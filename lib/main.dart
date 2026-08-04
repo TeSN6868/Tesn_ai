@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const TeSNAI());
@@ -12,14 +14,7 @@ class TeSNAI extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'TeSN AI',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF173B68),
-          brightness: Brightness.dark,
-        ),
-        scaffoldBackgroundColor: const Color(0xFF08111F),
-      ),
+      theme: ThemeData.dark(useMaterial3: true),
       home: const ChatPage(),
     );
   }
@@ -33,39 +28,82 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final TextEditingController controller = TextEditingController();
-  final ScrollController scrollController = ScrollController();
+  final controller = TextEditingController();
+  final scrollController = ScrollController();
 
-  final List<Map<String, String>> messages = [
+  // Alamat backend.
+  // Nanti kita ganti dengan alamat server online.
+  static const backendUrl = 'http://10.0.2.2:3000';
+
+  final messages = <Map<String, String>>[
     {
       'role': 'ai',
-      'text': 'Halo! Saya TeSN AI. Ada yang bisa saya bantu?'
-    },
+      'text': 'Halo! Saya TeSN AI. Silakan kirim pesan.'
+    }
   ];
 
-  void sendMessage() {
+  bool loading = false;
+
+  Future<void> sendMessage() async {
     final text = controller.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || loading) return;
+
+    controller.clear();
 
     setState(() {
       messages.add({'role': 'user', 'text': text});
-      messages.add({
-        'role': 'ai',
-        'text':
-            'Saya menerima pesan Anda: "$text"\n\nTeSN AI siap dikembangkan menjadi AI sungguhan dengan koneksi API.'
-      });
-      controller.clear();
+      loading = true;
     });
 
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (scrollController.hasClients) {
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$backendUrl/chat'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'message': text}),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          messages.add({
+            'role': 'ai',
+            'text': data['reply']?.toString() ?? 'Tidak ada jawaban.'
+          });
+        });
+      } else {
+        setState(() {
+          messages.add({
+            'role': 'ai',
+            'text': 'Backend mengembalikan error ${response.statusCode}.'
+          });
+        });
       }
-    });
+    } catch (e) {
+      setState(() {
+        messages.add({
+          'role': 'ai',
+          'text':
+              'Belum dapat terhubung ke server TeSN AI. Backend online akan kita siapkan berikutnya.'
+        });
+      });
+    } finally {
+      setState(() {
+        loading = false;
+      });
+
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (scrollController.hasClients) {
+          scrollController.animateTo(
+            scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -79,44 +117,18 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0D1B2A),
-        titleSpacing: 20,
-        title: const Row(
-          children: [
-            CircleAvatar(
-              radius: 19,
-              backgroundColor: Color(0xFF2E6FAF),
-              child: Icon(Icons.auto_awesome, color: Colors.white),
-            ),
-            SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'TeSN AI',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                Text(
-                  'AI Assistant',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.white60,
-                  ),
-                ),
-              ],
-            ),
-          ],
+        title: const Text(
+          'TeSN AI',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        centerTitle: true,
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
               controller: scrollController,
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+              padding: const EdgeInsets.all(16),
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 final message = messages[index];
@@ -127,69 +139,8 @@ class _ChatPageState extends State<ChatPage> {
                       isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     constraints: const BoxConstraints(maxWidth: 330),
-                    margin: const EdgeInsets.only(bottom: 14),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: isUser
-                          ? const Color(0xFF1D5C91)
-                          : const Color(0xFF142438),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Text(
-                      message['text']!,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      minLines: 1,
-                      maxLines: 5,
-                      textInputAction: TextInputAction.newline,
-                      decoration: InputDecoration(
-                        hintText: 'Tulis pesan...',
-                        filled: true,
-                        fillColor: const Color(0xFF142438),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FloatingActionButton(
-                    mini: true,
-                    onPressed: sendMessage,
-                    backgroundColor: const Color(0xFF2E6FAF),
-                    child: const Icon(Icons.send),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+
