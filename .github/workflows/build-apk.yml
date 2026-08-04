@@ -5,33 +5,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.44.8'
           channel: stable
-          cache: true
 
-      - name: Flutter pub get
-        run: flutter pub get
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter build apk --release --target-platform android-arm64
 
-      - name: Build APK
-        run: flutter build apk --debug --target-platform android-arm64
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: TeSN-AI-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: tesn-ai-release
+          path: build/app/outputs/flutter-apk/app-release.apk
