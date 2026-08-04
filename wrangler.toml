@@ -1,0 +1,3 @@
+name = "tesn-ai"
+main = "worker/index.js"
+compatibility_date = "2026-08-05"
