@@ -47,3 +47,6 @@ android_BACKUP_BEFORE_CLEAN/
 android_OLD_BUILD/
 build/
 .dart_tool/
+
+backend/.env
+backend/node_modules/
