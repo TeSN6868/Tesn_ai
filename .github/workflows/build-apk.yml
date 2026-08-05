@@ -1,10 +1,10 @@
 name: Build TeSN AI APK
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,6 +14,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -21,10 +27,13 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Flutter version
+        run: flutter --version
+
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
+      - name: Build release APK
         run: flutter build apk --release
 
       - name: Upload APK
@@ -32,3 +41,4 @@ jobs:
         with:
           name: tesn-ai-release
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
