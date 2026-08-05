@@ -33,7 +33,7 @@ class _ChatPageState extends State<ChatPage> {
 
   // Alamat backend.
   // Nanti kita ganti dengan alamat server online.
-  static const backendUrl = 'http://10.0.2.2:3000';
+  static const backendUrl = 'https://tesn-ai.coolalaga686.workers.dev/api';
 
   final messages = <Map<String, String>>[
     {
