@@ -111,103 +111,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _showPinDialog() async {
-    final pin = await showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        final controller = TextEditingController();
-        bool obscurePin = true;
-
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Row(
-                children: [
-                  Icon(Icons.pin_outlined),
-                  SizedBox(width: 10),
-                  Text('Buat PIN M8'),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'PIN M8 digunakan sebagai identitas dan keamanan akun kamu.',
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    obscureText: obscurePin,
-                    keyboardType: TextInputType.number,
-                    maxLength: 8,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      labelText: 'PIN M8',
-                      hintText: 'Minimal 4 karakter',
-                      prefixIcon: const Icon(Icons.pin_outlined),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setDialogState(() {
-                            obscurePin = !obscurePin;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePin
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                        ),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onSubmitted: (_) {
-                      final value = controller.text.trim();
-                      if (value.length >= 4) {
-                        Navigator.of(dialogContext).pop(value);
-                      }
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: const Text('BATAL'),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    final value = controller.text.trim();
-
-                    if (value.length < 4) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('PIN M8 minimal 4 karakter'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    Navigator.of(dialogContext).pop(value);
-                  },
-                  child: const Text('LANJUT'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    if (!mounted || pin == null || pin.isEmpty) return;
-
-    await register(pin);
-  }
-
   void showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -486,6 +389,103 @@ class _RegisterPageState extends State<RegisterPage> {
         setState(() => loading = false);
       }
     }
+  }
+
+  Future<void> _showPinDialog() async {
+    final pin = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        final controller = TextEditingController();
+        bool obscurePin = true;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.pin_outlined),
+                  SizedBox(width: 10),
+                  Text('Buat PIN M8'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'PIN M8 digunakan sebagai identitas dan keamanan akun kamu.',
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    obscureText: obscurePin,
+                    keyboardType: TextInputType.number,
+                    maxLength: 8,
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      labelText: 'PIN M8',
+                      hintText: 'Minimal 4 karakter',
+                      prefixIcon: const Icon(Icons.pin_outlined),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setDialogState(() {
+                            obscurePin = !obscurePin;
+                          });
+                        },
+                        icon: Icon(
+                          obscurePin
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onSubmitted: (_) {
+                      final value = controller.text.trim();
+                      if (value.length >= 4) {
+                        Navigator.of(dialogContext).pop(value);
+                      }
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: const Text('BATAL'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final value = controller.text.trim();
+
+                    if (value.length < 4) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('PIN M8 minimal 4 karakter'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.of(dialogContext).pop(value);
+                  },
+                  child: const Text('LANJUT'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (!mounted || pin == null || pin.isEmpty) return;
+
+    await register(pin);
   }
 
   void showMessage(String message) {
