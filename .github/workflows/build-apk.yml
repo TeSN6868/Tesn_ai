@@ -8,10 +8,11 @@ on:
 
 jobs:
   build:
+    name: M8 Android Release
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout M8
         uses: actions/checkout@v4
 
       - name: Setup Flutter
@@ -24,11 +25,12 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build APK
+      - name: Build M8 APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload M8 APK
         uses: actions/upload-artifact@v4
         with:
           name: M8-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
