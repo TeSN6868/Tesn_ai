@@ -7,30 +7,37 @@ on:
       - main
 
 jobs:
-  build:
-    name: M8 Android Release
+  build-apk:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout M8
         uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.44.2'
-          channel: 'stable'
+          channel: stable
           cache: true
 
-      - name: Flutter pub get
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Get dependencies
         run: flutter pub get
 
-      - name: Build M8 APK
+      - name: Build APK
         run: flutter build apk --release
 
-      - name: Upload M8 APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: M8-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
