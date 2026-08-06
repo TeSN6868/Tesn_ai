@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
-const String apiBase =
-    'https://m8-messenger-api.coolalaga686.workers.dev';
+const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
 void main() {
   runApp(const M8App());
@@ -64,13 +63,8 @@ class _LoginPageState extends State<LoginPage> {
       final response = await http
           .post(
             Uri.parse('$apiBase/api/login'),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode({
-              'm8_pin': pin,
-              'password': password,
-            }),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'m8_pin': pin, 'password': password}),
           )
           .timeout(const Duration(seconds: 20));
 
@@ -95,16 +89,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       } else {
-        showMessage(
-          data['error']?.toString() ?? 'Login gagal',
-        );
+        showMessage(data['error']?.toString() ?? 'Login gagal');
       }
     } catch (_) {
       if (!mounted) return;
 
-      showMessage(
-        'Tidak dapat terhubung ke server M8.',
-      );
+      showMessage('Tidak dapat terhubung ke server M8.');
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -113,9 +103,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -142,22 +132,13 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28),
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF1E5C91),
-                          Color(0xFF0B2945),
-                        ],
+                        colors: [Color(0xFF1E5C91), Color(0xFF0B2945)],
                       ),
                       boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 25,
-                          color: Colors.black54,
-                        ),
+                        BoxShadow(blurRadius: 25, color: Colors.black54),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.forum_rounded,
-                      size: 48,
-                    ),
+                    child: const Icon(Icons.forum_rounded, size: 48),
                   ),
 
                   const SizedBox(height: 24),
@@ -238,9 +219,7 @@ class _LoginPageState extends State<LoginPage> {
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Text(
                               'MASUK KE M8',
@@ -296,7 +275,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-
 // ============================================================
 // REGISTER
 // ============================================================
@@ -347,9 +325,7 @@ class _RegisterPageState extends State<RegisterPage> {
       final response = await http
           .post(
             Uri.parse('$apiBase/api/register'),
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'name': name,
               'email': isEmail ? identifier : '',
@@ -374,16 +350,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
         Navigator.of(context).pop();
       } else {
-        showMessage(
-          data['error']?.toString() ?? 'Pendaftaran M8 gagal',
-        );
+        showMessage(data['error']?.toString() ?? 'Pendaftaran M8 gagal');
       }
     } catch (_) {
       if (!mounted) return;
 
-      showMessage(
-        'Tidak dapat terhubung ke server M8.',
-      );
+      showMessage('Tidak dapat terhubung ke server M8.');
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -421,9 +393,7 @@ class _RegisterPageState extends State<RegisterPage> {
             children: [
               Icon(Icons.verified_user_outlined),
               SizedBox(width: 10),
-              Expanded(
-                child: Text('PIN M8 Kamu'),
-              ),
+              Expanded(child: Text('PIN M8 Kamu')),
             ],
           ),
           content: Column(
@@ -483,9 +453,9 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -509,18 +479,14 @@ class _RegisterPageState extends State<RegisterPage> {
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white.withOpacity(.05),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Daftar M8'),
-      ),
+      appBar: AppBar(title: const Text('Daftar M8')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -529,19 +495,13 @@ class _RegisterPageState extends State<RegisterPage> {
               constraints: const BoxConstraints(maxWidth: 430),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.person_add_alt_1_rounded,
-                    size: 64,
-                  ),
+                  const Icon(Icons.person_add_alt_1_rounded, size: 64),
 
                   const SizedBox(height: 18),
 
                   const Text(
                     'Buat Akun M8',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
 
                   const SizedBox(height: 8),
@@ -549,9 +509,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Text(
                     'Daftar untuk mulai menggunakan M8 Messenger',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(.65),
-                    ),
+                    style: TextStyle(color: Colors.white.withOpacity(.65)),
                   ),
 
                   const SizedBox(height: 32),
@@ -559,10 +517,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   TextField(
                     controller: nameController,
                     textInputAction: TextInputAction.next,
-                    decoration: fieldDecoration(
-                      'Nama',
-                      Icons.person_outline,
-                    ),
+                    decoration: fieldDecoration('Nama', Icons.person_outline),
                   ),
 
                   const SizedBox(height: 14),
@@ -625,8 +580,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
-                            obscureConfirmPassword =
-                                !obscureConfirmPassword;
+                            obscureConfirmPassword = !obscureConfirmPassword;
                           });
                         },
                         icon: Icon(
@@ -649,9 +603,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Text(
                               'DAFTAR',
@@ -669,9 +621,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: loading
                         ? null
                         : () => Navigator.of(context).pop(),
-                    child: const Text(
-                      'Sudah punya akun? MASUK',
-                    ),
+                    child: const Text('Sudah punya akun? MASUK'),
                   ),
                 ],
               ),
@@ -683,7 +633,6 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 }
 
-
 // ============================================================
 // HOME
 // ============================================================
@@ -692,11 +641,7 @@ class HomePage extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
 
-  const HomePage({
-    super.key,
-    required this.token,
-    required this.user,
-  });
+  const HomePage({super.key, required this.token, required this.user});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -711,9 +656,7 @@ class _HomePageState extends State<HomePage> {
 
   void logout() {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const LoginPage(),
-      ),
+      MaterialPageRoute(builder: (_) => const LoginPage()),
       (_) => false,
     );
   }
@@ -721,15 +664,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      ChatsPage(
-        token: widget.token,
-        myPin: pin,
-      ),
+      ChatsPage(token: widget.token, myPin: pin),
       const CallsPage(),
-      ProfilePage(
-        user: widget.user,
-        onLogout: logout,
-      ),
+      ProfilePage(user: widget.user, onLogout: logout),
     ];
 
     return Scaffold(
@@ -738,15 +675,12 @@ class _HomePageState extends State<HomePage> {
           currentIndex == 0
               ? 'M8 Messenger'
               : currentIndex == 1
-                  ? 'Panggilan'
-                  : 'Profil',
+              ? 'Panggilan'
+              : 'Profil',
         ),
         actions: [
           if (currentIndex == 0)
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.search),
-            ),
+            IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
         ],
       ),
       body: pages[currentIndex],
@@ -787,11 +721,7 @@ class ChatsPage extends StatefulWidget {
   final String token;
   final String myPin;
 
-  const ChatsPage({
-    super.key,
-    required this.token,
-    required this.myPin,
-  });
+  const ChatsPage({super.key, required this.token, required this.myPin});
 
   @override
   State<ChatsPage> createState() => _ChatsPageState();
@@ -811,9 +741,7 @@ class _ChatsPageState extends State<ChatsPage> {
     try {
       final response = await http.get(
         Uri.parse('$apiBase/api/chats'),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
+        headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
       if (response.statusCode == 200) {
@@ -822,11 +750,7 @@ class _ChatsPageState extends State<ChatsPage> {
         final list = data['chats'];
 
         if (list is List) {
-          chats = list
-              .map(
-                (e) => Map<String, dynamic>.from(e),
-              )
-              .toList();
+          chats = list.map((e) => Map<String, dynamic>.from(e)).toList();
         }
       }
     } catch (_) {
@@ -861,10 +785,7 @@ class _ChatsPageState extends State<ChatsPage> {
             ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(
-                  context,
-                  controller.text.trim(),
-                );
+                Navigator.pop(context, controller.text.trim());
               },
               child: const Text('MULAI'),
             ),
@@ -884,9 +805,7 @@ class _ChatsPageState extends State<ChatsPage> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${widget.token}',
         },
-        body: jsonEncode({
-          'participant_2_pin': pin,
-        }),
+        body: jsonEncode({'participant_2_pin': pin}),
       );
 
       final data = jsonDecode(response.body);
@@ -908,9 +827,7 @@ class _ChatsPageState extends State<ChatsPage> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tidak dapat terhubung ke M8'),
-        ),
+        const SnackBar(content: Text('Tidak dapat terhubung ke M8')),
       );
     }
   }
@@ -920,9 +837,7 @@ class _ChatsPageState extends State<ChatsPage> {
     return Stack(
       children: [
         if (loading)
-          const Center(
-            child: CircularProgressIndicator(),
-          )
+          const Center(child: CircularProgressIndicator())
         else if (chats.isEmpty)
           Center(
             child: Padding(
@@ -938,18 +853,13 @@ class _ChatsPageState extends State<ChatsPage> {
                   const SizedBox(height: 20),
                   const Text(
                     'Belum ada percakapan',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Mulai percakapan pertama kamu di M8.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(.6),
-                    ),
+                    style: TextStyle(color: Colors.white.withOpacity(.6)),
                   ),
                 ],
               ),
@@ -964,14 +874,11 @@ class _ChatsPageState extends State<ChatsPage> {
               itemBuilder: (context, index) {
                 final chat = chats[index];
 
-                final p1 =
-                    chat['participant_1_pin']?.toString() ?? '';
+                final p1 = chat['participant_1_pin']?.toString() ?? '';
 
-                final p2 =
-                    chat['participant_2_pin']?.toString() ?? '';
+                final p2 = chat['participant_2_pin']?.toString() ?? '';
 
-                final other =
-                    p1 == widget.myPin ? p2 : p1;
+                final other = p1 == widget.myPin ? p2 : p1;
 
                 return ListTile(
                   leading: CircleAvatar(
@@ -987,16 +894,10 @@ class _ChatsPageState extends State<ChatsPage> {
                   ),
                   title: Text(
                     other,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text(
-                    'Percakapan M8',
-                  ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                  ),
+                  subtitle: const Text('Percakapan M8'),
+                  trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -1050,19 +951,122 @@ class ChatRoomPage extends StatefulWidget {
 class _ChatRoomPageState extends State<ChatRoomPage> {
   final controller = TextEditingController();
 
+  List<Map<String, dynamic>> messages = [];
+  bool loading = true;
+  bool sending = false;
+
+  String get chatId => widget.chat['id'].toString();
+
+  @override
+  void initState() {
+    super.initState();
+    loadMessages();
+  }
+
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
   }
 
+  Future<void> loadMessages() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/api/messages?chat_id=$chatId'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true) {
+          final list = data['messages'];
+
+          if (mounted) {
+            setState(() {
+              messages = List<Map<String, dynamic>>.from(list ?? []);
+              loading = false;
+            });
+          }
+          return;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> sendMessage() async {
+    final text = controller.text.trim();
+
+    if (text.isEmpty || sending) return;
+
+    setState(() {
+      sending = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/messages'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'chat_id': widget.chat['id'],
+          'sender_pin': widget.myPin,
+          'message': text,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 201 && data['success'] == true) {
+        controller.clear();
+
+        final saved = data['message'];
+
+        if (saved != null && mounted) {
+          setState(() {
+            messages.add(Map<String, dynamic>.from(saved));
+          });
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error']?.toString() ?? 'Gagal mengirim pesan.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Koneksi gagal: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          sending = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final p1 =
-        widget.chat['participant_1_pin']?.toString() ?? '';
-
-    final p2 =
-        widget.chat['participant_2_pin']?.toString() ?? '';
+    final p1 = widget.chat['participant_1_pin']?.toString() ?? '';
+    final p2 = widget.chat['participant_2_pin']?.toString() ?? '';
 
     final other = p1 == widget.myPin ? p2 : p1;
 
@@ -1070,46 +1074,86 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       appBar: AppBar(
         title: Row(
           children: [
-            const CircleAvatar(
-              radius: 18,
-              child: Icon(Icons.person),
-            ),
+            const CircleAvatar(radius: 18, child: Icon(Icons.person)),
             const SizedBox(width: 10),
             Text(other),
           ],
         ),
       ),
+
       body: Column(
         children: [
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.lock_outline,
-                    size: 42,
-                    color: Colors.white.withOpacity(.3),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Percakapan M8',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(.5),
+            child: loading
+                ? const Center(child: CircularProgressIndicator())
+                : messages.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: 42,
+                          color: Colors.white.withOpacity(.3),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Belum ada pesan',
+                          style: TextStyle(color: Colors.white.withOpacity(.5)),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Mulai percakapan M8',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(.35),
+                          ),
+                        ),
+                      ],
                     ),
+                  )
+                : ListView.builder(
+                    reverse: false,
+                    padding: const EdgeInsets.all(12),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+
+                      final sender = msg['sender_pin']?.toString() ?? '';
+
+                      final text = msg['message']?.toString() ?? '';
+
+                      final mine = sender == widget.myPin;
+
+                      return Align(
+                        alignment: mine
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * .78,
+                          ),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 15,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            color: mine
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.white.withOpacity(.08),
+                          ),
+                          child: Text(
+                            text,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Chat ID: ${widget.chat['id']}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(.35),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
+
           Container(
             padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
             child: Row(
@@ -1118,11 +1162,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   onPressed: () {},
                   icon: const Icon(Icons.add_circle_outline),
                 ),
+
                 Expanded(
                   child: TextField(
                     controller: controller,
                     minLines: 1,
                     maxLines: 5,
+                    textInputAction: TextInputAction.newline,
                     decoration: InputDecoration(
                       hintText: 'Tulis pesan...',
                       filled: true,
@@ -1134,10 +1180,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     ),
                   ),
                 ),
+
                 const SizedBox(width: 6),
+
                 IconButton.filled(
-                  onPressed: () {},
-                  icon: const Icon(Icons.send_rounded),
+                  onPressed: sending ? null : sendMessage,
+                  icon: sending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send_rounded),
                 ),
               ],
             ),
@@ -1161,25 +1215,16 @@ class CallsPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.call,
-            size: 70,
-            color: Colors.white.withOpacity(.25),
-          ),
+          Icon(Icons.call, size: 70, color: Colors.white.withOpacity(.25)),
           const SizedBox(height: 18),
           const Text(
             'Panggilan M8',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Fitur panggilan akan kita aktifkan berikutnya.',
-            style: TextStyle(
-              color: Colors.white.withOpacity(.55),
-            ),
+            style: TextStyle(color: Colors.white.withOpacity(.55)),
           ),
         ],
       ),
@@ -1195,11 +1240,7 @@ class ProfilePage extends StatelessWidget {
   final Map<String, dynamic> user;
   final VoidCallback onLogout;
 
-  const ProfilePage({
-    super.key,
-    required this.user,
-    required this.onLogout,
-  });
+  const ProfilePage({super.key, required this.user, required this.onLogout});
 
   @override
   Widget build(BuildContext context) {
@@ -1212,31 +1253,20 @@ class ProfilePage extends StatelessWidget {
       children: [
         const SizedBox(height: 20),
         const Center(
-          child: CircleAvatar(
-            radius: 48,
-            child: Icon(
-              Icons.person,
-              size: 48,
-            ),
-          ),
+          child: CircleAvatar(radius: 48, child: Icon(Icons.person, size: 48)),
         ),
         const SizedBox(height: 18),
         Center(
           child: Text(
             name,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
         const SizedBox(height: 5),
         Center(
           child: Text(
             pin,
-            style: TextStyle(
-              color: Colors.white.withOpacity(.55),
-            ),
+            style: TextStyle(color: Colors.white.withOpacity(.55)),
           ),
         ),
         const SizedBox(height: 30),
@@ -1251,9 +1281,7 @@ class ProfilePage extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.email_outlined),
                 title: const Text('Email'),
-                subtitle: Text(
-                  email.isEmpty ? 'Belum diatur' : email,
-                ),
+                subtitle: Text(email.isEmpty ? 'Belum diatur' : email),
               ),
             ],
           ),

@@ -16,36 +16,32 @@ export default {
     }
 
     try {
-      // =========================
       // HEALTH CHECK
-      // =========================
       if (url.pathname === "/" && request.method === "GET") {
         return json({
           success: true,
           app: "M8 Messenger",
           status: "online",
+          database: "M8 D1",
         });
       }
 
-      // =========================
       // REGISTER
-      // =========================
       if (url.pathname === "/api/register" && request.method === "POST") {
         const body = await request.json();
 
         const name = String(body.name || "").trim();
-        const email = String(body.email || "").trim().toLowerCase();
-        const phone = String(body.phone || "").trim();
+        const identifier = String(
+          body.identifier || body.email_or_phone || ""
+        ).trim();
         const password = String(body.password || "");
-        const confirmPassword = String(
-          body.confirm_password || body.confirmPassword || ""
-        );
+        const confirmPassword = String(body.confirm_password || "");
         const m8Pin = String(body.m8_pin || "").trim();
 
-        if (!name || !email || !phone || !password || !m8Pin) {
+        if (!name || !identifier || !password || !confirmPassword || !m8Pin) {
           return json({
             success: false,
-            error: "Nama, email, nomor HP, password, dan PIN M8 wajib diisi.",
+            error: "Semua data wajib diisi.",
           }, 400);
         }
 
@@ -66,45 +62,35 @@ export default {
         if (!env.DB) {
           return json({
             success: false,
-            error: "Database M8 belum terhubung.",
+            error: "Binding D1 DB belum tersedia.",
           }, 500);
         }
 
         const existing = await env.DB.prepare(
-          `SELECT id
-           FROM users
-           WHERE email = ? OR phone = ? OR m8_pin = ?
-           LIMIT 1`
+          "SELECT id FROM users WHERE email = ? OR phone = ? OR m8_pin = ? LIMIT 1"
         )
-          .bind(email, phone, m8Pin)
+          .bind(identifier, identifier, m8Pin)
           .first();
 
         if (existing) {
           return json({
             success: false,
-            error: "Email, nomor HP, atau PIN M8 sudah terdaftar.",
+            error: "Email/nomor HP atau PIN M8 sudah terdaftar.",
           }, 409);
         }
 
-        const passwordHash = await hashPassword(password);
+        const passwordHash = await sha256(password);
 
         const result = await env.DB.prepare(
           `INSERT INTO users
-           (m8_pin, name, email, phone, password_hash, created_at)
-           VALUES (?, ?, ?, ?, ?, ?)`
+           (name, email, password_hash, m8_pin, created_at)
+           VALUES (?, ?, ?, ?, datetime('now'))`
         )
-          .bind(
-            m8Pin,
-            name,
-            email,
-            phone,
-            passwordHash,
-            Date.now()
-          )
+          .bind(name, identifier, passwordHash, m8Pin)
           .run();
 
         if (!result.success) {
-          throw new Error("Gagal membuat akun M8.");
+          throw new Error("Gagal menyimpan akun M8.");
         }
 
         return json({
@@ -113,59 +99,282 @@ export default {
         }, 201);
       }
 
-      // =========================
+
+      // ============================================================
+      // CHATS
+      // ============================================================
+
+      if (url.pathname === "/api/chats" && request.method === "GET") {
+        const myPin = url.searchParams.get("m8_pin")?.trim();
+
+        if (!myPin) {
+          return json({
+            success: false,
+            error: "m8_pin wajib diisi."
+          }, 400);
+        }
+
+        const result = await env.DB.prepare(`
+          SELECT
+            id,
+            participant_1_pin,
+            participant_2_pin,
+            created_at
+          FROM chats
+          WHERE participant_1_pin = ? OR participant_2_pin = ?
+          ORDER BY id DESC
+        `)
+          .bind(myPin, myPin)
+          .all();
+
+        return json({
+          success: true,
+          chats: result.results || []
+        });
+      }
+
+      // ============================================================
+      // CREATE CHAT
+      // ============================================================
+
+      if (url.pathname === "/api/chats" && request.method === "POST") {
+        const body = await request.json();
+
+        const myPin = String(body.my_pin || "").trim();
+        const otherPin = String(body.other_pin || "").trim();
+
+        if (!myPin || !otherPin) {
+          return json({
+            success: false,
+            error: "my_pin dan other_pin wajib diisi."
+          }, 400);
+        }
+
+        if (myPin === otherPin) {
+          return json({
+            success: false,
+            error: "Tidak bisa membuat chat dengan PIN sendiri."
+          }, 400);
+        }
+
+        const existing = await env.DB.prepare(`
+          SELECT id, participant_1_pin, participant_2_pin, created_at
+          FROM chats
+          WHERE
+            (participant_1_pin = ? AND participant_2_pin = ?)
+            OR
+            (participant_1_pin = ? AND participant_2_pin = ?)
+          LIMIT 1
+        `)
+          .bind(myPin, otherPin, otherPin, myPin)
+          .first();
+
+        if (existing) {
+          return json({
+            success: true,
+            chat: existing,
+            existing: true
+          });
+        }
+
+        const createdAt = Date.now();
+
+        const result = await env.DB.prepare(`
+          INSERT INTO chats
+          (participant_1_pin, participant_2_pin, created_at)
+          VALUES (?, ?, ?)
+        `)
+          .bind(myPin, otherPin, createdAt)
+          .run();
+
+        if (!result.success) {
+          throw new Error("Gagal membuat chat.");
+        }
+
+        const chat = await env.DB.prepare(`
+          SELECT id, participant_1_pin, participant_2_pin, created_at
+          FROM chats
+          WHERE id = ?
+        `)
+          .bind(result.meta.last_row_id)
+          .first();
+
+        return json({
+          success: true,
+          chat,
+          existing: false
+        }, 201);
+      }
+
+      // ============================================================
+      // MESSAGES - GET
+      // ============================================================
+
+      if (url.pathname === "/api/messages" && request.method === "GET") {
+        const chatId = Number(url.searchParams.get("chat_id"));
+
+        if (!chatId) {
+          return json({
+            success: false,
+            error: "chat_id wajib diisi."
+          }, 400);
+        }
+
+        const result = await env.DB.prepare(`
+          SELECT
+            id,
+            chat_id,
+            sender_pin,
+            message,
+            timestamp,
+            status
+          FROM messages
+          WHERE chat_id = ?
+          ORDER BY id ASC
+        `)
+          .bind(chatId)
+          .all();
+
+        return json({
+          success: true,
+          messages: result.results || []
+        });
+      }
+
+      // ============================================================
+      // MESSAGES - SEND
+      // ============================================================
+
+      if (url.pathname === "/api/messages" && request.method === "POST") {
+        const body = await request.json();
+
+        const chatId = Number(body.chat_id);
+        const senderPin = String(body.sender_pin || "").trim();
+        const message = String(body.message || "").trim();
+
+        if (!chatId || !senderPin || !message) {
+          return json({
+            success: false,
+            error: "chat_id, sender_pin dan message wajib diisi."
+          }, 400);
+        }
+
+        const chat = await env.DB.prepare(`
+          SELECT
+            id,
+            participant_1_pin,
+            participant_2_pin
+          FROM chats
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(chatId)
+          .first();
+
+        if (!chat) {
+          return json({
+            success: false,
+            error: "Chat tidak ditemukan."
+          }, 404);
+        }
+
+        if (
+          chat.participant_1_pin !== senderPin &&
+          chat.participant_2_pin !== senderPin
+        ) {
+          return json({
+            success: false,
+            error: "Pengirim bukan anggota chat."
+          }, 403);
+        }
+
+        const timestamp = Date.now();
+
+        const result = await env.DB.prepare(`
+          INSERT INTO messages
+          (chat_id, sender_pin, message, timestamp, status)
+          VALUES (?, ?, ?, ?, 'sent')
+        `)
+          .bind(chatId, senderPin, message, timestamp)
+          .run();
+
+        if (!result.success) {
+          throw new Error("Gagal menyimpan pesan.");
+        }
+
+        const saved = await env.DB.prepare(`
+          SELECT
+            id,
+            chat_id,
+            sender_pin,
+            message,
+            timestamp,
+            status
+          FROM messages
+          WHERE id = ?
+        `)
+          .bind(result.meta.last_row_id)
+          .first();
+
+        return json({
+          success: true,
+          message: saved
+        }, 201);
+      }
+
       // LOGIN
-      // =========================
       if (url.pathname === "/api/login" && request.method === "POST") {
         const body = await request.json();
 
-        const login = String(
-          body.email || body.phone || body.identifier || ""
-        ).trim().toLowerCase();
+        const identifier = String(
+          body.identifier || body.email_or_phone || ""
+        ).trim();
 
         const m8Pin = String(body.m8_pin || "").trim();
         const password = String(body.password || "");
 
-        if (!login || !password) {
+        if ((!identifier && !m8Pin) || !password) {
           return json({
             success: false,
-            error: "Email/nomor HP dan password wajib diisi.",
+            error: "Identitas/PIN dan password wajib diisi.",
           }, 400);
         }
 
-        const user = await env.DB.prepare(
-          `SELECT id, m8_pin, name, email, phone, password_hash
-           FROM users
-           WHERE (LOWER(email) = ? OR phone = ?)
-           LIMIT 1`
-        )
-          .bind(login, login)
-          .first();
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        const passwordHash = await sha256(password);
+
+        let user;
+
+        if (identifier) {
+          user = await env.DB.prepare(
+            `SELECT id, name, email, phone, m8_pin
+             FROM users
+             WHERE (email = ? OR phone = ?) AND password_hash = ?
+             LIMIT 1`
+          )
+            .bind(identifier, identifier, passwordHash)
+            .first();
+        } else {
+          user = await env.DB.prepare(
+            `SELECT id, name, email, phone, m8_pin
+             FROM users
+             WHERE m8_pin = ? AND password_hash = ?
+             LIMIT 1`
+          )
+            .bind(m8Pin, passwordHash)
+            .first();
+        }
 
         if (!user) {
           return json({
             success: false,
-            error: "Akun M8 tidak ditemukan.",
-          }, 401);
-        }
-
-        // Jika PIN diberikan, pastikan cocok.
-        if (m8Pin && user.m8_pin !== m8Pin) {
-          return json({
-            success: false,
-            error: "PIN M8 salah.",
-          }, 401);
-        }
-
-        const valid = await verifyPassword(
-          password,
-          user.password_hash
-        );
-
-        if (!valid) {
-          return json({
-            success: false,
-            error: "Password salah.",
+            error: "Identitas/PIN atau password salah.",
           }, 401);
         }
 
@@ -176,10 +385,10 @@ export default {
           token,
           user: {
             id: user.id,
-            m8_pin: user.m8_pin,
             name: user.name,
             email: user.email,
-            phone: user.phone,
+          phone: user.phone,
+            m8_pin: user.m8_pin,
           },
         });
       }
@@ -201,115 +410,19 @@ export default {
   },
 };
 
+async function sha256(text) {
+  const data = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", data);
 
-// ============================================================
-// PASSWORD
-// ============================================================
-
-async function hashPassword(password) {
-  const salt = crypto.randomUUID();
-
-  const iterations = 100000;
-
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(password),
-    "PBKDF2",
-    false,
-    ["deriveBits"]
-  );
-
-  const bits = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      salt: new TextEncoder().encode(salt),
-      iterations,
-      hash: "SHA-256",
-    },
-    keyMaterial,
-    256
-  );
-
-  const hash = bytesToBase64(new Uint8Array(bits));
-
-  return `pbkdf2$${iterations}$${salt}$${hash}`;
+  return [...new Uint8Array(hash)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
-
-async function verifyPassword(password, stored) {
-  if (!stored) return false;
-
-  // Akun lama TEST0001.
-  // Jangan izinkan TEST_HASH sebagai password nyata.
-  if (stored === "TEST_HASH") {
-    return false;
-  }
-
-  const parts = stored.split("$");
-
-  if (parts.length !== 4 || parts[0] !== "pbkdf2") {
-    return false;
-  }
-
-  const iterations = Number(parts[1]);
-  const salt = parts[2];
-  const expected = parts[3];
-
-  if (!iterations || !salt || !expected) {
-    return false;
-  }
-
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(password),
-    "PBKDF2",
-    false,
-    ["deriveBits"]
-  );
-
-  const bits = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      salt: new TextEncoder().encode(salt),
-      iterations,
-      hash: "SHA-256",
-    },
-    keyMaterial,
-    256
-  );
-
-  const actual = bytesToBase64(new Uint8Array(bits));
-
-  return actual === expected;
-}
-
-
-// ============================================================
-// TOKEN
-// ============================================================
 
 async function createToken() {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
 
-  return bytesToHex(bytes);
-}
-
-
-// ============================================================
-// HELPERS
-// ============================================================
-
-function bytesToBase64(bytes) {
-  let binary = "";
-
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return btoa(binary);
-}
-
-function bytesToHex(bytes) {
   return [...bytes]
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
