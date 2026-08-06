@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -313,7 +314,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
-  final pinController = TextEditingController();
 
   bool loading = false;
   bool obscurePassword = true;
@@ -391,99 +391,93 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  String _generateM8Pin() {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+    final random = Random.secure();
+
+    final generatedLetters = List.generate(
+      4,
+      (_) => letters[random.nextInt(letters.length)],
+    ).join();
+
+    final generatedNumbers = List.generate(
+      4,
+      (_) => numbers[random.nextInt(numbers.length)],
+    ).join();
+
+    return '$generatedLetters$generatedNumbers';
+  }
+
   Future<void> _showPinDialog() async {
-    final pin = await showDialog<String>(
+    final pin = _generateM8Pin();
+
+    final proceed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
-        final controller = TextEditingController();
-        bool obscurePin = true;
-
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Row(
-                children: [
-                  Icon(Icons.pin_outlined),
-                  SizedBox(width: 10),
-                  Text('Buat PIN M8'),
-                ],
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.verified_user_outlined),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('PIN M8 Kamu'),
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'PIN M8 digunakan sebagai identitas dan keamanan akun kamu.',
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    obscureText: obscurePin,
-                    keyboardType: TextInputType.number,
-                    maxLength: 8,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      labelText: 'PIN M8',
-                      hintText: 'Minimal 4 karakter',
-                      prefixIcon: const Icon(Icons.pin_outlined),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setDialogState(() {
-                            obscurePin = !obscurePin;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePin
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                        ),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onSubmitted: (_) {
-                      final value = controller.text.trim();
-                      if (value.length >= 4) {
-                        Navigator.of(dialogContext).pop(value);
-                      }
-                    },
-                  ),
-                ],
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'PIN M8 dibuat otomatis oleh sistem. '
+                'Kamu tidak dapat memilih atau mengubah PIN ini.',
+                textAlign: TextAlign.center,
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: const Text('BATAL'),
+              const SizedBox(height: 22),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 18,
+                  horizontal: 12,
                 ),
-                FilledButton(
-                  onPressed: () {
-                    final value = controller.text.trim();
-
-                    if (value.length < 4) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('PIN M8 minimal 4 karakter'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    Navigator.of(dialogContext).pop(value);
-                  },
-                  child: const Text('LANJUT'),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 1.5,
+                  ),
                 ),
-              ],
-            );
-          },
+                child: SelectableText(
+                  pin,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 4,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Simpan PIN ini. PIN akan digunakan sebagai identitas akun M8.',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text('LANJUT DAFTAR'),
+            ),
+          ],
         );
       },
     );
 
-    if (!mounted || pin == null || pin.isEmpty) return;
+    if (!mounted || proceed != true) return;
 
     await register(pin);
   }
@@ -501,7 +495,6 @@ class _RegisterPageState extends State<RegisterPage> {
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
-    pinController.dispose();
     super.dispose();
   }
 
