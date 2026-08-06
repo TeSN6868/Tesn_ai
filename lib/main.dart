@@ -251,6 +251,31 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: OutlinedButton(
+                      onPressed: loading
+                          ? null
+                          : () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const RegisterPage(),
+                                ),
+                              );
+                            },
+                      child: const Text(
+                        'DAFTAR AKUN M8',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
 
                   Text(
@@ -269,6 +294,325 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+
+// ============================================================
+// REGISTER
+// ============================================================
+
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final nameController = TextEditingController();
+  final identifierController = TextEditingController();
+  final phoneController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final pinController = TextEditingController();
+
+  bool loading = false;
+  bool obscurePassword = true;
+  bool obscureConfirmPassword = true;
+
+  Future<void> register() async {
+    final name = nameController.text.trim();
+    final identifier = identifierController.text.trim();
+    final phone = phoneController.text.trim();
+    final password = passwordController.text;
+    final confirmPassword = confirmPasswordController.text;
+    final pin = pinController.text.trim();
+
+    if (name.isEmpty ||
+        identifier.isEmpty ||
+        phone.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty ||
+        pin.isEmpty) {
+      showMessage('Semua data wajib diisi');
+      return;
+    }
+
+    if (password != confirmPassword) {
+      showMessage('Konfirmasi password tidak cocok');
+      return;
+    }
+
+    if (pin.length < 4) {
+      showMessage('PIN M8 minimal 4 karakter');
+      return;
+    }
+
+    setState(() => loading = true);
+
+    try {
+      final isEmail = identifier.contains('@');
+
+      final response = await http
+          .post(
+            Uri.parse('$apiBase/api/register'),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'name': name,
+              'email': isEmail ? identifier : '',
+              'phone': phone,
+              'password': password,
+              'confirm_password': confirmPassword,
+              'm8_pin': pin,
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (!mounted) return;
+
+      if (response.statusCode == 201 && data['success'] == true) {
+        showMessage('Akun M8 berhasil dibuat');
+
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        if (!mounted) return;
+
+        Navigator.of(context).pop();
+      } else {
+        showMessage(
+          data['error']?.toString() ?? 'Pendaftaran M8 gagal',
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+
+      showMessage(
+        'Tidak dapat terhubung ke server M8.',
+      );
+    } finally {
+      if (mounted) {
+        setState(() => loading = false);
+      }
+    }
+  }
+
+  void showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    identifierController.dispose();
+    phoneController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    pinController.dispose();
+    super.dispose();
+  }
+
+  InputDecoration fieldDecoration(
+    String label,
+    IconData icon, {
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: Colors.white.withOpacity(.05),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Daftar M8'),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 430),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.person_add_alt_1_rounded,
+                    size: 64,
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  const Text(
+                    'Buat Akun M8',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    'Daftar untuk mulai menggunakan M8 Messenger',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(.65),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  TextField(
+                    controller: nameController,
+                    textInputAction: TextInputAction.next,
+                    decoration: fieldDecoration(
+                      'Nama',
+                      Icons.person_outline,
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  TextField(
+                    controller: identifierController,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    decoration: fieldDecoration(
+                      'Email / Nomor HP',
+                      Icons.alternate_email,
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.next,
+                    decoration: fieldDecoration(
+                      'Nomor HP',
+                      Icons.phone_outlined,
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  TextField(
+                    controller: passwordController,
+                    obscureText: obscurePassword,
+                    textInputAction: TextInputAction.next,
+                    decoration: fieldDecoration(
+                      'Password',
+                      Icons.lock_outline,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            obscurePassword = !obscurePassword;
+                          });
+                        },
+                        icon: Icon(
+                          obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  TextField(
+                    controller: confirmPasswordController,
+                    obscureText: obscureConfirmPassword,
+                    textInputAction: TextInputAction.next,
+                    decoration: fieldDecoration(
+                      'Konfirmasi Password',
+                      Icons.lock_reset_outlined,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            obscureConfirmPassword =
+                                !obscureConfirmPassword;
+                          });
+                        },
+                        icon: Icon(
+                          obscureConfirmPassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  TextField(
+                    controller: pinController,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => register(),
+                    decoration: fieldDecoration(
+                      'PIN M8',
+                      Icons.pin_outlined,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: FilledButton(
+                      onPressed: loading ? null : register,
+                      child: loading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'DAFTAR',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextButton(
+                    onPressed: loading
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    child: const Text(
+                      'Sudah punya akun? MASUK',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 // ============================================================
 // HOME
