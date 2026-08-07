@@ -91,10 +91,10 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         showMessage(data['error']?.toString() ?? 'Login gagal');
       }
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
 
-      showMessage('Tidak dapat terhubung ke server M8.');
+      showMessage('Error login M8: $e');
     } finally {
       if (mounted) {
         setState(() => loading = false);
