@@ -588,7 +588,7 @@ class _RegisterPageState extends State<RegisterPage> {
       prefixIcon: Icon(icon),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: Colors.white.withOpacity(.05),
+      fillColor: const Color(0xFFF9FCFF),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
     );
   }
@@ -1301,20 +1301,39 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(18),
                             color: mine
-                                ? Theme.of(context).colorScheme.primary
-                                : const Color(0xFFE7F2F6),
+                                ? const Color(0xFF147FBD)
+                                : const Color(0xFFEAF5FB),
                           ),
-                          child: Text(
-                            text,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: mine
-                                  ? Colors.white
-                                  : const Color(0xFF123D78),
+                                      child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                text,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: mine
+                                      ? Colors.white
+                                      : const Color(0xFF0E5F91),
+                                ),
+                              ),
+                              if (mine && statusLabel.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 3),
+                                  child: Text(
+                                    statusLabel,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.8,
+                                      color: Colors.white.withOpacity(.90),
+                                    ),
+                                  ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                      );
+                        );
                     },
                   ),
           ),
