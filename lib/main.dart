@@ -42,14 +42,14 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final pinController = TextEditingController();
+  final identifierController = TextEditingController();
   final passwordController = TextEditingController();
 
   bool loading = false;
   bool obscurePassword = true;
 
   Future<void> login() async {
-    final pin = pinController.text.trim();
+    final pin = identifierController.text.trim();
     final password = passwordController.text;
 
     if (pin.isEmpty || password.isEmpty) {
@@ -110,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    pinController.dispose();
+    identifierController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -165,11 +165,11 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 42),
 
                   TextField(
-                    controller: pinController,
+                    controller: identifierController,
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
-                      labelText: 'M8 PIN',
-                      hintText: 'Contoh: TEST0002',
+                      labelText: 'Email / Nomor HP',
+                      hintText: 'contoh@email.com atau 080000009999',
                       prefixIcon: const Icon(Icons.badge_outlined),
                       filled: true,
                       fillColor: Colors.white.withOpacity(.05),
