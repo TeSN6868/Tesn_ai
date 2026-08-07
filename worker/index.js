@@ -85,7 +85,7 @@ export default {
           }, 409);
         }
 
-        const passwordHash = await sha256(password);
+        const passwordHash = await hashPassword(password);
 
         const result = await env.DB.prepare(
           `INSERT INTO users
@@ -433,6 +433,49 @@ if (url.pathname === "/api/login" && request.method === "POST") {
     }
   },
 };
+
+async function hashPassword(password) {
+  const iterations = 100000;
+  const saltBytes = new Uint8Array(16);
+  crypto.getRandomValues(saltBytes);
+
+  let saltBinary = "";
+  for (const byte of saltBytes) {
+    saltBinary += String.fromCharCode(byte);
+  }
+  const salt = btoa(saltBinary);
+
+  const passwordBytes = new TextEncoder().encode(password);
+  const saltData = new TextEncoder().encode(salt);
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    passwordBytes,
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: saltData,
+      iterations: iterations,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256
+  );
+
+  const derivedBytes = new Uint8Array(derivedBits);
+
+  let binary = "";
+  for (const byte of derivedBytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return `pbkdf2$${iterations}$${salt}$${btoa(binary)}`;
+}
 
 async function verifyPassword(password, stored) {
   if (!stored || !stored.startsWith("pbkdf2$")) {
