@@ -64,10 +64,7 @@ class _LoginPageState extends State<LoginPage> {
           .post(
             Uri.parse('$apiBase/api/login'),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'identifier': identifier,
-              'password': password,
-            }),
+            body: jsonEncode({'identifier': identifier, 'password': password}),
           )
           .timeout(const Duration(seconds: 20));
 
@@ -120,155 +117,265 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    const lightBlue = Color(0xFF63C5FF);
+    const blue = Color(0xFF2785E5);
+    const darkBlue = Color(0xFF123D78);
+
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: Column(
-                children: [
-                  Container(
-                    width: 92,
-                    height: 92,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1E5C91), Color(0xFF0B2945)],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [lightBlue, blue, darkBlue],
+            stops: [0.0, 0.48, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 430),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 108,
+                      height: 108,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(32),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFFFFFFFF), Color(0xFFD9F1FF)],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 30,
+                            offset: Offset(0, 14),
+                          ),
+                        ],
                       ),
-                      boxShadow: const [
-                        BoxShadow(blurRadius: 25, color: Colors.black54),
-                      ],
-                    ),
-                    child: const Icon(Icons.forum_rounded, size: 48),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    'M8 Messenger',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    'Private. Secure. Connected.',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(.65),
-                      fontSize: 15,
-                    ),
-                  ),
-
-                  const SizedBox(height: 42),
-
-                  TextField(
-                    controller: identifierController,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      labelText: 'Email / Nomor HP',
-                      hintText: 'contoh@email.com atau 080000009999',
-                      prefixIcon: const Icon(Icons.badge_outlined),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(.05),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  TextField(
-                    controller: passwordController,
-                    obscureText: obscurePassword,
-                    onSubmitted: (_) => login(),
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                      child: const Center(
+                        child: Text(
+                          '8',
+                          style: TextStyle(
+                            fontSize: 72,
+                            height: .9,
+                            fontWeight: FontWeight.w900,
+                            color: darkBlue,
+                          ),
                         ),
                       ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(.05),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    const Text(
+                      'M8',
+                      style: TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 2,
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 2),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: FilledButton(
-                      onPressed: loading ? null : login,
-                      child: loading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text(
-                              'MASUK KE M8',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
+                    const Text(
+                      'MESSENGER',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: 4,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Text(
+                      'Private. Secure. Connected.',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(.82),
+                        fontSize: 14,
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(.13),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(.25),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 30,
+                            offset: Offset(0, 16),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: identifierController,
+                            textInputAction: TextInputAction.next,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              labelText: 'Email / Nomor HP',
+                              hintText: 'Email atau nomor HP',
+                              labelStyle: TextStyle(color: Colors.white),
+                              hintStyle: TextStyle(color: Colors.white54),
+                              prefixIcon: const Icon(
+                                Icons.person_outline_rounded,
+                                color: Colors.white,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white12,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(17),
+                                borderSide: BorderSide(color: Colors.white24),
+                              ),
+                              focusedBorder: const OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(17),
+                                ),
+                                borderSide: BorderSide(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
                               ),
                             ),
-                    ),
-                  ),
+                          ),
 
-                  const SizedBox(height: 12),
+                          const SizedBox(height: 14),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: OutlinedButton(
-                      onPressed: loading
-                          ? null
-                          : () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const RegisterPage(),
+                          TextField(
+                            controller: passwordController,
+                            obscureText: obscurePassword,
+                            onSubmitted: (_) => login(),
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              labelStyle: const TextStyle(color: Colors.white),
+                              prefixIcon: const Icon(
+                                Icons.lock_outline_rounded,
+                                color: Colors.white,
+                              ),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    obscurePassword = !obscurePassword;
+                                  });
+                                },
+                                icon: Icon(
+                                  obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: Colors.white,
                                 ),
-                              );
-                            },
-                      child: const Text(
-                        'DAFTAR AKUN M8',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white12,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(17),
+                                borderSide: BorderSide(color: Colors.white24),
+                              ),
+                              focusedBorder: const OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(17),
+                                ),
+                                borderSide: BorderSide(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 54,
+                            child: FilledButton(
+                              onPressed: loading ? null : login,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: darkBlue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(17),
+                                ),
+                                elevation: 8,
+                              ),
+                              child: loading
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'MASUK KE M8',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1,
+                                      ),
+                                    ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 54,
+                            child: OutlinedButton(
+                              onPressed: loading
+                                  ? null
+                                  : () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => const RegisterPage(),
+                                        ),
+                                      );
+                                    },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                side: const BorderSide(color: Colors.white70),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(17),
+                                ),
+                              ),
+                              child: const Text(
+                                'DAFTAR AKUN M8',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 22),
 
-                  Text(
-                    'M8 Messenger API • Online',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(.45),
+                    Text(
+                      'M8 Messenger API • Online',
+                      style: TextStyle(fontSize: 12, color: Colors.white70),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -335,7 +442,7 @@ class _RegisterPageState extends State<RegisterPage> {
               'phone': phone,
               'password': password,
               'confirm_password': confirmPassword,
-              'identifier': pin,
+              'm8_pin': pin,
             }),
           )
           .timeout(const Duration(seconds: 20));
@@ -743,7 +850,9 @@ class _ChatsPageState extends State<ChatsPage> {
   Future<void> loadChats() async {
     try {
       final response = await http.get(
-        Uri.parse('$apiBase/api/chats?m8_pin=${Uri.encodeComponent(widget.myPin)}'),
+        Uri.parse(
+          '$apiBase/api/chats?m8_pin=${Uri.encodeComponent(widget.myPin)}',
+        ),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
@@ -758,11 +867,9 @@ class _ChatsPageState extends State<ChatsPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memuat chat: $e'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat chat: $e')));
       }
     }
 
