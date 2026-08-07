@@ -1,7 +1,7 @@
-<manifest
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/> xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="tesn_ai"
+        android:label="M8 Messenger"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
