@@ -333,6 +333,122 @@ export default {
         }, 201);
       }
 
+      // ============================================================
+      // ============================================================
+      // MESSAGES - DELIVERED
+      // ============================================================
+      if (url.pathname === "/api/messages/delivered" && request.method === "POST") {
+        const body = await request.json();
+
+        const chatId = Number(body.chat_id);
+        const receiverPin = String(body.receiver_pin || "").trim();
+
+        if (!chatId || !receiverPin) {
+          return json({
+            success: false,
+            error: "chat_id dan receiver_pin wajib diisi."
+          }, 400);
+        }
+
+        const chat = await env.DB.prepare(`
+          SELECT id, participant_1_pin, participant_2_pin
+          FROM chats
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(chatId)
+          .first();
+
+        if (!chat) {
+          return json({
+            success: false,
+            error: "Chat tidak ditemukan."
+          }, 404);
+        }
+
+        if (
+          chat.participant_1_pin !== receiverPin &&
+          chat.participant_2_pin !== receiverPin
+        ) {
+          return json({
+            success: false,
+            error: "Penerima bukan anggota chat."
+          }, 403);
+        }
+
+        const result = await env.DB.prepare(`
+          UPDATE messages
+          SET status = 'delivered'
+          WHERE chat_id = ?
+            AND sender_pin != ?
+            AND status = 'sent'
+        `)
+          .bind(chatId, receiverPin)
+          .run();
+
+        return json({
+          success: true,
+          updated: result.meta?.changes || 0
+        });
+      }
+
+      // MESSAGES - READ
+      // ============================================================
+      if (url.pathname === "/api/messages/read" && request.method === "POST") {
+        const body = await request.json();
+
+        const chatId = Number(body.chat_id);
+        const readerPin = String(body.reader_pin || "").trim();
+
+        if (!chatId || !readerPin) {
+          return json({
+            success: false,
+            error: "chat_id dan reader_pin wajib diisi."
+          }, 400);
+        }
+
+        const chat = await env.DB.prepare(`
+          SELECT id, participant_1_pin, participant_2_pin
+          FROM chats
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(chatId)
+          .first();
+
+        if (!chat) {
+          return json({
+            success: false,
+            error: "Chat tidak ditemukan."
+          }, 404);
+        }
+
+        if (
+          chat.participant_1_pin !== readerPin &&
+          chat.participant_2_pin !== readerPin
+        ) {
+          return json({
+            success: false,
+            error: "Pembaca bukan anggota chat."
+          }, 403);
+        }
+
+        const result = await env.DB.prepare(`
+          UPDATE messages
+          SET status = 'read'
+          WHERE chat_id = ?
+            AND sender_pin != ?
+            AND status != 'read'
+        `)
+          .bind(chatId, readerPin)
+          .run();
+
+        return json({
+          success: true,
+          updated: result.meta?.changes || 0
+        });
+      }
+
       // LOGIN
 if (url.pathname === "/api/login" && request.method === "POST") {
       const body = await request.json();

@@ -1079,6 +1079,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   void initState() {
     super.initState();
     loadMessages();
+    markMessagesAsDelivered();
+    markMessagesAsRead();
   }
 
   @override
@@ -1122,6 +1124,38 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         });
       }
     }
+  }
+
+  Future<void> markMessagesAsDelivered() async {
+    try {
+      await http.post(
+        Uri.parse('$apiBase/api/messages/delivered'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'chat_id': widget.chat['id'],
+          'receiver_pin': widget.myPin,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> markMessagesAsRead() async {
+    try {
+      await http.post(
+        Uri.parse('$apiBase/api/messages/read'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'chat_id': widget.chat['id'],
+          'reader_pin': widget.myPin,
+        }),
+      );
+    } catch (_) {}
   }
 
   Future<void> sendMessage() async {
