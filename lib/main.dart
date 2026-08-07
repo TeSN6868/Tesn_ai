@@ -740,7 +740,7 @@ class _ChatsPageState extends State<ChatsPage> {
   Future<void> loadChats() async {
     try {
       final response = await http.get(
-        Uri.parse('$apiBase/api/chats'),
+        Uri.parse('$apiBase/api/chats?m8_pin=${Uri.encodeComponent(widget.myPin)}'),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
@@ -805,7 +805,7 @@ class _ChatsPageState extends State<ChatsPage> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${widget.token}',
         },
-        body: jsonEncode({'participant_2_pin': pin}),
+        body: jsonEncode({'my_pin': widget.myPin, 'other_pin': pin}),
       );
 
       final data = jsonDecode(response.body);
