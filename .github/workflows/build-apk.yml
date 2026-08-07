@@ -27,16 +27,13 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter doctor
-        run: flutter doctor -v
-
-      - name: Get dependencies
+      - name: Flutter Pub Get
         run: flutter pub get
 
-      - name: Build APK
+      - name: Build M8 APK
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload M8 APK
         uses: actions/upload-artifact@v4
         with:
           name: M8-release-apk
