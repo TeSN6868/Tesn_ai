@@ -23,7 +23,7 @@ class M8App extends StatelessWidget {
         brightness: Brightness.dark,
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFF147FBD),
-        scaffoldBackgroundColor: const Color(0xFFE4F1F6),
+        scaffoldBackgroundColor: const Color(0xFFC9E1EC),
       ),
       home: const LoginPage(),
     );
@@ -596,7 +596,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Daftar M8')),
+      appBar: AppBar(backgroundColor: const Color(0xFF147FBD), foregroundColor: Colors.white, title: const Text('Daftar M8')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -781,6 +781,8 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF147FBD),
+        foregroundColor: Colors.white,
         title: Text(
           currentIndex == 0
               ? 'M8 Messenger'
@@ -1188,6 +1190,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF147FBD),
+        foregroundColor: Colors.white,
         title: Row(
           children: [
             const CircleAvatar(radius: 18, child: Icon(Icons.person)),
@@ -1258,7 +1262,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             borderRadius: BorderRadius.circular(18),
                             color: mine
                                 ? Theme.of(context).colorScheme.primary
-                                : const Color(0xFFC6DCE6),
+                                : const Color(0xFFA9C9D8),
                           ),
                           child: Text(
                             text,
