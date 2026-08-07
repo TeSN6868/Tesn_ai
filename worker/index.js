@@ -390,10 +390,33 @@ if (url.pathname === "/api/login" && request.method === "POST") {
         }, 401);
       }
 
-      const validPassword = await verifyPassword(
+      let validPassword = await verifyPassword(
         password,
         user.password_hash
       );
+
+      // Upgrade akun lama dari SHA-256 ke PBKDF2
+      if (
+        !validPassword &&
+        user.password_hash &&
+        !user.password_hash.startsWith("pbkdf2$")
+      ) {
+        const legacyHash = await sha256(password);
+
+        if (legacyHash === user.password_hash) {
+          const upgradedHash = await hashPassword(password);
+
+          await env.DB.prepare(`
+            UPDATE users
+            SET password_hash = ?
+            WHERE id = ?
+          `)
+            .bind(upgradedHash, user.id)
+            .run();
+
+          validPassword = true;
+        }
+      }
 
       if (!validPassword) {
         return json({
