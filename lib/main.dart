@@ -22,8 +22,8 @@ class M8App extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF123A63),
-        scaffoldBackgroundColor: const Color(0xFF071522),
+        colorSchemeSeed: const Color(0xFF1B91D0),
+        scaffoldBackgroundColor: const Color(0xFFEAF6FC),
       ),
       home: const LoginPage(),
     );
@@ -117,9 +117,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const lightBlue = Color(0xFF63C5FF);
-    const blue = Color(0xFF2785E5);
-    const darkBlue = Color(0xFF123D78);
+    const lightBlue = Color(0xFF5BB9E8);
+    const blue = Color(0xFF1B91D0);
+    const darkBlue = Color(0xFF126A9B);
 
     return Scaffold(
       body: Container(
@@ -1258,7 +1258,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             borderRadius: BorderRadius.circular(18),
                             color: mine
                                 ? Theme.of(context).colorScheme.primary
-                                : Colors.white.withOpacity(.08),
+                                : const Color(0xFFF2F5F7),
                           ),
                           child: Text(
                             text,
