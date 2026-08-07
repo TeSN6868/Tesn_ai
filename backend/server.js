@@ -21,7 +21,7 @@ const ai = new GoogleGenAI({
 
 app.get('/', (req, res) => {
   res.json({
-    app: 'TeSN AI',
+    app: 'M8 Messenger',
     status: 'online',
     ai: 'Gemini',
   });
@@ -55,5 +55,5 @@ app.post('/chat', async (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`TeSN AI backend berjalan di port ${PORT}`);
+  console.log(`M8 Messenger backend berjalan di port ${PORT}`);
 });

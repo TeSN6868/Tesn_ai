@@ -1,4 +1,4 @@
-# tesn_ai
+# m8_messenger
 
 A new Flutter project.
 

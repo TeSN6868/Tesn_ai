@@ -18,7 +18,7 @@ export default {
     if (url.pathname === "/" && request.method === "GET") {
       return json({
         success: true,
-        app: "TeSN AI",
+        app: "M8 Messenger",
         status: "online",
         service: "Cloudflare Worker + Gemini API",
       }, corsHeaders);
@@ -65,7 +65,7 @@ export default {
           `?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
 
         const systemInstruction = `
-Kamu adalah TeSN AI, asisten AI pribadi yang ramah, cerdas, natural, dan membantu.
+Kamu adalah M8 Messenger, asisten AI pribadi yang ramah, cerdas, natural, dan membantu.
 
 Gunakan bahasa yang sama dengan pengguna.
 Jika pengguna menggunakan Bahasa Indonesia, jawab dalam Bahasa Indonesia.

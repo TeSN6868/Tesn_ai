@@ -1,4 +1,4 @@
-package com.example.tesn_ai
+package com.example.m8_messenger
 
 import io.flutter.embedding.android.FlutterActivity
 
