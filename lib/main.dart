@@ -49,11 +49,11 @@ class _LoginPageState extends State<LoginPage> {
   bool obscurePassword = true;
 
   Future<void> login() async {
-    final pin = identifierController.text.trim();
+    final identifier = identifierController.text.trim();
     final password = passwordController.text;
 
-    if (pin.isEmpty || password.isEmpty) {
-      showMessage('M8 PIN dan password wajib diisi');
+    if (identifier.isEmpty || password.isEmpty) {
+      showMessage('Email/Nomor HP dan password wajib diisi');
       return;
     }
 
@@ -64,7 +64,10 @@ class _LoginPageState extends State<LoginPage> {
           .post(
             Uri.parse('$apiBase/api/login'),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'identifier': pin, 'password': password}),
+            body: jsonEncode({
+              'identifier': identifier,
+              'password': password,
+            }),
           )
           .timeout(const Duration(seconds: 20));
 
