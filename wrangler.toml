@@ -5,4 +5,4 @@ compatibility_date = "2026-08-05"
 [[d1_databases]]
 binding = "DB"
 database_name = "m8-database"
-database_id = 8b80aa4e-6212-402f-80ec-2c54987eab19
+database_id = "8b80aa4e-6212-402f-80ec-2c54987eab19"
