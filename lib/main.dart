@@ -753,8 +753,14 @@ class _ChatsPageState extends State<ChatsPage> {
           chats = list.map((e) => Map<String, dynamic>.from(e)).toList();
         }
       }
-    } catch (_) {
-      // UI tetap dapat ditampilkan.
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memuat chat: $e'),
+          ),
+        );
+      }
     }
 
     if (mounted) {
