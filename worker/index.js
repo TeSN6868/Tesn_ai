@@ -334,75 +334,88 @@ export default {
       }
 
       // LOGIN
-      if (url.pathname === "/api/login" && request.method === "POST") {
-        const body = await request.json();
+if (url.pathname === "/api/login" && request.method === "POST") {
+      const body = await request.json();
 
-        const identifier = String(
-          body.identifier || body.email_or_phone || ""
-        ).trim();
+      const identifier = String(
+        body.identifier || body.email_or_phone || ""
+      ).trim();
 
-        const m8Pin = String(body.m8_pin || "").trim();
-        const password = String(body.password || "");
+      const m8Pin = String(
+        body.m8_pin || body.pin || ""
+      ).trim();
 
-        if ((!identifier && !m8Pin) || !password) {
-          return json({
-            success: false,
-            error: "Identitas/PIN dan password wajib diisi.",
-          }, 400);
-        }
+      const password = String(body.password || "");
 
-        if (!env.DB) {
-          return json({
-            success: false,
-            error: "Binding D1 DB belum tersedia.",
-          }, 500);
-        }
-
-        const passwordHash = await sha256(password);
-
-        let user;
-
-        if (identifier) {
-          user = await env.DB.prepare(
-            `SELECT id, name, email, phone, m8_pin
-             FROM users
-             WHERE (email = ? OR phone = ?) AND password_hash = ?
-             LIMIT 1`
-          )
-            .bind(identifier, identifier, passwordHash)
-            .first();
-        } else {
-          user = await env.DB.prepare(
-            `SELECT id, name, email, phone, m8_pin
-             FROM users
-             WHERE m8_pin = ? AND password_hash = ?
-             LIMIT 1`
-          )
-            .bind(m8Pin, passwordHash)
-            .first();
-        }
-
-        if (!user) {
-          return json({
-            success: false,
-            error: "Identitas/PIN atau password salah.",
-          }, 401);
-        }
-
-        const token = await createToken();
-
+      if ((!identifier && !m8Pin) || !password) {
         return json({
-          success: true,
-          token,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-          phone: user.phone,
-            m8_pin: user.m8_pin,
-          },
-        });
+          success: false,
+          error: "Identitas/PIN dan password wajib diisi.",
+        }, 400);
       }
+
+      if (!env.DB) {
+        return json({
+          success: false,
+          error: "Binding D1 DB belum tersedia.",
+        }, 500);
+      }
+
+      let user;
+
+      if (identifier) {
+        user = await env.DB.prepare(`
+          SELECT id, name, email, phone, m8_pin, password_hash
+          FROM users
+          WHERE email = ? OR phone = ?
+          LIMIT 1
+        `)
+          .bind(identifier, identifier)
+          .first();
+      } else {
+        user = await env.DB.prepare(`
+          SELECT id, name, email, phone, m8_pin, password_hash
+          FROM users
+          WHERE m8_pin = ?
+          LIMIT 1
+        `)
+          .bind(m8Pin)
+          .first();
+      }
+
+      if (!user) {
+        return json({
+          success: false,
+          error: "Identitas/PIN atau password salah.",
+        }, 401);
+      }
+
+      const validPassword = await verifyPassword(
+        password,
+        user.password_hash
+      );
+
+      if (!validPassword) {
+        return json({
+          success: false,
+          error: "Identitas/PIN atau password salah.",
+        }, 401);
+      }
+
+      const token = await createToken();
+
+      return json({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          m8_pin: user.m8_pin,
+        },
+      });
+    }
 
       return json({
         success: false,
@@ -420,6 +433,58 @@ export default {
     }
   },
 };
+
+async function verifyPassword(password, stored) {
+  if (!stored || !stored.startsWith("pbkdf2$")) {
+    return false;
+  }
+
+  const parts = stored.split("$");
+
+  if (parts.length !== 4) {
+    return false;
+  }
+
+  const iterations = Number(parts[1]);
+  const salt = parts[2];
+  const expectedBase64 = parts[3];
+
+  if (!Number.isInteger(iterations) || !salt || !expectedBase64) {
+    return false;
+  }
+
+  const passwordBytes = new TextEncoder().encode(password);
+  const saltBytes = new TextEncoder().encode(salt);
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    passwordBytes,
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: saltBytes,
+      iterations: iterations,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256
+  );
+
+  const derivedBytes = new Uint8Array(derivedBits);
+
+  let binary = "";
+
+  for (const byte of derivedBytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary) === expectedBase64;
+}
 
 async function sha256(text) {
   const data = new TextEncoder().encode(text);
