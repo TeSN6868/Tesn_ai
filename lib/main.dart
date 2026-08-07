@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
           .post(
             Uri.parse('$apiBase/api/login'),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'m8_pin': pin, 'password': password}),
+            body: jsonEncode({'identifier': pin, 'password': password}),
           )
           .timeout(const Duration(seconds: 20));
 
@@ -332,7 +332,7 @@ class _RegisterPageState extends State<RegisterPage> {
               'phone': phone,
               'password': password,
               'confirm_password': confirmPassword,
-              'm8_pin': pin,
+              'identifier': pin,
             }),
           )
           .timeout(const Duration(seconds: 20));
