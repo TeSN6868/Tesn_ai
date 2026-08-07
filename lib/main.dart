@@ -23,7 +23,7 @@ class M8App extends StatelessWidget {
         brightness: Brightness.dark,
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFF147FBD),
-        scaffoldBackgroundColor: const Color(0xFFEAF6FC),
+        scaffoldBackgroundColor: const Color(0xFFE4F1F6),
       ),
       home: const LoginPage(),
     );
@@ -147,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFFFFFFFF), Color(0xFFD9F1FF)],
+                          colors: [Color(0xFFC6DCE6), Color(0xFFD9F1FF)],
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -1258,7 +1258,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             borderRadius: BorderRadius.circular(18),
                             color: mine
                                 ? Theme.of(context).colorScheme.primary
-                                : const Color(0xFFFFFFFF),
+                                : const Color(0xFFC6DCE6),
                           ),
                           child: Text(
                             text,
