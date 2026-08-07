@@ -23,7 +23,7 @@ class M8App extends StatelessWidget {
         brightness: Brightness.dark,
         useMaterial3: true,
         colorSchemeSeed: const Color(0xFF147FBD),
-        scaffoldBackgroundColor: const Color(0xFFC9E1EC),
+        scaffoldBackgroundColor: const Color(0xFFB8D2DE),
       ),
       home: const LoginPage(),
     );
@@ -1244,6 +1244,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       final text = msg['message']?.toString() ?? '';
 
                       final mine = sender == widget.myPin;
+                      final status = msg['status']?.toString().toLowerCase() ?? '';
+                      final statusLabel = status == 'read'
+                          ? 'R'
+                          : status == 'delivered'
+                              ? 'D'
+                              : '';
 
                       return Align(
                         alignment: mine
@@ -1262,7 +1268,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             borderRadius: BorderRadius.circular(18),
                             color: mine
                                 ? Theme.of(context).colorScheme.primary
-                                : const Color(0xFFA9C9D8),
+                                : const Color(0xFFE7F2F6),
                           ),
                           child: Text(
                             text,
@@ -1297,10 +1303,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     decoration: InputDecoration(
                       hintText: 'Tulis pesan...',
                       filled: true,
-                      fillColor: Colors.white.withOpacity(.06),
+                      fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(22),
-                        borderSide: BorderSide.none,
+                        borderSide: const BorderSide(
+                            color: Color(0xFF147FBD),
+                            width: 1.5,
+                          ),
                       ),
                     ),
                   ),
