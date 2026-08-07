@@ -31,17 +31,23 @@ export default {
         const body = await request.json();
 
         const name = String(body.name || "").trim();
+        const email = String(body.email || "").trim().toLowerCase();
+        const phone = String(body.phone || "").trim();
         const identifier = String(
           body.identifier || body.email_or_phone || ""
         ).trim();
+
+        const finalEmail = email || (identifier.includes("@") ? identifier.toLowerCase() : "");
+        const finalPhone = phone || (identifier && !identifier.includes("@") ? identifier : "");
+
         const password = String(body.password || "");
         const confirmPassword = String(body.confirm_password || "");
-        const m8Pin = String(body.m8_pin || "").trim();
+        const m8Pin = String(body.m8_pin || body.pin || "").trim();
 
-        if (!name || !identifier || !password || !confirmPassword || !m8Pin) {
+        if (!name || (!finalEmail && !finalPhone) || !password || !confirmPassword || !m8Pin) {
           return json({
             success: false,
-            error: "Semua data wajib diisi.",
+            error: "Nama, email/nomor HP, password, konfirmasi password, dan PIN M8 wajib diisi.",
           }, 400);
         }
 
@@ -67,9 +73,9 @@ export default {
         }
 
         const existing = await env.DB.prepare(
-          "SELECT id FROM users WHERE email = ? OR phone = ? OR m8_pin = ? LIMIT 1"
+          "SELECT id FROM users WHERE (email IS NOT NULL AND email = ?) OR (phone IS NOT NULL AND phone = ?) OR m8_pin = ? LIMIT 1"
         )
-          .bind(identifier, identifier, m8Pin)
+          .bind(finalEmail || "", finalPhone || "", m8Pin)
           .first();
 
         if (existing) {
@@ -83,10 +89,16 @@ export default {
 
         const result = await env.DB.prepare(
           `INSERT INTO users
-           (name, email, password_hash, m8_pin, created_at)
-           VALUES (?, ?, ?, ?, datetime('now'))`
+           (m8_pin, name, email, phone, password_hash, created_at)
+           VALUES (?, ?, ?, ?, ?, unixepoch())`
         )
-          .bind(name, identifier, passwordHash, m8Pin)
+          .bind(
+            m8Pin,
+            name,
+            finalEmail || null,
+            finalPhone || null,
+            passwordHash
+          )
           .run();
 
         if (!result.success) {
@@ -98,7 +110,6 @@ export default {
           message: "Akun M8 berhasil dibuat.",
         }, 201);
       }
-
 
       // ============================================================
       // CHATS
