@@ -6,3 +6,7 @@ compatibility_date = "2026-08-05"
 binding = "DB"
 database_name = "m8-database"
 database_id = "8b80aa4e-6212-402f-80ec-2c54987eab19"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "m8-media"

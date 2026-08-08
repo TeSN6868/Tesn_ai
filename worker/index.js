@@ -218,7 +218,140 @@ export default {
       }
 
       // ============================================================
-      // MESSAGES - GET
+      // ============================================================
+    // MEDIA - R2 UPLOAD
+    // ============================================================
+    if (url.pathname === "/api/media/upload" && request.method === "POST") {
+      if (!env.MEDIA) {
+        return json({
+          success: false,
+          error: "R2 MEDIA binding belum tersedia.",
+        }, 500);
+      }
+
+      const chatId = Number(request.headers.get("X-Chat-Id"));
+      const senderPin = String(
+        request.headers.get("X-Sender-Pin") || ""
+      ).trim();
+      const contentType =
+        request.headers.get("Content-Type") || "application/octet-stream";
+
+      if (!chatId || !senderPin) {
+        return json({
+          success: false,
+          error: "X-Chat-Id dan X-Sender-Pin wajib diisi.",
+        }, 400);
+      }
+
+      if (!request.body) {
+        return json({
+          success: false,
+          error: "File media kosong.",
+        }, 400);
+      }
+
+      if (!contentType.startsWith("image/")) {
+        return json({
+          success: false,
+          error: "Untuk tahap ini hanya gambar yang didukung.",
+        }, 415);
+      }
+
+      const chat = await env.DB.prepare(`
+        SELECT id, participant_1_pin, participant_2_pin
+        FROM chats
+        WHERE id = ?
+        LIMIT 1
+      `)
+        .bind(chatId)
+        .first();
+
+      if (!chat) {
+        return json({
+          success: false,
+          error: "Chat tidak ditemukan.",
+        }, 404);
+      }
+
+      if (
+        chat.participant_1_pin !== senderPin &&
+        chat.participant_2_pin !== senderPin
+      ) {
+        return json({
+          success: false,
+          error: "Pengirim bukan anggota chat.",
+        }, 403);
+      }
+
+      const extension = contentType.split("/")[1]?.split(";")[0] || "bin";
+      const safeExtension = extension.replace(/[^a-zA-Z0-9]/g, "") || "bin";
+
+      const key =
+        `chat/${chatId}/${Date.now()}_${crypto.randomUUID()}.${safeExtension}`;
+
+      const object = await env.MEDIA.put(key, request.body, {
+        httpMetadata: {
+          contentType,
+          cacheControl: "public, max-age=31536000, immutable",
+        },
+      });
+
+      return json({
+        success: true,
+        key,
+        size: object.size,
+        etag: object.etag,
+        content_type: contentType,
+      }, 201);
+    }
+
+    // ============================================================
+    // MEDIA - R2 GET
+    // ============================================================
+    if (
+      url.pathname.startsWith("/api/media/") &&
+      request.method === "GET"
+    ) {
+      if (!env.MEDIA) {
+        return new Response("R2 MEDIA binding belum tersedia.", {
+          status: 500,
+          headers: corsHeaders,
+        });
+      }
+
+      const key = decodeURIComponent(
+        url.pathname.substring("/api/media/".length)
+      );
+
+      if (!key) {
+        return new Response("Media key wajib diisi.", {
+          status: 400,
+          headers: corsHeaders,
+        });
+      }
+
+      const object = await env.MEDIA.get(key);
+
+      if (!object) {
+        return new Response("Media tidak ditemukan.", {
+          status: 404,
+          headers: corsHeaders,
+        });
+      }
+
+      const headers = new Headers(corsHeaders);
+
+      object.writeHttpMetadata(headers);
+      headers.set("ETag", object.httpEtag);
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+
+      return new Response(object.body, {
+        status: 200,
+        headers,
+      });
+    }
+
+    // MESSAGES - GET
       // ============================================================
 
       if (url.pathname === "/api/messages" && request.method === "GET") {
@@ -248,7 +381,22 @@ export default {
 
         return json({
           success: true,
-          messages: result.results || []
+          messages: (result.results || []).map((msg) => {
+          const message = String(msg.message || "");
+          const imagePrefix = "__M8_IMAGE__:";
+
+          if (message.startsWith(imagePrefix)) {
+            const mediaKey = message.substring(imagePrefix.length);
+
+            return {
+              ...msg,
+              media_key: mediaKey,
+              image_url: `${url.origin}/api/media/${encodeURIComponent(mediaKey)}`,
+            };
+          }
+
+          return msg;
+        })
         });
       }
 
@@ -451,6 +599,170 @@ export default {
 
   
     // ============================================================
+
+    // ============================================================
+    // TYPING INDICATOR
+    // ============================================================
+
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS typing_states (
+        chat_id INTEGER NOT NULL,
+        user_pin TEXT NOT NULL,
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (chat_id, user_pin)
+      )
+    `).run();
+
+    // SET TYPING
+    if (
+      url.pathname === "/api/typing" &&
+      request.method === "POST"
+    ) {
+      const body = await request.json();
+
+      const chatId = Number(body.chat_id);
+      const userPin = String(body.user_pin || "").trim();
+      const typing = body.typing === true;
+
+      if (!chatId || !userPin) {
+        return json({
+          success: false,
+          error: "chat_id dan user_pin wajib diisi."
+        }, 400);
+      }
+
+      const chat = await env.DB.prepare(`
+        SELECT
+          id,
+          participant_1_pin,
+          participant_2_pin
+        FROM chats
+        WHERE id = ?
+        LIMIT 1
+      `)
+        .bind(chatId)
+        .first();
+
+      if (!chat) {
+        return json({
+          success: false,
+          error: "Chat tidak ditemukan."
+        }, 404);
+      }
+
+      if (
+        chat.participant_1_pin !== userPin &&
+        chat.participant_2_pin !== userPin
+      ) {
+        return json({
+          success: false,
+          error: "Pengguna bukan anggota chat."
+        }, 403);
+      }
+
+      if (!typing) {
+        await env.DB.prepare(`
+          DELETE FROM typing_states
+          WHERE chat_id = ?
+            AND user_pin = ?
+        `)
+          .bind(chatId, userPin)
+          .run();
+
+        return json({
+          success: true,
+          typing: false
+        });
+      }
+
+      await env.DB.prepare(`
+        INSERT INTO typing_states
+        (chat_id, user_pin, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(chat_id, user_pin)
+        DO UPDATE SET updated_at = excluded.updated_at
+      `)
+        .bind(chatId, userPin, Date.now())
+        .run();
+
+      return json({
+        success: true,
+        typing: true
+      });
+    }
+
+    // GET TYPING STATUS
+    if (
+      url.pathname === "/api/typing" &&
+      request.method === "GET"
+    ) {
+      const chatId = Number(url.searchParams.get("chat_id"));
+      const userPin = url.searchParams.get("user_pin")?.trim();
+
+      if (!chatId || !userPin) {
+        return json({
+          success: false,
+          error: "chat_id dan user_pin wajib diisi."
+        }, 400);
+      }
+
+      const chat = await env.DB.prepare(`
+        SELECT
+          id,
+          participant_1_pin,
+          participant_2_pin
+        FROM chats
+        WHERE id = ?
+        LIMIT 1
+      `)
+        .bind(chatId)
+        .first();
+
+      if (!chat) {
+        return json({
+          success: false,
+          error: "Chat tidak ditemukan."
+        }, 404);
+      }
+
+      if (
+        chat.participant_1_pin !== userPin &&
+        chat.participant_2_pin !== userPin
+      ) {
+        return json({
+          success: false,
+          error: "Pengguna bukan anggota chat."
+        }, 403);
+      }
+
+      const otherPin =
+        chat.participant_1_pin === userPin
+          ? chat.participant_2_pin
+          : chat.participant_1_pin;
+
+      const state = await env.DB.prepare(`
+        SELECT updated_at
+        FROM typing_states
+        WHERE chat_id = ?
+          AND user_pin = ?
+        LIMIT 1
+      `)
+        .bind(chatId, otherPin)
+        .first();
+
+      const now = Date.now();
+
+      const isTyping =
+        state &&
+        Number(state.updated_at) > now - 4000;
+
+      return json({
+        success: true,
+        typing: !!isTyping,
+        user_pin: otherPin
+      });
+    }
+
     // VOICE CALL / WEBRTC SIGNALING
     // ============================================================
 

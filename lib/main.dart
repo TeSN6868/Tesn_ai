@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1106,6 +1107,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   bool loading = true;
   bool sending = false;
   bool otherTyping = false;
+  XFile? pendingImage;
 
   String get chatId => widget.chat['id'].toString();
 
@@ -1268,30 +1270,82 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   Future<void> sendMessage() async {
     final text = controller.text.trim();
-    if (text.isEmpty || sending) return;
+    final image = pendingImage;
+
+    if ((text.isEmpty && image == null) || sending) return;
 
     final tempId = 'local_${DateTime.now().microsecondsSinceEpoch}';
 
-    // Tampilkan pesan langsung agar chat terasa instan.
-    final optimistic = <String, dynamic>{
-      'id': tempId,
-      'chat_id': widget.chat['id'],
-      'sender_pin': widget.myPin,
-      'message': text,
-      'created_at': DateTime.now().toIso8601String(),
-      '_sending': true,
-    };
-
-    controller.clear();
-
-    if (mounted) {
-      setState(() {
-        messages.add(optimistic);
-        sending = true;
-      });
-    }
+    setState(() {
+      sending = true;
+    });
 
     try {
+      String? mediaKey;
+
+      // Upload gambar ke R2 terlebih dahulu.
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+
+        final extension = image.name.contains('.')
+            ? image.name.split('.').last.toLowerCase()
+            : 'jpg';
+
+        final contentType = switch (extension) {
+          'png' => 'image/png',
+          'webp' => 'image/webp',
+          'gif' => 'image/gif',
+          _ => 'image/jpeg',
+        };
+
+        final uploadResponse = await http.post(
+          Uri.parse('$apiBase/api/media/upload'),
+          headers: {
+            'Content-Type': contentType,
+            'X-Chat-Id': widget.chat['id'].toString(),
+            'X-Sender-Pin': widget.myPin,
+            'Authorization': 'Bearer ${widget.token}',
+          },
+          body: bytes,
+        );
+
+        final uploadData = jsonDecode(uploadResponse.body);
+
+        if (uploadResponse.statusCode != 201 || uploadData['success'] != true) {
+          throw Exception(
+            uploadData['error']?.toString() ?? 'Gagal upload foto.',
+          );
+        }
+
+        mediaKey = uploadData['key']?.toString();
+
+        if (mediaKey == null || mediaKey.isEmpty) {
+          throw Exception('R2 tidak mengembalikan media key.');
+        }
+      }
+
+      final messageText = mediaKey != null ? '__M8_IMAGE__:$mediaKey' : text;
+
+      final optimistic = <String, dynamic>{
+        'id': tempId,
+        'chat_id': widget.chat['id'],
+        'sender_pin': widget.myPin,
+        'message': messageText,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'created_at': DateTime.now().toIso8601String(),
+        '_sending': true,
+        if (mediaKey != null) 'media_key': mediaKey,
+      };
+
+      controller.clear();
+
+      if (mounted) {
+        setState(() {
+          messages.add(optimistic);
+          pendingImage = null;
+        });
+      }
+
       final response = await http.post(
         Uri.parse('$apiBase/api/messages'),
         headers: {
@@ -1301,7 +1355,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         body: jsonEncode({
           'chat_id': widget.chat['id'],
           'sender_pin': widget.myPin,
-          'message': text,
+          'message': messageText,
         }),
       );
 
@@ -1339,14 +1393,15 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           );
         }
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() {
           messages.removeWhere((m) => m['id']?.toString() == tempId);
+          pendingImage = image;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Koneksi gagal. Pesan belum terkirim.')),
+          SnackBar(content: Text('Gagal mengirim foto/pesan: $e')),
         );
       }
     } finally {
@@ -1495,19 +1550,45 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  text,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    height: 1.3,
-                                    color: mine
-                                        ? Colors.white
-                                        : const Color(0xFF172033),
+                              if ((msg["image_url"]?.toString() ?? "")
+                                  .isNotEmpty)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    msg["image_url"].toString(),
+                                    width: 220,
+                                    height: 220,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 220,
+                                        height: 120,
+                                        alignment: Alignment.center,
+                                        color: mine
+                                            ? const Color(0xFF0F6FA8)
+                                            : const Color(0xFFEAF1F5),
+                                        child: const Icon(
+                                          Icons.broken_image_rounded,
+                                          size: 36,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              else
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    text,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      height: 1.3,
+                                      color: mine
+                                          ? Colors.white
+                                          : const Color(0xFF172033),
+                                    ),
                                   ),
                                 ),
-                              ),
                               const SizedBox(height: 3),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -1594,14 +1675,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
                                 if (image == null || !context.mounted) return;
 
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      "Foto dipilih: ${image.name}",
-                                    ),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
+                                setState(() {
+                                  pendingImage = image;
+                                });
                               } catch (e) {
                                 if (!context.mounted) return;
 
