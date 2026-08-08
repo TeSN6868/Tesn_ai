@@ -211,9 +211,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(.13),
                         borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(.25),
-                        ),
+                        border: Border.all(color: Color(0xFF147FBD)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black26,
@@ -231,17 +229,17 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: InputDecoration(
                               labelText: 'Email / Nomor HP',
                               hintText: 'Email atau nomor HP',
-                              labelStyle: TextStyle(color: Colors.white),
-                              hintStyle: TextStyle(color: Colors.white54),
+                              labelStyle: TextStyle(color: Color(0xFF172033)),
+                              hintStyle: TextStyle(color: Colors.black45),
                               prefixIcon: const Icon(
                                 Icons.person_outline_rounded,
                                 color: Colors.white,
                               ),
                               filled: true,
-                              fillColor: Colors.white12,
+                              fillColor: Colors.white,
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(17),
-                                borderSide: BorderSide(color: Colors.white24),
+                                borderSide: BorderSide(color: Colors.black12),
                               ),
                               focusedBorder: const OutlineInputBorder(
                                 borderRadius: BorderRadius.all(
@@ -264,7 +262,9 @@ class _LoginPageState extends State<LoginPage> {
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: const TextStyle(color: Colors.white),
+                              labelStyle: const TextStyle(
+                                color: Color(0xFF172033),
+                              ),
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
                                 color: Colors.white,
@@ -283,10 +283,10 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               filled: true,
-                              fillColor: Colors.white12,
+                              fillColor: Colors.white,
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(17),
-                                borderSide: BorderSide(color: Colors.white24),
+                                borderSide: BorderSide(color: Colors.black12),
                               ),
                               focusedBorder: const OutlineInputBorder(
                                 borderRadius: BorderRadius.all(
@@ -585,18 +585,30 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon),
+      labelStyle: const TextStyle(color: Color(0xFF172033)),
+      prefixIcon: Icon(icon, color: Color(0xFF172033)),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: const Color(0xFFF9FCFF),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+      fillColor: Colors.white,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.black12),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFF2F80ED), width: 1.5),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: const Color(0xFF147FBD), foregroundColor: Colors.white, title: const Text('Daftar M8')),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF147FBD),
+        foregroundColor: Colors.white,
+        title: const Text('Daftar M8'),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -966,7 +978,7 @@ class _ChatsPageState extends State<ChatsPage> {
                   Icon(
                     Icons.forum_outlined,
                     size: 70,
-                    color: Colors.white.withOpacity(.3),
+                    color: Color(0xFF147FBD),
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -977,7 +989,7 @@ class _ChatsPageState extends State<ChatsPage> {
                   Text(
                     'Mulai percakapan pertama kamu di M8.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white.withOpacity(.6)),
+                    style: TextStyle(color: Color(0xFF536A75)),
                   ),
                 ],
               ),
@@ -1248,19 +1260,19 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         Icon(
                           Icons.lock_outline,
                           size: 42,
-                          color: Colors.white.withOpacity(.3),
+                          color: Color(0xFF147FBD),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           'Belum ada pesan',
-                          style: TextStyle(color: Colors.white.withOpacity(.5)),
+                          style: TextStyle(color: Color(0xFF536A75)),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Mulai percakapan M8',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.white.withOpacity(.35),
+                            color: Color(0xFF78909C),
                           ),
                         ),
                       ],
@@ -1278,12 +1290,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       final text = msg['message']?.toString() ?? '';
 
                       final mine = sender == widget.myPin;
-                      final status = msg['status']?.toString().toLowerCase() ?? '';
+                      final status =
+                          msg['status']?.toString().toLowerCase() ?? '';
                       final statusLabel = status == 'read'
                           ? 'R'
                           : status == 'delivered'
-                              ? 'D'
-                              : '';
+                          ? 'D'
+                          : '';
 
                       return Align(
                         alignment: mine
@@ -1304,7 +1317,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 ? const Color(0xFF147FBD)
                                 : const Color(0xFFEAF5FB),
                           ),
-                                      child: Column(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -1329,11 +1342,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       color: Colors.white.withOpacity(.90),
                                     ),
                                   ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        );
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   ),
           ),
@@ -1360,9 +1373,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(22),
                         borderSide: const BorderSide(
-                            color: Color(0xFF147FBD),
-                            width: 1.5,
-                          ),
+                          color: Color(0xFF147FBD),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -1402,7 +1415,7 @@ class CallsPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.call, size: 70, color: Colors.white.withOpacity(.25)),
+          Icon(Icons.call, size: 70, color: Color(0xFF147FBD)),
           const SizedBox(height: 18),
           const Text(
             'Panggilan M8',
@@ -1411,7 +1424,7 @@ class CallsPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Fitur panggilan akan kita aktifkan berikutnya.',
-            style: TextStyle(color: Colors.white.withOpacity(.55)),
+            style: TextStyle(color: Color(0xFF536A75)),
           ),
         ],
       ),
@@ -1451,10 +1464,7 @@ class ProfilePage extends StatelessWidget {
         ),
         const SizedBox(height: 5),
         Center(
-          child: Text(
-            pin,
-            style: TextStyle(color: Colors.white.withOpacity(.55)),
-          ),
+          child: Text(pin, style: TextStyle(color: Color(0xFF536A75))),
         ),
         const SizedBox(height: 30),
         Card(
