@@ -449,7 +449,387 @@ export default {
         });
       }
 
-      // LOGIN
+  
+    // ============================================================
+    // VOICE CALL / WEBRTC SIGNALING
+    // ============================================================
+
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS call_sessions (
+        id TEXT PRIMARY KEY,
+        caller_pin TEXT NOT NULL,
+        callee_pin TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'ringing',
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    `).run();
+
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS call_signals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        call_id TEXT NOT NULL,
+        sender_pin TEXT NOT NULL,
+        type TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    `).run();
+
+    // CREATE CALL
+    if (url.pathname === "/api/calls" && request.method === "POST") {
+      const body = await request.json();
+
+      const callerPin = String(body.caller_pin || "").trim();
+      const calleePin = String(body.callee_pin || "").trim();
+
+      if (!callerPin || !calleePin) {
+        return json({
+          success: false,
+          error: "caller_pin dan callee_pin wajib diisi.",
+        }, 400);
+      }
+
+      if (callerPin === calleePin) {
+        return json({
+          success: false,
+          error: "Tidak dapat menelepon PIN sendiri.",
+        }, 400);
+      }
+
+      const callee = await env.DB.prepare(
+        "SELECT m8_pin FROM users WHERE m8_pin = ? LIMIT 1"
+      ).bind(calleePin).first();
+
+      if (!callee) {
+        return json({
+          success: false,
+          error: "Pengguna tujuan tidak ditemukan.",
+        }, 404);
+      }
+
+      const active = await env.DB.prepare(`
+        SELECT id
+        FROM call_sessions
+        WHERE
+          status IN ('ringing', 'accepted')
+          AND (
+            caller_pin = ?
+            OR callee_pin = ?
+          )
+        LIMIT 1
+      `).bind(callerPin, callerPin).first();
+
+      if (active) {
+        return json({
+          success: false,
+          error: "Masih ada panggilan aktif.",
+        }, 409);
+      }
+
+      const callId = crypto.randomUUID();
+      const now = Date.now();
+
+      await env.DB.prepare(`
+        INSERT INTO call_sessions
+        (id, caller_pin, callee_pin, status, created_at, updated_at)
+        VALUES (?, ?, ?, 'ringing', ?, ?)
+      `).bind(
+        callId,
+        callerPin,
+        calleePin,
+        now,
+        now
+      ).run();
+
+      return json({
+        success: true,
+        call_id: callId,
+        status: "ringing",
+      }, 201);
+    }
+
+    // INCOMING CALLS
+    if (url.pathname === "/api/calls/incoming" && request.method === "GET") {
+      const pin = url.searchParams.get("m8_pin")?.trim();
+
+      if (!pin) {
+        return json({
+          success: false,
+          error: "m8_pin wajib diisi.",
+        }, 400);
+      }
+
+      const result = await env.DB.prepare(`
+        SELECT
+          id,
+          caller_pin,
+          callee_pin,
+          status,
+          created_at,
+          updated_at
+        FROM call_sessions
+        WHERE callee_pin = ?
+          AND status = 'ringing'
+        ORDER BY created_at DESC
+        LIMIT 5
+      `).bind(pin).all();
+
+      return json({
+        success: true,
+        calls: result.results || [],
+      });
+    }
+
+    // ACCEPT / REJECT / END
+    if (
+      url.pathname === "/api/calls/accept" &&
+      request.method === "POST"
+    ) {
+      const body = await request.json();
+      const callId = String(body.call_id || "").trim();
+      const pin = String(body.m8_pin || "").trim();
+
+      if (!callId || !pin) {
+        return json({
+          success: false,
+          error: "call_id dan m8_pin wajib diisi.",
+        }, 400);
+      }
+
+      const call = await env.DB.prepare(`
+        SELECT *
+        FROM call_sessions
+        WHERE id = ?
+        LIMIT 1
+      `).bind(callId).first();
+
+      if (!call || call.callee_pin !== pin) {
+        return json({
+          success: false,
+          error: "Panggilan tidak ditemukan.",
+        }, 404);
+      }
+
+      await env.DB.prepare(`
+        UPDATE call_sessions
+        SET status = 'accepted', updated_at = ?
+        WHERE id = ?
+      `).bind(Date.now(), callId).run();
+
+      return json({
+        success: true,
+        status: "accepted",
+      });
+    }
+
+    if (
+      url.pathname === "/api/calls/reject" &&
+      request.method === "POST"
+    ) {
+      const body = await request.json();
+      const callId = String(body.call_id || "").trim();
+      const pin = String(body.m8_pin || "").trim();
+
+      if (!callId || !pin) {
+        return json({
+          success: false,
+          error: "call_id dan m8_pin wajib diisi.",
+        }, 400);
+      }
+
+      const result = await env.DB.prepare(`
+        UPDATE call_sessions
+        SET status = 'rejected', updated_at = ?
+        WHERE id = ?
+          AND callee_pin = ?
+          AND status = 'ringing'
+      `).bind(
+        Date.now(),
+        callId,
+        pin
+      ).run();
+
+      return json({
+        success: true,
+        changed: result.meta?.changes > 0,
+        status: "rejected",
+      });
+    }
+
+    if (
+      url.pathname === "/api/calls/end" &&
+      request.method === "POST"
+    ) {
+      const body = await request.json();
+      const callId = String(body.call_id || "").trim();
+      const pin = String(body.m8_pin || "").trim();
+
+      if (!callId || !pin) {
+        return json({
+          success: false,
+          error: "call_id dan m8_pin wajib diisi.",
+        }, 400);
+      }
+
+      const result = await env.DB.prepare(`
+        UPDATE call_sessions
+        SET status = 'ended', updated_at = ?
+        WHERE id = ?
+          AND (caller_pin = ? OR callee_pin = ?)
+          AND status IN ('ringing', 'accepted')
+      `).bind(
+        Date.now(),
+        callId,
+        pin,
+        pin
+      ).run();
+
+      return json({
+        success: true,
+        changed: result.meta?.changes > 0,
+        status: "ended",
+      });
+    }
+
+    // WEBRTC SIGNAL
+    if (
+      url.pathname === "/api/calls/signal" &&
+      request.method === "POST"
+    ) {
+      const body = await request.json();
+
+      const callId = String(body.call_id || "").trim();
+      const senderPin = String(body.sender_pin || "").trim();
+      const type = String(body.type || "").trim();
+      const payload = body.payload;
+
+      const allowedTypes = [
+        "offer",
+        "answer",
+        "ice",
+      ];
+
+      if (
+        !callId ||
+        !senderPin ||
+        !allowedTypes.includes(type) ||
+        payload == null
+      ) {
+        return json({
+          success: false,
+          error: "Data signaling tidak lengkap.",
+        }, 400);
+      }
+
+      const call = await env.DB.prepare(`
+        SELECT *
+        FROM call_sessions
+        WHERE id = ?
+        LIMIT 1
+      `).bind(callId).first();
+
+      if (!call) {
+        return json({
+          success: false,
+          error: "Panggilan tidak ditemukan.",
+        }, 404);
+      }
+
+      if (
+        call.caller_pin !== senderPin &&
+        call.callee_pin !== senderPin
+      ) {
+        return json({
+          success: false,
+          error: "Pengirim bukan peserta panggilan.",
+        }, 403);
+      }
+
+      await env.DB.prepare(`
+        INSERT INTO call_signals
+        (call_id, sender_pin, type, payload, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).bind(
+        callId,
+        senderPin,
+        type,
+        JSON.stringify(payload),
+        Date.now()
+      ).run();
+
+      return json({
+        success: true,
+      }, 201);
+    }
+
+    // GET WEBRTC SIGNALS
+    if (
+      url.pathname === "/api/calls/signals" &&
+      request.method === "GET"
+    ) {
+      const callId = url.searchParams.get("call_id")?.trim();
+      const pin = url.searchParams.get("m8_pin")?.trim();
+
+      if (!callId || !pin) {
+        return json({
+          success: false,
+          error: "call_id dan m8_pin wajib diisi.",
+        }, 400);
+      }
+
+      const call = await env.DB.prepare(`
+        SELECT *
+        FROM call_sessions
+        WHERE id = ?
+        LIMIT 1
+      `).bind(callId).first();
+
+      if (!call) {
+        return json({
+          success: false,
+          error: "Panggilan tidak ditemukan.",
+        }, 404);
+      }
+
+      if (
+        call.caller_pin !== pin &&
+        call.callee_pin !== pin
+      ) {
+        return json({
+          success: false,
+          error: "Bukan peserta panggilan.",
+        }, 403);
+      }
+
+      const result = await env.DB.prepare(`
+        SELECT
+          id,
+          sender_pin,
+          type,
+          payload,
+          created_at
+        FROM call_signals
+        WHERE call_id = ?
+          AND sender_pin != ?
+        ORDER BY id ASC
+        LIMIT 100
+      `).bind(callId, pin).all();
+
+      return json({
+        success: true,
+        status: call.status,
+        signals: (result.results || []).map((row) => ({
+          id: row.id,
+          sender_pin: row.sender_pin,
+          type: row.type,
+          payload: JSON.parse(row.payload),
+          created_at: row.created_at,
+        })),
+      });
+    }
+
+    // LOGIN
 if (url.pathname === "/api/login" && request.method === "POST") {
       const body = await request.json();
 
