@@ -1613,11 +1613,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                               },
                                         ),
                                       );
-                                    } catch (_) {
+                                    } catch (e) {
                                       return Container(
                                         width: 220,
                                         height: 120,
                                         alignment: Alignment.center,
+                                        padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
                                           color: mine
                                               ? const Color(0xFF0F6FA8)
@@ -1626,9 +1627,15 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                             12,
                                           ),
                                         ),
-                                        child: const Icon(
-                                          Icons.broken_image_rounded,
-                                          size: 36,
+                                        child: Text(
+                                          "Gambar gagal dibaca\\n${e.toString()}",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: mine
+                                                ? Colors.white
+                                                : const Color(0xFF172033),
+                                          ),
                                         ),
                                       );
                                     }
