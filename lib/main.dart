@@ -225,7 +225,10 @@ class _LoginPageState extends State<LoginPage> {
                           TextField(
                             controller: pinController,
                             textInputAction: TextInputAction.next,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(
+                              color: Color(0xFF172033),
+                              fontWeight: FontWeight.w600,
+                            ),
                             decoration: InputDecoration(
                               labelText: 'M8 PIN',
                               hintText: 'Masukkan M8 PIN',
@@ -262,7 +265,10 @@ class _LoginPageState extends State<LoginPage> {
                             controller: passwordController,
                             obscureText: obscurePassword,
                             onSubmitted: (_) => login(),
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(
+                              color: Color(0xFF172033),
+                              fontWeight: FontWeight.w600,
+                            ),
                             decoration: InputDecoration(
                               labelText: 'Password',
                               labelStyle: const TextStyle(
