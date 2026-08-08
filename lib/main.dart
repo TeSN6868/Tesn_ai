@@ -1149,6 +1149,221 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     }
   }
 
+  Future<void> editMessage(Map<String, dynamic> msg) async {
+    final messageId = msg["id"];
+    final currentText = msg["message"]?.toString() ?? "";
+
+    if (messageId == null ||
+        currentText.isEmpty ||
+        currentText.startsWith("__M8_IMAGE_BASE64__:")) {
+      return;
+    }
+
+    final editController = TextEditingController(text: currentText);
+
+    final editedText = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit pesan"),
+          content: TextField(
+            controller: editController,
+            autofocus: true,
+            maxLines: 5,
+            minLines: 1,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(
+              hintText: "Tulis pesan...",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal"),
+            ),
+            FilledButton(
+              onPressed: () {
+                final value = editController.text.trim();
+
+                if (value.isEmpty) {
+                  return;
+                }
+
+                Navigator.pop(context, value);
+              },
+              child: const Text("Simpan"),
+            ),
+          ],
+        );
+      },
+    );
+
+    editController.dispose();
+
+    if (!mounted ||
+        editedText == null ||
+        editedText.trim().isEmpty ||
+        editedText.trim() == currentText.trim()) {
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/messages/edit'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'message_id': messageId,
+          'sender_pin': widget.myPin,
+          'message': editedText.trim(),
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 &&
+          data['success'] == true &&
+          data['message'] is Map) {
+        final saved = Map<String, dynamic>.from(data['message']);
+
+        if (!mounted) return;
+
+        setState(() {
+          final index = messages.indexWhere(
+            (m) => m['id']?.toString() == messageId.toString(),
+          );
+
+          if (index >= 0) {
+            messages[index] = {...messages[index], ...saved, '_edited': true};
+          }
+        });
+      } else {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error']?.toString() ?? 'Gagal mengedit pesan.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengedit pesan: $e')));
+    }
+  }
+
+  Future<void> editMessage(Map<String, dynamic> msg) async {
+    final messageId = msg["id"];
+    final currentText = msg["message"]?.toString() ?? "";
+
+    if (messageId == null ||
+        currentText.isEmpty ||
+        currentText.startsWith("__M8_IMAGE_BASE64__:")) {
+      return;
+    }
+
+    final editController = TextEditingController(text: currentText);
+
+    final editedText = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit pesan"),
+          content: TextField(
+            controller: editController,
+            autofocus: true,
+            maxLines: 5,
+            minLines: 1,
+            decoration: const InputDecoration(
+              hintText: "Tulis pesan...",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal"),
+            ),
+            FilledButton(
+              onPressed: () {
+                final value = editController.text.trim();
+
+                if (value.isNotEmpty) {
+                  Navigator.pop(context, value);
+                }
+              },
+              child: const Text("Simpan"),
+            ),
+          ],
+        );
+      },
+    );
+
+    editController.dispose();
+
+    if (!mounted ||
+        editedText == null ||
+        editedText.trim().isEmpty ||
+        editedText.trim() == currentText.trim()) {
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/messages/edit'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'message_id': messageId,
+          'sender_pin': widget.myPin,
+          'message': editedText.trim(),
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 &&
+          data['success'] == true &&
+          data['message'] is Map) {
+        final saved = Map<String, dynamic>.from(data['message']);
+
+        if (!mounted) return;
+
+        setState(() {
+          final index = messages.indexWhere(
+            (m) => m['id']?.toString() == messageId.toString(),
+          );
+
+          if (index >= 0) {
+            messages[index] = {...messages[index], ...saved, '_edited': true};
+          }
+        });
+      } else {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error']?.toString() ?? 'Gagal mengedit pesan.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengedit pesan: $e')));
+    }
+  }
+
   Future<void> loadMessages() async {
     try {
       final response = await http.get(
@@ -1540,150 +1755,163 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         alignment: mine
                             ? Alignment.centerRight
                             : Alignment.centerLeft,
-                        child: Container(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * .78,
-                          ),
-                          margin: const EdgeInsets.only(bottom: 7),
-                          padding: const EdgeInsets.fromLTRB(13, 9, 11, 6),
-                          decoration: BoxDecoration(
-                            color: mine
-                                ? const Color(0xFF147FBD)
-                                : Colors.white,
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(5),
-                              topRight: const Radius.circular(16),
-                              bottomLeft: Radius.circular(mine ? 16 : 5),
-                              bottomRight: Radius.circular(mine ? 5 : 16),
+                        child: GestureDetector(
+                          onLongPress:
+                              mine && !text.startsWith("__M8_IMAGE_BASE64__:")
+                              ? () => editMessage(msg)
+                              : null,
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * .78,
                             ),
-                            border: Border.all(
+                            margin: const EdgeInsets.only(bottom: 7),
+                            padding: const EdgeInsets.fromLTRB(13, 9, 11, 6),
+                            decoration: BoxDecoration(
                               color: mine
                                   ? const Color(0xFF147FBD)
-                                  : const Color(0xFFDCE7EE),
+                                  : Colors.white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: const Radius.circular(5),
+                                topRight: const Radius.circular(16),
+                                bottomLeft: Radius.circular(mine ? 16 : 5),
+                                bottomRight: Radius.circular(mine ? 5 : 16),
+                              ),
+                              border: Border.all(
+                                color: mine
+                                    ? const Color(0xFF147FBD)
+                                    : const Color(0xFFDCE7EE),
+                              ),
                             ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              if (text.startsWith("__M8_IMAGE_BASE64__:"))
-                                Builder(
-                                  builder: (context) {
-                                    try {
-                                      final payload = text.substring(
-                                        "__M8_IMAGE_BASE64__:".length,
-                                      );
-
-                                      final separator = payload.indexOf(":");
-
-                                      if (separator <= 0) {
-                                        throw Exception(
-                                          "Format gambar invalid",
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                if (text.startsWith("__M8_IMAGE_BASE64__:"))
+                                  Builder(
+                                    builder: (context) {
+                                      try {
+                                        final payload = text.substring(
+                                          "__M8_IMAGE_BASE64__:".length,
                                         );
-                                      }
 
-                                      final base64Data = payload.substring(
-                                        separator + 1,
-                                      );
+                                        final separator = payload.indexOf(":");
 
-                                      final imageBytes = base64Decode(
-                                        base64Data,
-                                      );
+                                        if (separator <= 0) {
+                                          throw Exception(
+                                            "Format gambar invalid",
+                                          );
+                                        }
 
-                                      return ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.memory(
-                                          imageBytes,
-                                          width: 220,
-                                          height: 220,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return Container(
-                                                  width: 220,
-                                                  height: 120,
-                                                  alignment: Alignment.center,
-                                                  color: mine
-                                                      ? const Color(0xFF0F6FA8)
-                                                      : const Color(0xFFEAF1F5),
-                                                  child: const Icon(
-                                                    Icons.broken_image_rounded,
-                                                    size: 36,
-                                                  ),
-                                                );
-                                              },
-                                        ),
-                                      );
-                                    } catch (e) {
-                                      return Container(
-                                        width: 220,
-                                        height: 120,
-                                        alignment: Alignment.center,
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: mine
-                                              ? const Color(0xFF0F6FA8)
-                                              : const Color(0xFFEAF1F5),
+                                        final base64Data = payload.substring(
+                                          separator + 1,
+                                        );
+
+                                        final imageBytes = base64Decode(
+                                          base64Data,
+                                        );
+
+                                        return ClipRRect(
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
-                                        ),
-                                        child: Text(
-                                          "Gambar gagal dibaca\\n${e.toString()}",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: mine
-                                                ? Colors.white
-                                                : const Color(0xFF172033),
+                                          child: Image.memory(
+                                            imageBytes,
+                                            width: 220,
+                                            height: 220,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return Container(
+                                                    width: 220,
+                                                    height: 120,
+                                                    alignment: Alignment.center,
+                                                    color: mine
+                                                        ? const Color(
+                                                            0xFF0F6FA8,
+                                                          )
+                                                        : const Color(
+                                                            0xFFEAF1F5,
+                                                          ),
+                                                    child: const Icon(
+                                                      Icons
+                                                          .broken_image_rounded,
+                                                      size: 36,
+                                                    ),
+                                                  );
+                                                },
                                           ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                )
-                              else
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    text,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      height: 1.3,
-                                      color: mine
-                                          ? Colors.white
-                                          : const Color(0xFF172033),
-                                    ),
-                                  ),
-                                ),
-                              const SizedBox(height: 3),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    time,
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: mine
-                                          ? const Color(0xFFD5EAF5)
-                                          : const Color(0xFF91A0AA),
-                                    ),
-                                  ),
-                                  if (mine) ...[
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      statusLabel,
+                                        );
+                                      } catch (e) {
+                                        return Container(
+                                          width: 220,
+                                          height: 120,
+                                          alignment: Alignment.center,
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: mine
+                                                ? const Color(0xFF0F6FA8)
+                                                : const Color(0xFFEAF1F5),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "Gambar gagal dibaca\\n${e.toString()}",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: mine
+                                                  ? Colors.white
+                                                  : const Color(0xFF172033),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  )
+                                else
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      text,
                                       style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w800,
-                                        color: status == "read"
-                                            ? const Color(0xFFBFE8FF)
-                                            : Colors.white,
+                                        fontSize: 15,
+                                        height: 1.3,
+                                        color: mine
+                                            ? Colors.white
+                                            : const Color(0xFF172033),
                                       ),
                                     ),
+                                  ),
+                                const SizedBox(height: 3),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      time,
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: mine
+                                            ? const Color(0xFFD5EAF5)
+                                            : const Color(0xFF91A0AA),
+                                      ),
+                                    ),
+                                    if (mine) ...[
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        statusLabel,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          color: status == "read"
+                                              ? const Color(0xFFBFE8FF)
+                                              : Colors.white,
+                                        ),
+                                      ),
+                                    ],
                                   ],
-                                ],
-                              ),
-                            ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );

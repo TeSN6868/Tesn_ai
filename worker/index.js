@@ -336,6 +336,86 @@ export default {
 
       // ============================================================
       // ============================================================
+      // MESSAGES - EDIT
+      // ============================================================
+
+      if (
+        url.pathname === "/api/messages/edit" &&
+        request.method === "POST"
+      ) {
+        const body = await request.json();
+
+        const messageId = Number(body.message_id);
+        const senderPin = String(body.sender_pin || "").trim();
+        const message = String(body.message || "").trim();
+
+        if (!messageId || !senderPin || !message) {
+          return json({
+            success: false,
+            error: "message_id, sender_pin dan message wajib diisi."
+          }, 400);
+        }
+
+        const existing = await env.DB.prepare(`
+          SELECT
+            id,
+            chat_id,
+            sender_pin,
+            message,
+            timestamp,
+            status
+          FROM messages
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(messageId)
+          .first();
+
+        if (!existing) {
+          return json({
+            success: false,
+            error: "Pesan tidak ditemukan."
+          }, 404);
+        }
+
+        if (existing.sender_pin !== senderPin) {
+          return json({
+            success: false,
+            error: "Kamu hanya dapat mengedit pesan milik sendiri."
+          }, 403);
+        }
+
+        await env.DB.prepare(`
+          UPDATE messages
+          SET message = ?
+          WHERE id = ?
+            AND sender_pin = ?
+        `)
+          .bind(message, messageId, senderPin)
+          .run();
+
+        const saved = await env.DB.prepare(`
+          SELECT
+            id,
+            chat_id,
+            sender_pin,
+            message,
+            timestamp,
+            status
+          FROM messages
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(messageId)
+          .first();
+
+        return json({
+          success: true,
+          message: saved
+        });
+      }
+
+      // ============================================================
       // MESSAGES - DELIVERED
       // ============================================================
       if (url.pathname === "/api/messages/delivered" && request.method === "POST") {
