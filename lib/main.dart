@@ -1608,7 +1608,68 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             onPressed: () => startVoiceCall(other),
             icon: const Icon(Icons.call_outlined),
           ),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case 'profile':
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Profil kontak segera hadir.'),
+                    ),
+                  );
+                  break;
+
+                case 'search':
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Pencarian dalam chat segera hadir.'),
+                    ),
+                  );
+                  break;
+
+                case 'mute':
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Pengaturan notifikasi segera hadir.'),
+                    ),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem<String>(
+                value: 'profile',
+                child: Row(
+                  children: [
+                    Icon(Icons.person_outline),
+                    SizedBox(width: 12),
+                    Text('Lihat profil'),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'search',
+                child: Row(
+                  children: [
+                    Icon(Icons.search),
+                    SizedBox(width: 12),
+                    Text('Cari dalam chat'),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'mute',
+                child: Row(
+                  children: [
+                    Icon(Icons.notifications_off_outlined),
+                    SizedBox(width: 12),
+                    Text('Bisukan notifikasi'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: Column(
