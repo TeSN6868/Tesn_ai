@@ -1569,7 +1569,89 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        showDragHandle: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
+                        ),
+                        builder: (sheetContext) {
+                          void selectAttachment(String label) {
+                            Navigator.pop(sheetContext);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  "$label — fitur M8 akan kita aktifkan berikutnya.",
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          }
+
+                          return SafeArea(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      "Kirim ke M8",
+                                      style: TextStyle(
+                                        fontSize: 19,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF172033),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 18),
+                                  GridView.count(
+                                    shrinkWrap: true,
+                                    crossAxisCount: 4,
+                                    mainAxisSpacing: 18,
+                                    crossAxisSpacing: 12,
+                                    children: [
+                                      _AttachmentItem(
+                                        icon: Icons.camera_alt_rounded,
+                                        label: "Kamera",
+                                        onTap: () => selectAttachment("Kamera"),
+                                      ),
+                                      _AttachmentItem(
+                                        icon: Icons.photo_library_rounded,
+                                        label: "Galeri",
+                                        onTap: () => selectAttachment("Galeri"),
+                                      ),
+                                      _AttachmentItem(
+                                        icon: Icons.insert_drive_file_rounded,
+                                        label: "Dokumen",
+                                        onTap: () =>
+                                            selectAttachment("Dokumen"),
+                                      ),
+                                      _AttachmentItem(
+                                        icon: Icons.location_on_rounded,
+                                        label: "Lokasi",
+                                        onTap: () => selectAttachment("Lokasi"),
+                                      ),
+                                      _AttachmentItem(
+                                        icon: Icons.person_rounded,
+                                        label: "Kontak M8",
+                                        onTap: () =>
+                                            selectAttachment("Kontak M8"),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                     icon: const Icon(
                       Icons.add_circle_outline,
                       color: Color(0xFF147FBD),
@@ -1630,9 +1712,49 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 }
 
-// ============================================================
-// CALLS
-// ============================================================
+class _AttachmentItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _AttachmentItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF5FB),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: const Color(0xFF147FBD), size: 25),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Color(0xFF536A75),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class CallsPage extends StatelessWidget {
   const CallsPage({super.key});
