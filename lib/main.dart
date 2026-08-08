@@ -229,8 +229,11 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: InputDecoration(
                               labelText: 'M8 PIN',
                               hintText: 'Masukkan M8 PIN',
-                              labelStyle: TextStyle(color: Color(0xFF172033)),
-                              hintStyle: TextStyle(color: Colors.black45),
+                              labelStyle: const TextStyle(
+                                color: Color(0xFF172033),
+                                fontWeight: FontWeight.w600,
+                              ),
+                              hintStyle: const TextStyle(color: Colors.black54),
                               prefixIcon: const Icon(
                                 Icons.key_rounded,
                                 color: Colors.white,
