@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'm8_call_service.dart';
 import 'package:http/http.dart' as http;
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
@@ -1116,6 +1118,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     super.dispose();
   }
 
+  Future<void> startVoiceCall(String other) async {
+    final call = M8CallService();
+    try {
+      await call.startCall(callerPin: widget.myPin, calleePin: other);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Memanggil...")));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Panggilan gagal: $e")));
+    }
+  }
+
   Future<void> loadMessages() async {
     try {
       final response = await http.get(
@@ -1254,6 +1268,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         backgroundColor: const Color(0xFF147FBD),
         foregroundColor: Colors.white,
         title: Row(
+          actions: [
+            IconButton(
+              tooltip: "Panggilan suara",
+              icon: const Icon(Icons.call_rounded),
+              onPressed: () => startVoiceCall(other),
+            ),
+          ],
           children: [
             const CircleAvatar(radius: 18, child: Icon(Icons.person)),
             const SizedBox(width: 10),
