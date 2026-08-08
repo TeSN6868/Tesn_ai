@@ -1205,12 +1205,28 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   Future<void> sendMessage() async {
     final text = controller.text.trim();
-
     if (text.isEmpty || sending) return;
 
-    setState(() {
-      sending = true;
-    });
+    final tempId = 'local_${DateTime.now().microsecondsSinceEpoch}';
+
+    // Tampilkan pesan langsung agar chat terasa instan.
+    final optimistic = <String, dynamic>{
+      'id': tempId,
+      'chat_id': widget.chat['id'],
+      'sender_pin': widget.myPin,
+      'message': text,
+      'created_at': DateTime.now().toIso8601String(),
+      '_sending': true,
+    };
+
+    controller.clear();
+
+    if (mounted) {
+      setState(() {
+        messages.add(optimistic);
+        sending = true;
+      });
+    }
 
     try {
       final response = await http.post(
@@ -1229,27 +1245,46 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 201 && data['success'] == true) {
-        controller.clear();
-
         final saved = data['message'];
 
-        if (saved != null && mounted) {
+        if (mounted && saved is Map) {
           setState(() {
-            messages.add(Map<String, dynamic>.from(saved));
+            final index = messages.indexWhere(
+              (m) => m['id']?.toString() == tempId,
+            );
+
+            if (index >= 0) {
+              messages[index] = {
+                ...Map<String, dynamic>.from(saved),
+                '_sending': false,
+              };
+            }
           });
         }
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(data['error']?.toString() ?? 'Gagal mengirim pesan.'),
-          ),
-        );
+      } else {
+        if (mounted) {
+          setState(() {
+            messages.removeWhere((m) => m['id']?.toString() == tempId);
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                data['error']?.toString() ?? 'Gagal mengirim pesan.',
+              ),
+            ),
+          );
+        }
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Koneksi gagal: $e')));
+        setState(() {
+          messages.removeWhere((m) => m['id']?.toString() == tempId);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Koneksi gagal. Pesan belum terkirim.')),
+        );
       }
     } finally {
       if (mounted) {
