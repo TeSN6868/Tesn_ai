@@ -1182,8 +1182,21 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           }
 
           if (mounted) {
+            final loadedMessages = List<Map<String, dynamic>>.from(list ?? []);
+
+            debugPrint('M8 DEBUG GET messages count=${loadedMessages.length}');
+
+            for (final msg in loadedMessages) {
+              final raw = msg['message']?.toString() ?? '';
+              debugPrint(
+                'M8 DEBUG message id=${msg['id']} '
+                'prefix=${raw.length > 30 ? raw.substring(0, 30) : raw} '
+                'length=${raw.length}',
+              );
+            }
+
             setState(() {
-              messages = List<Map<String, dynamic>>.from(list ?? []);
+              messages = loadedMessages;
               loading = false;
             });
           }
