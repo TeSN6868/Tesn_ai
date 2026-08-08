@@ -42,18 +42,18 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final identifierController = TextEditingController();
+  final pinController = TextEditingController();
   final passwordController = TextEditingController();
 
   bool loading = false;
   bool obscurePassword = true;
 
   Future<void> login() async {
-    final identifier = identifierController.text.trim();
+    final m8Pin = pinController.text.trim();
     final password = passwordController.text;
 
-    if (identifier.isEmpty || password.isEmpty) {
-      showMessage('Email/Nomor HP dan password wajib diisi');
+    if (m8Pin.isEmpty || password.isEmpty) {
+      showMessage('M8 PIN dan password wajib diisi');
       return;
     }
 
@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
           .post(
             Uri.parse('$apiBase/api/login'),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'identifier': identifier, 'password': password}),
+            body: jsonEncode({'m8_pin': m8Pin, 'password': password}),
           )
           .timeout(const Duration(seconds: 20));
 
@@ -110,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    identifierController.dispose();
+    pinController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -223,16 +223,16 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         children: [
                           TextField(
-                            controller: identifierController,
+                            controller: pinController,
                             textInputAction: TextInputAction.next,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              labelText: 'Email / Nomor HP',
-                              hintText: 'Email atau nomor HP',
+                              labelText: 'M8 PIN',
+                              hintText: 'Masukkan M8 PIN',
                               labelStyle: TextStyle(color: Color(0xFF172033)),
                               hintStyle: TextStyle(color: Colors.black45),
                               prefixIcon: const Icon(
-                                Icons.person_outline_rounded,
+                                Icons.key_rounded,
                                 color: Colors.white,
                               ),
                               filled: true,
@@ -338,7 +338,7 @@ class _LoginPageState extends State<LoginPage> {
                           SizedBox(
                             width: double.infinity,
                             height: 54,
-                            child: OutlinedButton(
+                            child: TextButton(
                               onPressed: loading
                                   ? null
                                   : () {
@@ -348,15 +348,15 @@ class _LoginPageState extends State<LoginPage> {
                                         ),
                                       );
                                     },
-                              style: OutlinedButton.styleFrom(
+                              style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
-                                side: const BorderSide(color: Colors.white70),
+
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(17),
                                 ),
                               ),
                               child: const Text(
-                                'DAFTAR AKUN M8',
+                                'Belum punya akun : Daftar',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
