@@ -817,8 +817,150 @@ class _HomePageState extends State<HomePage> {
               : 'Profil',
         ),
         actions: [
-          if (currentIndex == 0)
+          if (currentIndex == 0) ...[
             IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) {
+                switch (value) {
+                  case 'profile':
+                    setState(() {
+                      currentIndex = 2;
+                    });
+                    break;
+
+                  case 'contacts':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Kontak M8 segera hadir.')),
+                    );
+                    break;
+
+                  case 'settings':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Pengaturan M8 segera hadir.'),
+                      ),
+                    );
+                    break;
+
+                  case 'notifications':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Notifikasi M8 segera hadir.'),
+                      ),
+                    );
+                    break;
+
+                  case 'appearance':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tampilan M8 segera hadir.'),
+                      ),
+                    );
+                    break;
+
+                  case 'privacy':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Privasi M8 segera hadir.')),
+                    );
+                    break;
+
+                  case 'help':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Bantuan M8 segera hadir.')),
+                    );
+                    break;
+
+                  case 'logout':
+                    logout();
+                    break;
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem<String>(
+                  value: 'profile',
+                  child: Row(
+                    children: [
+                      Icon(Icons.person_outline),
+                      SizedBox(width: 12),
+                      Text('Profil Saya'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'contacts',
+                  child: Row(
+                    children: [
+                      Icon(Icons.people_outline),
+                      SizedBox(width: 12),
+                      Text('Kontak'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'settings',
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings_outlined),
+                      SizedBox(width: 12),
+                      Text('Pengaturan'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'notifications',
+                  child: Row(
+                    children: [
+                      Icon(Icons.notifications_none),
+                      SizedBox(width: 12),
+                      Text('Notifikasi'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'appearance',
+                  child: Row(
+                    children: [
+                      Icon(Icons.palette_outlined),
+                      SizedBox(width: 12),
+                      Text('Tampilan'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'privacy',
+                  child: Row(
+                    children: [
+                      Icon(Icons.lock_outline),
+                      SizedBox(width: 12),
+                      Text('Privasi'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'help',
+                  child: Row(
+                    children: [
+                      Icon(Icons.help_outline),
+                      SizedBox(width: 12),
+                      Text('Bantuan'),
+                    ],
+                  ),
+                ),
+                PopupMenuDivider(),
+                PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout),
+                      SizedBox(width: 12),
+                      Text('Keluar'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
       body: pages[currentIndex],
