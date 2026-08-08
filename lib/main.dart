@@ -1162,6 +1162,25 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         if (data['success'] == true) {
           final list = data['messages'];
 
+          print(
+            'M8 DEBUG messages count: '
+            '${list is List ? list.length : 'NOT_LIST'}',
+          );
+
+          if (list is List) {
+            for (final m in list) {
+              if (m is Map) {
+                final msg = m['message']?.toString() ?? '';
+                final prefix = msg.length > 35 ? msg.substring(0, 35) : msg;
+                print(
+                  'M8 DEBUG id=${m['id']} '
+                  'len=${msg.length} '
+                  'prefix=$prefix',
+                );
+              }
+            }
+          }
+
           if (mounted) {
             setState(() {
               messages = List<Map<String, dynamic>>.from(list ?? []);
@@ -1281,11 +1300,20 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     });
 
     try {
-      String? mediaKey;
+      String messageText = text;
 
-      // Upload gambar ke R2 terlebih dahulu.
+      // Tanpa R2: gambar dikirim sebagai Base64 ke Worker.
       if (image != null) {
         final bytes = await image.readAsBytes();
+
+        // Batasi payload agar D1 tidak menerima file terlalu besar.
+        if (bytes.length > 300 * 1024) {
+          throw Exception(
+            'Foto terlalu besar. Maksimal 300 KB. Pilih foto yang lebih kecil.',
+          );
+        }
+
+        final base64Image = base64Encode(bytes);
 
         final extension = image.name.contains('.')
             ? image.name.split('.').last.toLowerCase()
@@ -1298,33 +1326,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           _ => 'image/jpeg',
         };
 
-        final uploadResponse = await http.post(
-          Uri.parse('$apiBase/api/media/upload'),
-          headers: {
-            'Content-Type': contentType,
-            'X-Chat-Id': widget.chat['id'].toString(),
-            'X-Sender-Pin': widget.myPin,
-            'Authorization': 'Bearer ${widget.token}',
-          },
-          body: bytes,
-        );
-
-        final uploadData = jsonDecode(uploadResponse.body);
-
-        if (uploadResponse.statusCode != 201 || uploadData['success'] != true) {
-          throw Exception(
-            uploadData['error']?.toString() ?? 'Gagal upload foto.',
-          );
-        }
-
-        mediaKey = uploadData['key']?.toString();
-
-        if (mediaKey == null || mediaKey.isEmpty) {
-          throw Exception('R2 tidak mengembalikan media key.');
-        }
+        messageText = '__M8_IMAGE_BASE64__:$contentType:$base64Image';
       }
-
-      final messageText = mediaKey != null ? '__M8_IMAGE__:$mediaKey' : text;
 
       final optimistic = <String, dynamic>{
         'id': tempId,
@@ -1334,7 +1337,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'timestamp': DateTime.now().millisecondsSinceEpoch,
         'created_at': DateTime.now().toIso8601String(),
         '_sending': true,
-        if (mediaKey != null) 'media_key': mediaKey,
       };
 
       controller.clear();
@@ -1550,30 +1552,74 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              if ((msg["image_url"]?.toString() ?? "")
-                                  .isNotEmpty)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                    msg["image_url"].toString(),
-                                    width: 220,
-                                    height: 220,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
+                              if (text.startsWith("__M8_IMAGE_BASE64__:"))
+                                Builder(
+                                  builder: (context) {
+                                    try {
+                                      final payload = text.substring(
+                                        "__M8_IMAGE_BASE64__:".length,
+                                      );
+
+                                      final separator = payload.indexOf(":");
+
+                                      if (separator <= 0) {
+                                        throw Exception(
+                                          "Format gambar invalid",
+                                        );
+                                      }
+
+                                      final base64Data = payload.substring(
+                                        separator + 1,
+                                      );
+
+                                      final imageBytes = base64Decode(
+                                        base64Data,
+                                      );
+
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.memory(
+                                          imageBytes,
+                                          width: 220,
+                                          height: 220,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Container(
+                                                  width: 220,
+                                                  height: 120,
+                                                  alignment: Alignment.center,
+                                                  color: mine
+                                                      ? const Color(0xFF0F6FA8)
+                                                      : const Color(0xFFEAF1F5),
+                                                  child: const Icon(
+                                                    Icons.broken_image_rounded,
+                                                    size: 36,
+                                                  ),
+                                                );
+                                              },
+                                        ),
+                                      );
+                                    } catch (_) {
                                       return Container(
                                         width: 220,
                                         height: 120,
                                         alignment: Alignment.center,
-                                        color: mine
-                                            ? const Color(0xFF0F6FA8)
-                                            : const Color(0xFFEAF1F5),
+                                        decoration: BoxDecoration(
+                                          color: mine
+                                              ? const Color(0xFF0F6FA8)
+                                              : const Color(0xFFEAF1F5),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
                                         child: const Icon(
                                           Icons.broken_image_rounded,
                                           size: 36,
                                         ),
                                       );
-                                    },
-                                  ),
+                                    }
+                                  },
                                 )
                               else
                                 Align(
