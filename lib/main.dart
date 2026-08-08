@@ -1465,48 +1465,76 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = user['name']?.toString() ?? 'M8 User';
     final pin = user['m8_pin']?.toString() ?? '';
-    final email = user['email']?.toString() ?? '';
 
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
+
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const CircleAvatar(
+              radius: 48,
+              backgroundColor: Color(0xFFEAF5FB),
+              child: Icon(Icons.person, size: 52, color: Color(0xFF147FBD)),
+            ),
+
+            const SizedBox(width: 20),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF172033),
+                    ),
+                  ),
+
+                  const SizedBox(height: 7),
+
+                  Text(
+                    pin,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF172033),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 32),
+
         const Center(
-          child: CircleAvatar(radius: 48, child: Icon(Icons.person, size: 48)),
-        ),
-        const SizedBox(height: 18),
-        Center(
           child: Text(
-            name,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            'Status pengguna',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF172033),
+            ),
           ),
         ),
-        const SizedBox(height: 5),
-        Center(
-          child: Text(pin, style: TextStyle(color: Color(0xFF536A75))),
-        ),
-        const SizedBox(height: 30),
-        Card(
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.badge_outlined),
-                title: const Text('M8 PIN'),
-                subtitle: Text(pin),
-              ),
-              ListTile(
-                leading: const Icon(Icons.email_outlined),
-                title: const Text('Email'),
-                subtitle: Text(email.isEmpty ? 'Belum diatur' : email),
-              ),
-            ],
+
+        const SizedBox(height: 8),
+
+        const Center(
+          child: Text(
+            'Online',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF147FBD),
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
-        FilledButton.tonalIcon(
-          onPressed: onLogout,
-          icon: const Icon(Icons.logout),
-          label: const Text('Keluar'),
         ),
       ],
     );
