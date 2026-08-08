@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'm8_call_service.dart';
@@ -1580,8 +1581,39 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           ),
                         ),
                         builder: (sheetContext) {
-                          void selectAttachment(String label) {
+                          Future<void> selectAttachment(String label) async {
                             Navigator.pop(sheetContext);
+
+                            if (label == "Galeri") {
+                              try {
+                                final picker = ImagePicker();
+                                final image = await picker.pickImage(
+                                  source: ImageSource.gallery,
+                                  imageQuality: 85,
+                                );
+
+                                if (image == null || !context.mounted) return;
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "Foto dipilih: ${image.name}",
+                                    ),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Gagal memilih foto: $e"),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
