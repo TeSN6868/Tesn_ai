@@ -1305,7 +1305,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           ? 'R'
                           : status == 'delivered'
                           ? 'D'
-                          : '';
+                          : '✓';
 
                       return Align(
                         alignment: mine
