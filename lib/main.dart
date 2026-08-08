@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -1097,10 +1098,13 @@ class ChatRoomPage extends StatefulWidget {
 
 class _ChatRoomPageState extends State<ChatRoomPage> {
   final controller = TextEditingController();
+  Timer? typingTimer;
+  Timer? typingPollTimer;
 
   List<Map<String, dynamic>> messages = [];
   bool loading = true;
   bool sending = false;
+  bool otherTyping = false;
 
   String get chatId => widget.chat['id'].toString();
 
@@ -1110,10 +1114,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     loadMessages();
     markMessagesAsDelivered();
     markMessagesAsRead();
+
+    typingPollTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => checkOtherTyping(),
+    );
   }
 
   @override
   void dispose() {
+    typingTimer?.cancel();
+    typingPollTimer?.cancel();
+    setTyping(false);
     controller.dispose();
     super.dispose();
   }
@@ -1201,6 +1213,56 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         }),
       );
     } catch (_) {}
+  }
+
+  Future<void> setTyping(bool typing) async {
+    try {
+      await http.post(
+        Uri.parse('$apiBase/api/typing'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'chat_id': widget.chat['id'],
+          'user_pin': widget.myPin,
+          'typing': typing,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> checkOtherTyping() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/typing'
+          '?chat_id=${Uri.encodeComponent(chatId)}'
+          '&user_pin=${Uri.encodeComponent(widget.myPin)}',
+        ),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (mounted && data['success'] == true) {
+          setState(() {
+            otherTyping = data['typing'] == true;
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
+  void handleTyping() {
+    typingTimer?.cancel();
+
+    setTyping(true);
+
+    typingTimer = Timer(const Duration(milliseconds: 1500), () {
+      setTyping(false);
+    });
   }
 
   Future<void> sendMessage() async {
@@ -1297,74 +1359,111 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   @override
   Widget build(BuildContext context) {
-    final p1 = widget.chat['participant_1_pin']?.toString() ?? '';
-    final p2 = widget.chat['participant_2_pin']?.toString() ?? '';
-
+    final p1 = widget.chat["participant_1_pin"]?.toString() ?? "";
+    final p2 = widget.chat["participant_2_pin"]?.toString() ?? "";
     final other = p1 == widget.myPin ? p2 : p1;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF3F7FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF147FBD),
+        backgroundColor: const Color(0xFF071A2E),
         foregroundColor: Colors.white,
+        elevation: 0,
+        toolbarHeight: 68,
+        titleSpacing: 0,
         title: Row(
           children: [
-            const CircleAvatar(radius: 18, child: Icon(Icons.person)),
+            Stack(
+              children: [
+                const CircleAvatar(
+                  radius: 21,
+                  backgroundColor: Color(0xFF174B70),
+                  child: Icon(Icons.person, color: Colors.white),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 11,
+                    height: 11,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF35D07F),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF071A2E),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(width: 10),
-            Text(other),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "M8 User",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    "M8 PIN: $other",
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFFB8C9D6),
+                    ),
+                  ),
+                  const Text(
+                    "Online",
+                    style: TextStyle(fontSize: 10, color: Color(0xFF35D07F)),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
+        actions: [
+          IconButton(
+            onPressed: () => startVoiceCall(other),
+            icon: const Icon(Icons.call_outlined),
+          ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
+        ],
       ),
-
       body: Column(
         children: [
           Expanded(
             child: loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF147FBD)),
+                  )
                 : messages.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.lock_outline,
-                          size: 42,
-                          color: Color(0xFF147FBD),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Belum ada pesan',
-                          style: TextStyle(color: Color(0xFF536A75)),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Mulai percakapan M8',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF78909C),
-                          ),
-                        ),
-                      ],
+                ? const Center(
+                    child: Text(
+                      "Mulai percakapan di M8",
+                      style: TextStyle(color: Color(0xFF78909C)),
                     ),
                   )
                 : ListView.builder(
-                    reverse: false,
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       final msg = messages[index];
-
-                      final sender = msg['sender_pin']?.toString() ?? '';
-
-                      final text = msg['message']?.toString() ?? '';
-
+                      final sender = msg["sender_pin"]?.toString() ?? "";
+                      final text = msg["message"]?.toString() ?? "";
                       final mine = sender == widget.myPin;
                       final status =
-                          msg['status']?.toString().toLowerCase() ?? '';
-                      final statusLabel = status == 'read'
-                          ? 'R'
-                          : status == 'delivered'
-                          ? 'D'
-                          : '✓';
+                          msg["status"]?.toString().toLowerCase() ?? "";
+                      final statusLabel = status == "read"
+                          ? "R"
+                          : status == "delivered"
+                          ? "D"
+                          : "✓";
+                      final rawTime = msg["created_at"]?.toString() ?? "";
+                      final time = rawTime.length >= 16
+                          ? rawTime.substring(11, 16)
+                          : rawTime;
 
                       return Align(
                         alignment: mine
@@ -1374,43 +1473,68 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           constraints: BoxConstraints(
                             maxWidth: MediaQuery.of(context).size.width * .78,
                           ),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 15,
-                            vertical: 10,
-                          ),
+                          margin: const EdgeInsets.only(bottom: 7),
+                          padding: const EdgeInsets.fromLTRB(13, 9, 11, 6),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
                             color: mine
                                 ? const Color(0xFF147FBD)
-                                : const Color(0xFFEAF5FB),
+                                : Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(5),
+                              topRight: const Radius.circular(16),
+                              bottomLeft: Radius.circular(mine ? 16 : 5),
+                              bottomRight: Radius.circular(mine ? 5 : 16),
+                            ),
+                            border: Border.all(
+                              color: mine
+                                  ? const Color(0xFF147FBD)
+                                  : const Color(0xFFDCE7EE),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                text,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: const Color(0xFF172033),
-                                ),
-                              ),
-                              if (mine && statusLabel.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 3),
-                                  child: Text(
-                                    statusLabel,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.8,
-                                      color: status == 'read'
-                                          ? const Color(0xFF172033)
-                                          : const Color(0xFF78909C),
-                                    ),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  text,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    height: 1.3,
+                                    color: mine
+                                        ? Colors.white
+                                        : const Color(0xFF172033),
                                   ),
                                 ),
+                              ),
+                              const SizedBox(height: 3),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    time,
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: mine
+                                          ? const Color(0xFFD5EAF5)
+                                          : const Color(0xFF91A0AA),
+                                    ),
+                                  ),
+                                  if (mine) ...[
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      statusLabel,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: status == "read"
+                                            ? const Color(0xFFBFE8FF)
+                                            : Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -1418,54 +1542,86 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     },
                   ),
           ),
-
-          Container(
-            padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.add_circle_outline),
+          if (otherTyping)
+            const Padding(
+              padding: EdgeInsets.only(left: 18, bottom: 6),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "sedang mengetik...",
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF78909C),
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
-
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    style: const TextStyle(
-                      color: Color(0xFF172033),
-                      fontSize: 15,
+              ),
+            ),
+          SafeArea(
+            top: false,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(7, 6, 7, 8),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Color(0xFFDCE7EE))),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.add_circle_outline,
+                      color: Color(0xFF147FBD),
                     ),
-                    minLines: 1,
-                    maxLines: 5,
-                    textInputAction: TextInputAction.newline,
-                    decoration: InputDecoration(
-                      hintText: 'Tulis pesan...',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(22),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF147FBD),
-                          width: 1.5,
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      onChanged: (_) => handleTyping(),
+                      minLines: 1,
+                      maxLines: 5,
+                      textInputAction: TextInputAction.newline,
+                      style: const TextStyle(
+                        color: Color(0xFF172033),
+                        fontSize: 15,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: "Tulis pesan...",
+                        hintStyle: const TextStyle(color: Color(0xFF91A0AA)),
+                        filled: true,
+                        fillColor: const Color(0xFFF2F6F8),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(19),
+                          borderSide: BorderSide.none,
                         ),
                       ),
                     ),
                   ),
-                ),
-
-                const SizedBox(width: 6),
-
-                IconButton.filled(
-                  onPressed: sending ? null : sendMessage,
-                  icon: sending
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send_rounded),
-                ),
-              ],
+                  const SizedBox(width: 5),
+                  IconButton.filled(
+                    onPressed: sending ? null : sendMessage,
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFF147FBD),
+                      foregroundColor: Colors.white,
+                    ),
+                    icon: sending
+                        ? const SizedBox(
+                            width: 19,
+                            height: 19,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.send_rounded, size: 20),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
