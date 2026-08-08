@@ -1033,9 +1033,15 @@ class _ChatsPageState extends State<ChatsPage> {
                   ),
                   title: Text(
                     other,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Color(0xFF172033),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  subtitle: const Text('Percakapan M8'),
+                  subtitle: const Text(
+                    'Percakapan M8',
+                    style: TextStyle(color: Color(0xFF172033)),
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.push(
