@@ -1334,9 +1334,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 text,
                                 style: TextStyle(
                                   fontSize: 15,
-                                  color: mine
-                                      ? Colors.white
-                                      : const Color(0xFF0E5F91),
+                                  color: const Color(0xFF172033),
                                 ),
                               ),
                               if (mine && statusLabel.isNotEmpty)
@@ -1348,7 +1346,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       fontSize: 10,
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: 0.8,
-                                      color: Colors.white.withOpacity(.90),
+                                      color: status == 'read'
+                                          ? const Color(0xFF172033)
+                                          : const Color(0xFF78909C),
                                     ),
                                   ),
                                 ),
