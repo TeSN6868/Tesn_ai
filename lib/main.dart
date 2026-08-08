@@ -1372,6 +1372,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 Expanded(
                   child: TextField(
                     controller: controller,
+                    style: const TextStyle(
+                      color: Color(0xFF172033),
+                      fontSize: 15,
+                    ),
                     minLines: 1,
                     maxLines: 5,
                     textInputAction: TextInputAction.newline,
