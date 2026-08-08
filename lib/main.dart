@@ -1123,10 +1123,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     try {
       await call.startCall(callerPin: widget.myPin, calleePin: other);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Memanggil...")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Memanggil...")));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Panggilan gagal: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Panggilan gagal: $e")));
     }
   }
 
@@ -1268,13 +1272,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         backgroundColor: const Color(0xFF147FBD),
         foregroundColor: Colors.white,
         title: Row(
-          actions: [
-            IconButton(
-              tooltip: "Panggilan suara",
-              icon: const Icon(Icons.call_rounded),
-              onPressed: () => startVoiceCall(other),
-            ),
-          ],
           children: [
             const CircleAvatar(radius: 18, child: Icon(Icons.person)),
             const SizedBox(width: 10),
