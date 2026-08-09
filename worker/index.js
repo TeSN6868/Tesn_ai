@@ -753,17 +753,20 @@ export default {
         }, 404);
       }
 
+      const activeTimeout = Date.now() - 60000;
+
       const active = await env.DB.prepare(`
         SELECT id
         FROM call_sessions
         WHERE
           status IN ('ringing', 'accepted')
+          AND updated_at > ?
           AND (
             caller_pin = ?
             OR callee_pin = ?
           )
         LIMIT 1
-      `).bind(callerPin, callerPin).first();
+      `).bind(activeTimeout, callerPin, callerPin).first();
 
       if (active) {
         return json({
