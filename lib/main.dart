@@ -1275,32 +1275,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   Future<void> startVoiceCall(String other) async {
     final call = M8CallService();
 
-    try {
-      await call.startCall(
-        callerPin: widget.myPin,
-        calleePin: other,
-      );
+    if (!mounted) return;
 
-      if (!mounted) return;
-
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => VoiceCallPage(
-            myPin: widget.myPin,
-            otherPin: other,
-            call: call,
-          ),
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => VoiceCallPage(
+          myPin: widget.myPin,
+          otherPin: other,
+          call: call,
         ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Panggilan gagal: $e"),
-        ),
-      );
-    }
+      ),
+    );
   }
 
   Future<void> editMessage(Map<String, dynamic> msg) async {
@@ -2287,16 +2272,48 @@ class VoiceCallPage extends StatefulWidget {
 class _VoiceCallPageState extends State<VoiceCallPage> {
   Timer? timer;
   int seconds = 0;
+  bool connecting = true;
+  String callStatus = 'Memanggil...';
 
   @override
   void initState() {
     super.initState();
+    _startCall();
+  }
 
-    timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() => seconds++);
-      }
-    });
+  Future<void> _startCall() async {
+    try {
+      await widget.call.startCall(
+        callerPin: widget.myPin,
+        calleePin: widget.otherPin,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        connecting = false;
+        callStatus = 'Terhubung';
+      });
+
+      timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) {
+          setState(() => seconds++);
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        connecting = false;
+        callStatus = 'Panggilan gagal';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Panggilan gagal: $e'),
+        ),
+      );
+    }
   }
 
   String get durationText {
@@ -2365,23 +2382,26 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
             const SizedBox(height: 18),
 
-            const Text(
-              'Memanggil...',
+            Text(
+              callStatus,
               style: TextStyle(
-                color: Color(0xFF35D07F),
+                color: callStatus == 'Panggilan gagal'
+                    ? Colors.redAccent
+                    : const Color(0xFF35D07F),
                 fontSize: 15,
               ),
             ),
 
             const SizedBox(height: 8),
 
-            Text(
-              durationText,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+            if (!connecting && callStatus == 'Terhubung')
+              Text(
+                durationText,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
               ),
-            ),
 
             const Spacer(),
 
