@@ -201,7 +201,7 @@ class _LoginPageState extends State<LoginPage> {
                     Text(
                       'Private. Secure. Connected.',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(.82),
+                        color: Colors.white.withValues(alpha: .82),
                         fontSize: 14,
                       ),
                     ),
@@ -211,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(.13),
+                        color: Colors.white.withValues(alpha: .13),
                         borderRadius: BorderRadius.circular(28),
                         border: Border.all(color: Color(0xFF147FBD)),
                         boxShadow: [
@@ -642,7 +642,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Text(
                     'Daftar untuk mulai menggunakan M8 Messenger',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white.withOpacity(.65)),
+                    style: TextStyle(color: Colors.white.withValues(alpha: .65)),
                   ),
 
                   const SizedBox(height: 32),
@@ -1425,7 +1425,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         if (data['success'] == true) {
           final list = data['messages'];
 
-          print(
+          debugPrint(
             'M8 DEBUG messages count: '
             '${list is List ? list.length : 'NOT_LIST'}',
           );
@@ -1435,7 +1435,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               if (m is Map) {
                 final msg = m['message']?.toString() ?? '';
                 final prefix = msg.length > 35 ? msg.substring(0, 35) : msg;
-                print(
+          debugPrint(
                   'M8 DEBUG id=${m['id']} '
                   'len=${msg.length} '
                   'prefix=$prefix',
