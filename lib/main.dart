@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'm8_call_service.dart';
 import 'package:http/http.dart' as http;
 
@@ -1277,17 +1274,32 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   Future<void> startVoiceCall(String other) async {
     final call = M8CallService();
+
     try {
-      await call.startCall(callerPin: widget.myPin, calleePin: other);
+      await call.startCall(
+        callerPin: widget.myPin,
+        calleePin: other,
+      );
+
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Memanggil...")));
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => VoiceCallPage(
+            myPin: widget.myPin,
+            otherPin: other,
+            call: call,
+          ),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Panggilan gagal: $e")));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Panggilan gagal: $e"),
+        ),
+      );
     }
   }
 
@@ -2247,6 +2259,221 @@ class _AttachmentItem extends StatelessWidget {
               fontSize: 11,
               color: Color(0xFF536A75),
               fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+class VoiceCallPage extends StatefulWidget {
+  final String myPin;
+  final String otherPin;
+  final M8CallService call;
+
+  const VoiceCallPage({
+    super.key,
+    required this.myPin,
+    required this.otherPin,
+    required this.call,
+  });
+
+  @override
+  State<VoiceCallPage> createState() => _VoiceCallPageState();
+}
+
+class _VoiceCallPageState extends State<VoiceCallPage> {
+  Timer? timer;
+  int seconds = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() => seconds++);
+      }
+    });
+  }
+
+  String get durationText {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> hangUp() async {
+    timer?.cancel();
+
+    try {
+      await widget.call.hangUp();
+    } catch (_) {}
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF071A2E),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 70),
+
+            const CircleAvatar(
+              radius: 58,
+              backgroundColor: Color(0xFF147FBD),
+              child: Icon(
+                Icons.person,
+                size: 62,
+                color: Colors.white,
+              ),
+            ),
+
+            const SizedBox(height: 22),
+
+            const Text(
+              'M8 User',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              'M8 PIN: ${widget.otherPin}',
+              style: const TextStyle(
+                color: Color(0xFFB8C9D6),
+                fontSize: 13,
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            const Text(
+              'Memanggil...',
+              style: TextStyle(
+                color: Color(0xFF35D07F),
+                fontSize: 15,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              durationText,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+              ),
+            ),
+
+            const Spacer(),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _CallButton(
+                  icon: Icons.mic,
+                  label: 'Mikrofon',
+                  onTap: () {},
+                ),
+                _CallButton(
+                  icon: Icons.volume_up,
+                  label: 'Speaker',
+                  onTap: () {},
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 45),
+
+            GestureDetector(
+              onTap: hangUp,
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.call_end,
+                  color: Colors.white,
+                  size: 34,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            const Text(
+              'Akhiri',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+              ),
+            ),
+
+            const SizedBox(height: 45),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CallButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _CallButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: const BoxDecoration(
+              color: Color(0xFF16344D),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 27,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
             ),
           ),
         ],
