@@ -1,17 +1,18 @@
-name: Build M8 APK
+name: M8 Build APK
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+      - master
 
 jobs:
-  build-apk:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout M8
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -23,18 +24,25 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.2'
           channel: stable
+          flutter-version: '3.44.9'
           cache: true
 
-      - name: Flutter Pub Get
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Pub get
         run: flutter pub get
 
-      - name: Build M8 APK
-        run: flutter build apk --release
+      - name: Analyze
+        run: flutter analyze
 
-      - name: Upload M8 APK
+      - name: Build APK
+        run: flutter build apk --debug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: M8-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: M8-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
