@@ -1557,18 +1557,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     try {
       String messageText = text;
 
-      // Tanpa R2: gambar dikirim sebagai Base64 ke Worker.
+      // M8 R2: upload foto ke R2, lalu kirim URL melalui pesan.
       if (image != null) {
         final bytes = await image.readAsBytes();
 
-        // Batasi payload agar D1 tidak menerima file terlalu besar.
-        if (bytes.length > 300 * 1024) {
-          throw Exception(
-            'Foto terlalu besar. Maksimal 300 KB. Pilih foto yang lebih kecil.',
-          );
+        if (bytes.length > 5 * 1024 * 1024) {
+          throw Exception('Foto terlalu besar. Maksimal 5 MB.');
         }
-
-        final base64Image = base64Encode(bytes);
 
         final extension = image.name.contains('.')
             ? image.name.split('.').last.toLowerCase()
@@ -1581,7 +1576,30 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           _ => 'image/jpeg',
         };
 
-        messageText = '__M8_IMAGE_BASE64__:$contentType:$base64Image';
+        final uploadResponse = await http.post(
+          Uri.parse('$apiBase/api/upload'),
+          headers: {
+            'Content-Type': contentType,
+            'Authorization': 'Bearer ${widget.token}',
+          },
+          body: bytes,
+        );
+
+        final uploadData = jsonDecode(uploadResponse.body);
+
+        if (uploadResponse.statusCode != 201 || uploadData['success'] != true) {
+          throw Exception(
+            uploadData['error']?.toString() ?? 'Gagal mengupload foto ke R2.',
+          );
+        }
+
+        final imageUrl = uploadData['url']?.toString();
+
+        if (imageUrl == null || imageUrl.isEmpty) {
+          throw Exception('URL foto dari R2 tidak ditemukan.');
+        }
+
+        messageText = '__M8_IMAGE_URL__:$imageUrl';
       }
 
       final optimistic = <String, dynamic>{
@@ -1844,7 +1862,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               : Alignment.centerLeft,
                           child: GestureDetector(
                             onLongPress:
-                                mine && !text.startsWith("__M8_IMAGE_BASE64__:")
+                                mine &&
+                                    !text.startsWith("__M8_IMAGE_BASE64__:") &&
+                                    !text.startsWith("__M8_IMAGE_URL__:")
                                 ? () => editMessage(msg)
                                 : null,
                             child: Container(
@@ -1869,7 +1889,33 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  if (text.startsWith("__M8_IMAGE_BASE64__:"))
+                                  if (text.startsWith("__M8_IMAGE_URL__:"))
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.network(
+                                        text.substring(
+                                          "__M8_IMAGE_URL__:".length,
+                                        ),
+                                        width: 220,
+                                        height: 220,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return const SizedBox(
+                                                width: 220,
+                                                height: 120,
+                                                child: Center(
+                                                  child: Icon(
+                                                    Icons.broken_image_rounded,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                      ),
+                                    )
+                                  else if (text.startsWith(
+                                    "__M8_IMAGE_BASE64__:",
+                                  ))
                                     Builder(
                                       builder: (context) {
                                         try {
