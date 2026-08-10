@@ -3179,72 +3179,205 @@ class ProfilePage extends StatelessWidget {
     final pin = user['m8_pin']?.toString() ?? '';
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 30),
       children: [
-        const SizedBox(height: 24),
+        const SizedBox(height: 8),
 
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const CircleAvatar(
-              radius: 48,
-              backgroundColor: m8CreamLight,
-              child: Icon(Icons.person, size: 52, color: m8Gold),
-            ),
+        // PROFILE HEADER
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
+          decoration: BoxDecoration(
+            color: m8Navy2,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: m8Gold, width: 1),
+            boxShadow: const [
+              BoxShadow(
+                blurRadius: 18,
+                offset: Offset(0, 8),
+                color: Color(0x22000000),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: m8Gold, width: 2),
+                ),
+                child: const CircleAvatar(
+                  radius: 52,
+                  backgroundColor: m8CreamLight,
+                  child: Icon(Icons.person_rounded, size: 58, color: m8Gold),
+                ),
+              ),
 
-            const SizedBox(width: 20),
+              const SizedBox(height: 15),
 
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Text(
+                name,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.3,
+                  color: Colors.white,
+                ),
+              ),
+
+              const SizedBox(height: 7),
+
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF172033),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: m8GoldLight,
+                      shape: BoxShape.circle,
                     ),
                   ),
-
-                  const SizedBox(height: 7),
-
-                  Text(
-                    pin,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF172033),
+                  const SizedBox(width: 7),
+                  const Text(
+                    'Online',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: m8GoldLight,
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 18),
 
-        const Center(
-          child: Text(
-            'Status pengguna',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF172033),
+        // M8 PIN
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          decoration: BoxDecoration(
+            color: m8CreamLight,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: m8Gold, width: 0.8),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: m8Navy2,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: const Icon(
+                  Icons.key_rounded,
+                  color: m8GoldLight,
+                  size: 22,
+                ),
+              ),
+
+              const SizedBox(width: 13),
+
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'M8 PIN',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: m8TextMuted,
+                      ),
+                    ),
+                    SizedBox(height: 3),
+                    Text(
+                      'PIN identitas akun',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: m8Text,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Text(
+                pin,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                  color: m8Navy2,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        // EDIT PROFILE
+        SizedBox(
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: null,
+            icon: const Icon(Icons.edit_rounded),
+            label: const Text(
+              'Edit Profil',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: m8Navy2,
+              disabledForegroundColor: m8TextMuted,
+              side: const BorderSide(color: m8Gold, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 24),
 
-        const Center(
+        const Padding(
+          padding: EdgeInsets.only(left: 4, bottom: 9),
           child: Text(
-            'Online',
+            'Akun',
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: m8Gold,
+              fontWeight: FontWeight.w900,
+              color: m8Navy2,
+            ),
+          ),
+        ),
+
+        // LOGOUT
+        Container(
+          decoration: BoxDecoration(
+            color: m8CreamLight,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2D9C5)),
+          ),
+          child: ListTile(
+            onTap: onLogout,
+            leading: const Icon(Icons.logout_rounded, color: m8Gold),
+            title: const Text(
+              'Keluar',
+              style: TextStyle(fontWeight: FontWeight.w800, color: m8Text),
+            ),
+            subtitle: const Text(
+              'Keluar dari akun M8',
+              style: TextStyle(fontSize: 12, color: m8TextMuted),
+            ),
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: m8TextMuted,
             ),
           ),
         ),
