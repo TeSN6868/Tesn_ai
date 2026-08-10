@@ -2297,31 +2297,31 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       ),
                     ),
                     const SizedBox(width: 5),
-                    IconButton.filled(
-                      TextButton(
-                        onPressed: sending ? null : sendHI,
-                        style: TextButton.styleFrom(
-                          foregroundColor: m8Navy2,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 11,
-                            vertical: 9,
-                          ),
-                          minimumSize: const Size(0, 40),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(17),
-                            side: const BorderSide(color: m8Gold, width: 1),
-                          ),
+                    TextButton(
+                      onPressed: sending ? null : sendHI,
+                      style: TextButton.styleFrom(
+                        foregroundColor: m8Navy2,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
+                          vertical: 9,
                         ),
-                        child: const Text(
-                          "HI",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.8,
-                          ),
+                        minimumSize: const Size(0, 40),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(17),
+                          side: const BorderSide(color: m8Gold, width: 1),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      child: const Text(
+                        "HI",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton.filled(
                       onPressed: sending ? null : sendMessage,
                       style: IconButton.styleFrom(
                         backgroundColor: m8Gold,
