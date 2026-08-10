@@ -2425,22 +2425,26 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        IconButton.filled(
-                          onPressed: sending ? null : sendMessage,
-                          style: IconButton.styleFrom(
-                            backgroundColor: m8Gold,
-                            foregroundColor: Colors.white,
+                        SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: IconButton.filled(
+                            onPressed: sending ? null : sendMessage,
+                            style: IconButton.styleFrom(
+                              backgroundColor: m8Gold,
+                              foregroundColor: Colors.white,
+                            ),
+                            icon: sending
+                                ? const SizedBox(
+                                    width: 19,
+                                    height: 19,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.send_rounded, size: 20),
                           ),
-                          icon: sending
-                              ? const SizedBox(
-                                  width: 19,
-                                  height: 19,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.send_rounded, size: 20),
                         ),
                       ],
                     ),
