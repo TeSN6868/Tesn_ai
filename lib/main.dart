@@ -1977,41 +1977,106 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                             )
                                             .trim();
 
-                                        return ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          child: Image.network(
-                                            imageUrl,
-                                            width: 220,
-                                            height: 220,
-                                            fit: BoxFit.cover,
-                                            loadingBuilder:
-                                                (context, child, progress) {
-                                                  if (progress == null)
-                                                    return child;
-                                                  return const SizedBox(
-                                                    width: 220,
-                                                    height: 220,
-                                                    child: Center(
-                                                      child:
-                                                          CircularProgressIndicator(),
+                                        return GestureDetector(
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              barrierColor: Colors.black87,
+                                              builder: (_) {
+                                                return Scaffold(
+                                                  backgroundColor: Colors.black,
+                                                  appBar: AppBar(
+                                                    backgroundColor:
+                                                        Colors.transparent,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    elevation: 0,
+                                                  ),
+                                                  body: Center(
+                                                    child: InteractiveViewer(
+                                                      minScale: 1.0,
+                                                      maxScale: 4.0,
+                                                      child: Image.network(
+                                                        imageUrl,
+                                                        fit: BoxFit.contain,
+                                                        loadingBuilder:
+                                                            (
+                                                              context,
+                                                              child,
+                                                              progress,
+                                                            ) {
+                                                              if (progress ==
+                                                                  null) {
+                                                                return child;
+                                                              }
+                                                              return const SizedBox(
+                                                                width: 42,
+                                                                height: 42,
+                                                                child: CircularProgressIndicator(
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                              );
+                                                            },
+                                                        errorBuilder:
+                                                            (
+                                                              context,
+                                                              error,
+                                                              stackTrace,
+                                                            ) {
+                                                              return const Icon(
+                                                                Icons
+                                                                    .broken_image_rounded,
+                                                                color: Colors
+                                                                    .white,
+                                                                size: 56,
+                                                              );
+                                                            },
+                                                      ),
                                                     ),
-                                                  );
-                                                },
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return Container(
-                                                    width: 220,
-                                                    height: 120,
-                                                    alignment: Alignment.center,
-                                                    child: const Icon(
-                                                      Icons
-                                                          .broken_image_rounded,
-                                                      size: 36,
-                                                    ),
-                                                  );
-                                                },
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            child: Image.network(
+                                              imageUrl,
+                                              width: 220,
+                                              height: 220,
+                                              fit: BoxFit.cover,
+                                              loadingBuilder:
+                                                  (context, child, progress) {
+                                                    if (progress == null) {
+                                                      return child;
+                                                    }
+                                                    return const SizedBox(
+                                                      width: 220,
+                                                      height: 220,
+                                                      child: Center(
+                                                        child:
+                                                            CircularProgressIndicator(),
+                                                      ),
+                                                    );
+                                                  },
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return Container(
+                                                      width: 220,
+                                                      height: 120,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: const Icon(
+                                                        Icons
+                                                            .broken_image_rounded,
+                                                        size: 36,
+                                                      ),
+                                                    );
+                                                  },
+                                            ),
                                           ),
                                         );
                                       },
