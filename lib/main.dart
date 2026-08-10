@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:convert';
 import 'dart:math';
 
@@ -2188,203 +2189,260 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   color: m8CreamLight,
                   border: Border(top: BorderSide(color: m8Gold, width: 0.8)),
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.white,
-                          showDragHandle: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(24),
+                    if (pendingImage != null)
+                      Container(
+                        height: 82,
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 6),
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(14),
+                              child: Image.file(
+                                File(pendingImage!.path),
+                                width: 82,
+                                height: 82,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                          builder: (sheetContext) {
-                            Future<void> selectAttachment(String label) async {
-                              Navigator.pop(sheetContext);
-
-                              if (label == "Kamera" || label == "Galeri") {
-                                try {
-                                  final picker = ImagePicker();
-                                  final image = await picker.pickImage(
-                                    source: label == "Kamera"
-                                        ? ImageSource.camera
-                                        : ImageSource.gallery,
-                                    imageQuality: 85,
-                                  );
-
-                                  if (image == null || !context.mounted) return;
-
+                            Positioned(
+                              top: 4,
+                              left: 58,
+                              child: GestureDetector(
+                                onTap: () {
                                   setState(() {
-                                    pendingImage = image;
+                                    pendingImage = null;
                                   });
-                                } catch (e) {
-                                  if (!context.mounted) return;
+                                },
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: const BoxDecoration(
+                                    color: m8Navy2,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close_rounded,
+                                    size: 15,
+                                    color: m8CreamLight,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.white,
+                              showDragHandle: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(24),
+                                ),
+                              ),
+                              builder: (sheetContext) {
+                                Future<void> selectAttachment(
+                                  String label,
+                                ) async {
+                                  Navigator.pop(sheetContext);
+
+                                  if (label == "Kamera" || label == "Galeri") {
+                                    try {
+                                      final picker = ImagePicker();
+                                      final image = await picker.pickImage(
+                                        source: label == "Kamera"
+                                            ? ImageSource.camera
+                                            : ImageSource.gallery,
+                                        imageQuality: 85,
+                                      );
+
+                                      if (image == null || !context.mounted)
+                                        return;
+
+                                      setState(() {
+                                        pendingImage = image;
+                                      });
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            label == "Kamera"
+                                                ? "Gagal membuka kamera: $e"
+                                                : "Gagal memilih foto: $e",
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return;
+                                  }
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        label == "Kamera"
-                                            ? "Gagal membuka kamera: $e"
-                                            : "Gagal memilih foto: $e",
+                                        "$label — fitur M8 akan kita aktifkan berikutnya.",
                                       ),
+                                      duration: const Duration(seconds: 2),
                                     ),
                                   );
                                 }
-                                return;
-                              }
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "$label — fitur M8 akan kita aktifkan berikutnya.",
-                                  ),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            }
-
-                            return SafeArea(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  18,
-                                  4,
-                                  18,
-                                  24,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        "Kirim ke M8",
-                                        style: TextStyle(
-                                          fontSize: 19,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFF172033),
-                                        ),
-                                      ),
+                                return SafeArea(
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      18,
+                                      4,
+                                      18,
+                                      24,
                                     ),
-                                    const SizedBox(height: 18),
-                                    GridView.count(
-                                      shrinkWrap: true,
-                                      crossAxisCount: 4,
-                                      mainAxisSpacing: 18,
-                                      crossAxisSpacing: 12,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        _AttachmentItem(
-                                          icon: Icons.camera_alt_rounded,
-                                          label: "Kamera",
-                                          onTap: () =>
-                                              selectAttachment("Kamera"),
+                                        const Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            "Kirim ke M8",
+                                            style: TextStyle(
+                                              fontSize: 19,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF172033),
+                                            ),
+                                          ),
                                         ),
-                                        _AttachmentItem(
-                                          icon: Icons.photo_library_rounded,
-                                          label: "Galeri",
-                                          onTap: () =>
-                                              selectAttachment("Galeri"),
-                                        ),
-                                        _AttachmentItem(
-                                          icon: Icons.insert_drive_file_rounded,
-                                          label: "Dokumen",
-                                          onTap: () =>
-                                              selectAttachment("Dokumen"),
-                                        ),
-                                        _AttachmentItem(
-                                          icon: Icons.location_on_rounded,
-                                          label: "Lokasi",
-                                          onTap: () =>
-                                              selectAttachment("Lokasi"),
-                                        ),
-                                        _AttachmentItem(
-                                          icon: Icons.person_rounded,
-                                          label: "Kontak M8",
-                                          onTap: () =>
-                                              selectAttachment("Kontak M8"),
+                                        const SizedBox(height: 18),
+                                        GridView.count(
+                                          shrinkWrap: true,
+                                          crossAxisCount: 4,
+                                          mainAxisSpacing: 18,
+                                          crossAxisSpacing: 12,
+                                          children: [
+                                            _AttachmentItem(
+                                              icon: Icons.camera_alt_rounded,
+                                              label: "Kamera",
+                                              onTap: () =>
+                                                  selectAttachment("Kamera"),
+                                            ),
+                                            _AttachmentItem(
+                                              icon: Icons.photo_library_rounded,
+                                              label: "Galeri",
+                                              onTap: () =>
+                                                  selectAttachment("Galeri"),
+                                            ),
+                                            _AttachmentItem(
+                                              icon: Icons
+                                                  .insert_drive_file_rounded,
+                                              label: "Dokumen",
+                                              onTap: () =>
+                                                  selectAttachment("Dokumen"),
+                                            ),
+                                            _AttachmentItem(
+                                              icon: Icons.location_on_rounded,
+                                              label: "Lokasi",
+                                              onTap: () =>
+                                                  selectAttachment("Lokasi"),
+                                            ),
+                                            _AttachmentItem(
+                                              icon: Icons.person_rounded,
+                                              label: "Kontak M8",
+                                              onTap: () =>
+                                                  selectAttachment("Kontak M8"),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                              ),
+                                  ),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                      icon: const Icon(Icons.add_circle_outline, color: m8Gold),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: controller,
-                        onChanged: (_) => handleTyping(),
-                        minLines: 1,
-                        maxLines: 5,
-                        textInputAction: TextInputAction.newline,
-                        style: const TextStyle(
-                          color: Color(0xFF172033),
-                          fontSize: 15,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: "Tulis pesan...",
-                          hintStyle: TextStyle(color: m8TextMuted),
-                          filled: true,
-                          fillColor: m8Cream,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 15,
-                            vertical: 10,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(19),
-                            borderSide: BorderSide.none,
+                          icon: const Icon(
+                            Icons.add_circle_outline,
+                            color: m8Gold,
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    TextButton(
-                      onPressed: sending ? null : sendHI,
-                      style: TextButton.styleFrom(
-                        foregroundColor: m8Navy2,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 11,
-                          vertical: 9,
-                        ),
-                        minimumSize: const Size(0, 40),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(17),
-                          side: const BorderSide(color: m8Gold, width: 1),
-                        ),
-                      ),
-                      child: const Text(
-                        "Hi !",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    IconButton.filled(
-                      onPressed: sending ? null : sendMessage,
-                      style: IconButton.styleFrom(
-                        backgroundColor: m8Gold,
-                        foregroundColor: Colors.white,
-                      ),
-                      icon: sending
-                          ? const SizedBox(
-                              width: 19,
-                              height: 19,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            onChanged: (_) => handleTyping(),
+                            minLines: 1,
+                            maxLines: 5,
+                            textInputAction: TextInputAction.newline,
+                            style: const TextStyle(
+                              color: Color(0xFF172033),
+                              fontSize: 15,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: "Tulis pesan...",
+                              hintStyle: TextStyle(color: m8TextMuted),
+                              filled: true,
+                              fillColor: m8Cream,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                                vertical: 10,
                               ),
-                            )
-                          : const Icon(Icons.send_rounded, size: 20),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(19),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        TextButton(
+                          onPressed: sending ? null : sendHI,
+                          style: TextButton.styleFrom(
+                            foregroundColor: m8Navy2,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 11,
+                              vertical: 9,
+                            ),
+                            minimumSize: const Size(0, 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(17),
+                              side: const BorderSide(color: m8Gold, width: 1),
+                            ),
+                          ),
+                          child: const Text(
+                            "Hi !",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton.filled(
+                          onPressed: sending ? null : sendMessage,
+                          style: IconButton.styleFrom(
+                            backgroundColor: m8Gold,
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: sending
+                              ? const SizedBox(
+                                  width: 19,
+                                  height: 19,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.send_rounded, size: 20),
+                        ),
+                      ],
                     ),
                   ],
                 ),
