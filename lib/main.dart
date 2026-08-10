@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'm8_call_service.dart';
 import 'package:http/http.dart' as http;
 
@@ -3167,16 +3168,42 @@ class CallsPage extends StatelessWidget {
 // PROFILE
 // ============================================================
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   final Map<String, dynamic> user;
   final VoidCallback onLogout;
 
   const ProfilePage({super.key, required this.user, required this.onLogout});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final AudioPlayer _heyPlayer = AudioPlayer();
+
+  Future<void> _testHeySound() async {
+    try {
+      await _heyPlayer.stop();
+      await _heyPlayer.play(AssetSource('sounds/m8_hey.wav'));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Nada HEY gagal diputar: $e')));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _heyPlayer.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final name = user['name']?.toString() ?? 'M8 User';
-    final pin = user['m8_pin']?.toString() ?? '';
+    final name = widget.user['name']?.toString() ?? 'M8 User';
+    final pin = widget.user['m8_pin']?.toString() ?? '';
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 30),
@@ -3345,6 +3372,29 @@ class ProfilePage extends StatelessWidget {
 
         const SizedBox(height: 24),
 
+        const SizedBox(height: 18),
+
+        SizedBox(
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: _testHeySound,
+            icon: const Icon(Icons.volume_up_rounded),
+            label: const Text(
+              'Tes Nada HEY',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: m8Navy2,
+              side: const BorderSide(color: m8Gold, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
         const Padding(
           padding: EdgeInsets.only(left: 4, bottom: 9),
           child: Text(
@@ -3365,7 +3415,7 @@ class ProfilePage extends StatelessWidget {
             border: Border.all(color: const Color(0xFFE2D9C5)),
           ),
           child: ListTile(
-            onTap: onLogout,
+            onTap: widget.onLogout,
             leading: const Icon(Icons.logout_rounded, color: m8Gold),
             title: const Text(
               'Keluar',
