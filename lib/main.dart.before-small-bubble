@@ -1909,7 +1909,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                     MediaQuery.of(context).size.width * .78,
                               ),
                               margin: const EdgeInsets.only(bottom: 7),
-                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                              padding: const EdgeInsets.fromLTRB(13, 9, 11, 6),
                               decoration: BoxDecoration(
                                 color: mine
                                     ? const Color(0xFFDCE9F4)
