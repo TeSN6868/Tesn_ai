@@ -2400,7 +2400,7 @@ class _M8StoryRail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: m8Cream,
-      padding: const EdgeInsets.fromLTRB(12, 10, 0, 12),
+      padding: const EdgeInsets.fromLTRB(12, 10, 0, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2417,7 +2417,7 @@ class _M8StoryRail extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 92,
+            height: 82,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
