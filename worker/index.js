@@ -16,6 +16,109 @@ export default {
     }
 
     try {
+      // ============================================================
+      // M8 R2 MEDIA UPLOAD
+      // ============================================================
+      if (url.pathname === "/api/upload" && request.method === "POST") {
+        if (!env.MEDIA) {
+          return json({
+            success: false,
+            error: "Binding R2 MEDIA belum tersedia.",
+          }, 500);
+        }
+
+        const contentType =
+          request.headers.get("content-type") || "";
+
+        if (!contentType.startsWith("image/")) {
+          return json({
+            success: false,
+            error: "File harus berupa gambar.",
+          }, 400);
+        }
+
+        const contentLength =
+          Number(request.headers.get("content-length") || 0);
+
+        if (contentLength > 5 * 1024 * 1024) {
+          return json({
+            success: false,
+            error: "Ukuran foto maksimal 5 MB.",
+          }, 413);
+        }
+
+        const ext = contentType === "image/png"
+          ? "png"
+          : contentType === "image/webp"
+              ? "webp"
+              : contentType === "image/gif"
+                  ? "gif"
+                  : "jpg";
+
+        const key =
+          `messages/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+
+        await env.MEDIA.put(key, request.body, {
+          httpMetadata: {
+            contentType,
+            cacheControl: "public, max-age=31536000, immutable",
+          },
+        });
+
+        return json({
+          success: true,
+          key,
+          url: `${url.origin}/api/media/${encodeURIComponent(key)}`,
+        }, 201);
+      }
+
+      // ============================================================
+      // M8 R2 MEDIA GET
+      // ============================================================
+      if (
+        url.pathname.startsWith("/api/media/") &&
+        request.method === "GET"
+      ) {
+        if (!env.MEDIA) {
+          return json({
+            success: false,
+            error: "Binding R2 MEDIA belum tersedia.",
+          }, 500);
+        }
+
+        const key = decodeURIComponent(
+          url.pathname.substring("/api/media/".length)
+        );
+
+        if (!key || key.includes("..")) {
+          return json({
+            success: false,
+            error: "Media tidak valid.",
+          }, 400);
+        }
+
+        const object = await env.MEDIA.get(key);
+
+        if (!object) {
+          return json({
+            success: false,
+            error: "Foto tidak ditemukan.",
+          }, 404);
+        }
+
+        const headers = new Headers(corsHeaders);
+        object.writeHttpMetadata(headers);
+        headers.set("etag", object.httpEtag);
+        headers.set(
+          "Cache-Control",
+          "public, max-age=31536000, immutable"
+        );
+
+        return new Response(object.body, {
+          headers,
+        });
+      }
+
       // HEALTH CHECK
       if (url.pathname === "/" && request.method === "GET") {
         return json({
