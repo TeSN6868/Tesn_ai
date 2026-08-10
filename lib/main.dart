@@ -2032,7 +2032,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           fontSize: 15,
                                           height: 1.3,
                                           color: mine
-                                              ? m8CreamLight
+                                              ? m8Navy2
                                               : const Color(0xFF0F1B2E),
                                         ),
                                       ),
