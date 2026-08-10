@@ -50,3 +50,10 @@ build/
 
 backend/.env
 backend/node_modules/
+
+# Build artifacts
+M8-debug-apk/
+M8-release-apk/
+app-release.apk
+app-debug.apk
+*.apk
