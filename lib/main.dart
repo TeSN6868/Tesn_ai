@@ -1120,86 +1120,128 @@ class _ChatsPageState extends State<ChatsPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        if (loading)
-          const Center(child: CircularProgressIndicator())
-        else if (chats.isEmpty)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.forum_outlined, size: 70, color: m8Gold),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Belum ada percakapan',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Mulai percakapan pertama kamu di M8.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: m8TextMuted),
-                  ),
-                ],
-              ),
-            ),
-          )
-        else
-          RefreshIndicator(
-            onRefresh: loadChats,
-            child: ListView.builder(
-              padding: const EdgeInsets.only(top: 8),
-              itemCount: chats.length,
-              itemBuilder: (context, index) {
-                final chat = chats[index];
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: _M8StoryRail(
+            onMyStoryTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const StoryPage()),
+              );
+            },
+          ),
+        ),
 
-                final p1 = chat['participant_1_pin']?.toString() ?? '';
+        Positioned(
+          top: 112,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            ignoring: false,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: [
+                      if (loading)
+                        const Center(child: CircularProgressIndicator())
+                      else if (chats.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(30),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.forum_outlined,
+                                  size: 70,
+                                  color: m8Gold,
+                                ),
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Belum ada percakapan',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Mulai percakapan pertama kamu di M8.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: m8TextMuted),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        RefreshIndicator(
+                          onRefresh: loadChats,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.only(top: 8),
+                            itemCount: chats.length,
+                            itemBuilder: (context, index) {
+                              final chat = chats[index];
 
-                final p2 = chat['participant_2_pin']?.toString() ?? '';
+                              final p1 =
+                                  chat['participant_1_pin']?.toString() ?? '';
 
-                final other = p1 == widget.myPin ? p2 : p1;
+                              final p2 =
+                                  chat['participant_2_pin']?.toString() ?? '';
 
-                return ListTile(
-                  leading: CircleAvatar(
-                    radius: 27,
-                    child: Text(
-                      other.isNotEmpty
-                          ? other.substring(
-                              0,
-                              other.length > 2 ? 2 : other.length,
-                            )
-                          : '?',
-                    ),
-                  ),
-                  title: Text(
-                    other,
-                    style: const TextStyle(
-                      color: Color(0xFF172033),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'Percakapan M8',
-                    style: TextStyle(color: Color(0xFF172033)),
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChatRoomPage(
-                          token: widget.token,
-                          myPin: widget.myPin,
-                          chat: chat,
+                              final other = p1 == widget.myPin ? p2 : p1;
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  radius: 27,
+                                  child: Text(
+                                    other.isNotEmpty
+                                        ? other.substring(
+                                            0,
+                                            other.length > 2 ? 2 : other.length,
+                                          )
+                                        : '?',
+                                  ),
+                                ),
+                                title: Text(
+                                  other,
+                                  style: const TextStyle(
+                                    color: Color(0xFF172033),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: const Text(
+                                  'Percakapan M8',
+                                  style: TextStyle(color: Color(0xFF172033)),
+                                ),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ChatRoomPage(
+                                        token: widget.token,
+                                        myPin: widget.myPin,
+                                        chat: chat,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
 
         Positioned(
           right: 20,
@@ -2341,6 +2383,352 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _M8StoryRail extends StatelessWidget {
+  final VoidCallback onMyStoryTap;
+
+  const _M8StoryRail({required this.onMyStoryTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: m8Cream,
+      padding: const EdgeInsets.fromLTRB(12, 10, 0, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              'M8 STORY',
+              style: TextStyle(
+                color: m8Navy2,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.3,
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 92,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _M8StoryMiniCard(
+                  title: 'Cerita Saya',
+                  subtitle: 'Bagikan',
+                  isMine: true,
+                  onTap: onMyStoryTap,
+                ),
+                const SizedBox(width: 8),
+                const _M8StoryMiniCard(title: 'M8', subtitle: 'Baru saja'),
+                const SizedBox(width: 8),
+                const _M8StoryMiniCard(title: 'Teman M8', subtitle: '12 menit'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _M8StoryMiniCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool isMine;
+  final VoidCallback? onTap;
+
+  const _M8StoryMiniCard({
+    required this.title,
+    required this.subtitle,
+    this.isMine = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        width: 128,
+        padding: const EdgeInsets.fromLTRB(10, 9, 10, 8),
+        decoration: BoxDecoration(
+          color: isMine ? m8Navy2 : m8CreamLight,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: m8Gold.withValues(alpha: 0.7), width: 0.8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: isMine ? m8Gold : m8Navy2,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Icon(
+                    isMine ? Icons.add_rounded : Icons.auto_awesome_rounded,
+                    size: 17,
+                    color: isMine ? m8Navy2 : m8GoldLight,
+                  ),
+                ),
+                const Spacer(),
+                if (isMine)
+                  const Icon(Icons.edit_rounded, size: 14, color: m8GoldLight),
+              ],
+            ),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isMine ? m8CreamLight : m8Navy2,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isMine ? m8GoldLight : m8TextMuted,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class StoryPage extends StatelessWidget {
+  const StoryPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8Navy2,
+      appBar: AppBar(
+        backgroundColor: m8Navy2,
+        foregroundColor: m8CreamLight,
+        elevation: 0,
+        title: const Text(
+          "M8 Story",
+          style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.3),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.add_rounded),
+            color: m8GoldLight,
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        children: [
+          const Text(
+            "CERITA SAYA",
+            style: TextStyle(
+              color: m8GoldLight,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _M8MyStoryCard(onTap: () {}),
+          const SizedBox(height: 24),
+          const Text(
+            "CERITA TERBARU",
+            style: TextStyle(
+              color: m8GoldLight,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _M8StoryCard(
+            name: "M8",
+            time: "Baru saja",
+            text: "Selamat datang di M8 Story",
+            onTap: () {},
+          ),
+          const SizedBox(height: 10),
+          _M8StoryCard(
+            name: "Teman M8",
+            time: "12 menit",
+            text: "Cerita baru untuk kamu",
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _M8MyStoryCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _M8MyStoryCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: m8CreamLight,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: m8Gold, width: 0.8),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: m8Navy2,
+                shape: BoxShape.circle,
+                border: Border.all(color: m8Gold, width: 2),
+              ),
+              child: const Icon(
+                Icons.add_rounded,
+                color: m8GoldLight,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Cerita Saya",
+                    style: TextStyle(
+                      color: m8Navy2,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    "Bagikan sesuatu ke teman M8",
+                    style: TextStyle(color: m8TextMuted, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: m8Gold),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _M8StoryCard extends StatelessWidget {
+  final String name;
+  final String time;
+  final String text;
+  final VoidCallback onTap;
+
+  const _M8StoryCard({
+    required this.name,
+    required this.time,
+    required this.text,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: m8CreamLight,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: m8Gold.withValues(alpha: 0.55), width: 0.7),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: m8Navy2,
+                shape: BoxShape.circle,
+                border: Border.all(color: m8Gold, width: 1.5),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                name.substring(0, 1).toUpperCase(),
+                style: const TextStyle(
+                  color: m8CreamLight,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: m8Navy2,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF536273),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    time,
+                    style: const TextStyle(
+                      color: m8Gold,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: m8Gold,
             ),
           ],
         ),
