@@ -30,14 +30,27 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
-      - name: Flutter pub get
+      - name: Get dependencies
         run: flutter pub get
+
+      - name: Analyze M8
+        run: dart analyze lib/main.dart
+        continue-on-error: true
 
       - name: Build Debug APK
         run: flutter build apk --debug
 
-      - name: Upload APK
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: M8-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: M8-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
