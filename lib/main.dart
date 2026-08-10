@@ -10,14 +10,14 @@ import 'package:http/http.dart' as http;
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
 const m8Navy = Color(0xFF071A2E);
-const m8Navy2 = Color(0xFF0D223D);
+m8Navy2 = Color(0xFF0D223D);
 const m8Navy3 = Color(0xFF14284D);
 
 const m8Gold = Color(0xFFC9A227);
-const m8GoldLight = Color(0xFFF2D078);
+m8GoldLight = Color(0xFFF2D078);
 
-const m8Cream = Color(0xFFF7E7B6);
-const m8CreamLight = Color(0xFFFFF8EA);
+m8Cream = Color(0xFFF7E7B6);
+m8CreamLight = Color(0xFFFFF8EA);
 const m8Text = Color(0xFF172033);
 
 void main() {
@@ -1886,8 +1886,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             padding: const EdgeInsets.fromLTRB(13, 9, 11, 6),
                             decoration: BoxDecoration(
                               color: mine
-                                  ? const m8Navy2
-                                  : const m8CreamLight,
+                                  ? m8Navy2
+                                  : m8CreamLight,
                               borderRadius: BorderRadius.only(
                                 topLeft: const Radius.circular(5),
                                 topRight: const Radius.circular(16),
@@ -1939,9 +1939,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                     height: 120,
                                                     alignment: Alignment.center,
                                                     color: mine
-                                                        ? const Color(
-                                                            m8Navy2,
-                                                          )
+                                                        ? m8Navy2
                                                         : const Color(
                                                             0xFFFFF8E8,
                                                           ),
@@ -1989,7 +1987,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         fontSize: 15,
                                         height: 1.3,
                                         color: mine
-                                            ? const m8CreamLight
+                                            ? m8CreamLight
                                             : const Color(0xFF071A2E),
                                       ),
                                     ),
@@ -2003,7 +2001,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       style: TextStyle(
                                         fontSize: 9,
                                         color: mine
-                                            ? const m8GoldLight
+                                            ? m8GoldLight
                                             : const Color(0xFF536273),
                                       ),
                                     ),
@@ -2015,8 +2013,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           fontSize: 10,
                                           fontWeight: FontWeight.w800,
                                           color: status == "read"
-                                              ? const m8CreamLight
-                                              : const m8GoldLight,
+                                              ? m8CreamLight
+                                              : m8GoldLight,
                                         ),
                                       ),
                                     ],
@@ -2181,9 +2179,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       ),
                       decoration: InputDecoration(
                         hintText: "Tulis pesan...",
-                        hintStyle: const TextStyle(color: m8Text.withValues(alpha: .62)),
+                        hintStyle: TextStyle(color: m8Text.withValues(alpha: .62)),
                         filled: true,
-                        fillColor: const m8Cream,
+                        fillColor: m8Cream,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 15,
                           vertical: 10,
@@ -2246,7 +2244,7 @@ class _AttachmentItem extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: const m8CreamLight,
+              color: m8CreamLight,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, color: m8Gold, size: 25),
@@ -2382,7 +2380,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
             Text(
               'M8 PIN: ${widget.otherPin}',
-              style: const TextStyle(color: m8Text.withValues(alpha: .62), fontSize: 13),
+              style: TextStyle(color: m8Text.withValues(alpha: .62), fontSize: 13),
             ),
 
             const SizedBox(height: 18),
