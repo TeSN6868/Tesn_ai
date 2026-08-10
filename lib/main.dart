@@ -1722,10 +1722,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ),
                   Text(
                     "M8 PIN: $other",
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: m8TextMuted,
-                    ),
+                    style: const TextStyle(fontSize: 11, color: m8TextMuted),
                   ),
                   const Text(
                     "Online",
@@ -1808,383 +1805,400 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       body: Container(
         color: m8Cream,
         child: Column(
-        children: [
-          Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator(color: m8Gold))
-                : messages.isEmpty
-                ? const Center(
-                    child: Text(
-                      "Mulai percakapan di M8",
-                      style: TextStyle(color: m8TextMuted),
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final msg = messages[index];
-                      final sender = msg["sender_pin"]?.toString() ?? "";
-                      final text = msg["message"]?.toString() ?? "";
-                      final mine = sender == widget.myPin;
-                      final status =
-                          msg["status"]?.toString().toLowerCase() ?? "";
-                      final statusLabel = status == "read"
-                          ? "R"
-                          : status == "delivered"
-                          ? "D"
-                          : "✓";
-                      final rawTime = msg["created_at"]?.toString() ?? "";
-                      final time = rawTime.length >= 16
-                          ? rawTime.substring(11, 16)
-                          : rawTime;
+          children: [
+            Expanded(
+              child: loading
+                  ? const Center(
+                      child: CircularProgressIndicator(color: m8Gold),
+                    )
+                  : messages.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "Mulai percakapan di M8",
+                        style: TextStyle(color: m8TextMuted),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final msg = messages[index];
+                        final sender = msg["sender_pin"]?.toString() ?? "";
+                        final text = msg["message"]?.toString() ?? "";
+                        final mine = sender == widget.myPin;
+                        final status =
+                            msg["status"]?.toString().toLowerCase() ?? "";
+                        final statusLabel = status == "read"
+                            ? "R"
+                            : status == "delivered"
+                            ? "D"
+                            : "✓";
+                        final rawTime = msg["created_at"]?.toString() ?? "";
+                        final time = rawTime.length >= 16
+                            ? rawTime.substring(11, 16)
+                            : rawTime;
 
-                      return Align(
-                        alignment: mine
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: GestureDetector(
-                          onLongPress:
-                              mine && !text.startsWith("__M8_IMAGE_BASE64__:")
-                              ? () => editMessage(msg)
-                              : null,
-                          child: Container(
-                            constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * .78,
-                            ),
-                            margin: const EdgeInsets.only(bottom: 7),
-                            padding: const EdgeInsets.fromLTRB(13, 9, 11, 6),
-                            decoration: BoxDecoration(
-                              color: mine
-                                  ? const Color(0xFFDCE9F4)
-                                  : m8CreamLight,
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(5),
-                                topRight: const Radius.circular(16),
-                                bottomLeft: Radius.circular(mine ? 16 : 5),
-                                bottomRight: Radius.circular(mine ? 5 : 16),
+                        return Align(
+                          alignment: mine
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: GestureDetector(
+                            onLongPress:
+                                mine && !text.startsWith("__M8_IMAGE_BASE64__:")
+                                ? () => editMessage(msg)
+                                : null,
+                            child: Container(
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    MediaQuery.of(context).size.width * .78,
                               ),
-                              border: Border.all(color: m8Gold, width: 0.8),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                if (text.startsWith("__M8_IMAGE_BASE64__:"))
-                                  Builder(
-                                    builder: (context) {
-                                      try {
-                                        final payload = text.substring(
-                                          "__M8_IMAGE_BASE64__:".length,
-                                        );
-
-                                        final separator = payload.indexOf(":");
-
-                                        if (separator <= 0) {
-                                          throw Exception(
-                                            "Format gambar invalid",
+                              margin: const EdgeInsets.only(bottom: 7),
+                              padding: const EdgeInsets.fromLTRB(13, 9, 11, 6),
+                              decoration: BoxDecoration(
+                                color: mine
+                                    ? const Color(0xFFDCE9F4)
+                                    : m8CreamLight,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: const Radius.circular(5),
+                                  topRight: const Radius.circular(16),
+                                  bottomLeft: Radius.circular(mine ? 16 : 5),
+                                  bottomRight: Radius.circular(mine ? 5 : 16),
+                                ),
+                                border: Border.all(color: m8Gold, width: 0.8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  if (text.startsWith("__M8_IMAGE_BASE64__:"))
+                                    Builder(
+                                      builder: (context) {
+                                        try {
+                                          final payload = text.substring(
+                                            "__M8_IMAGE_BASE64__:".length,
                                           );
-                                        }
 
-                                        final base64Data = payload
-                                            .substring(separator + 1)
-                                            .replaceAll(RegExp(r'\s+'), '');
+                                          final separator = payload.indexOf(
+                                            ":",
+                                          );
 
-                                        final imageBytes = base64Decode(base64Data);
+                                          if (separator <= 0) {
+                                            throw Exception(
+                                              "Format gambar invalid",
+                                            );
+                                          }
 
-                                        return ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          child: Image.memory(
-                                            imageBytes,
-                                            width: 220,
-                                            height: 220,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return Container(
-                                                    width: 220,
-                                                    height: 120,
-                                                    alignment: Alignment.center,
-                                                    color: mine
-                                                        ? m8Navy2
-                                                        : const Color(
-                                                            0xFFFFFFFF,
-                                                          ),
-                                                    child: const Icon(
-                                                      Icons
-                                                          .broken_image_rounded,
-                                                      size: 36,
-                                                    ),
-                                                  );
-                                                },
-                                          ),
-                                        );
-                                      } catch (e) {
-                                        return Container(
-                                          width: 220,
-                                          height: 120,
-                                          alignment: Alignment.center,
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: mine ? m8Gold : m8CreamLight,
+                                          final base64Data = payload
+                                              .substring(separator + 1)
+                                              .replaceAll(RegExp(r'\s+'), '');
+
+                                          final imageBytes = base64Decode(
+                                            base64Data,
+                                          );
+
+                                          return ClipRRect(
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
-                                          ),
-                                          child: Text(
-                                            "Gambar gagal dibaca\\n${e.toString()}",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: mine
-                                                  ? Colors.white
-                                                  : const Color(0xFF172033),
+                                            child: Image.memory(
+                                              imageBytes,
+                                              width: 220,
+                                              height: 220,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return Container(
+                                                      width: 220,
+                                                      height: 120,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      color: mine
+                                                          ? m8Navy2
+                                                          : const Color(
+                                                              0xFFFFFFFF,
+                                                            ),
+                                                      child: const Icon(
+                                                        Icons
+                                                            .broken_image_rounded,
+                                                        size: 36,
+                                                      ),
+                                                    );
+                                                  },
                                             ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  )
-                                else
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      text,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        height: 1.3,
-                                        color: mine
-                                            ? m8CreamLight
-                                            : const Color(0xFF0F1B2E),
-                                      ),
-                                    ),
-                                  ),
-                                const SizedBox(height: 3),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      time,
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        color: mine
-                                            ? m8GoldLight
-                                            : const Color(0xFF536273),
-                                      ),
-                                    ),
-                                    if (mine) ...[
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        statusLabel,
+                                          );
+                                        } catch (e) {
+                                          return Container(
+                                            width: 220,
+                                            height: 120,
+                                            alignment: Alignment.center,
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: mine
+                                                  ? m8Gold
+                                                  : m8CreamLight,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              "Gambar gagal dibaca\\n${e.toString()}",
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: mine
+                                                    ? Colors.white
+                                                    : const Color(0xFF172033),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    )
+                                  else
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        text,
                                         style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w800,
-                                          color: status == "read"
+                                          fontSize: 15,
+                                          height: 1.3,
+                                          color: mine
                                               ? m8CreamLight
-                                              : m8GoldLight,
+                                              : const Color(0xFF0F1B2E),
                                         ),
                                       ),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          if (otherTyping)
-            const Padding(
-              padding: EdgeInsets.only(left: 18, bottom: 6),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "sedang mengetik...",
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: m8TextMuted,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
-            ),
-          SafeArea(
-            top: false,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(7, 6, 7, 8),
-              decoration: const BoxDecoration(
-                color: m8CreamLight,
-                border: Border(top: BorderSide(color: m8Gold, width: 0.8)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: Colors.white,
-                        showDragHandle: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(24),
-                          ),
-                        ),
-                        builder: (sheetContext) {
-                          Future<void> selectAttachment(String label) async {
-                            Navigator.pop(sheetContext);
-
-                            if (label == "Galeri") {
-                              try {
-                                final picker = ImagePicker();
-                                final image = await picker.pickImage(
-                                  source: ImageSource.gallery,
-                                  imageQuality: 85,
-                                );
-
-                                if (image == null || !context.mounted) return;
-
-                                setState(() {
-                                  pendingImage = image;
-                                });
-                              } catch (e) {
-                                if (!context.mounted) return;
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Gagal memilih foto: $e"),
-                                  ),
-                                );
-                              }
-                              return;
-                            }
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "$label — fitur M8 akan kita aktifkan berikutnya.",
-                                ),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
-
-                          return SafeArea(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Kirim ke M8",
-                                      style: TextStyle(
-                                        fontSize: 19,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF172033),
-                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 18),
-                                  GridView.count(
-                                    shrinkWrap: true,
-                                    crossAxisCount: 4,
-                                    mainAxisSpacing: 18,
-                                    crossAxisSpacing: 12,
+                                  const SizedBox(height: 3),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      _AttachmentItem(
-                                        icon: Icons.camera_alt_rounded,
-                                        label: "Kamera",
-                                        onTap: () => selectAttachment("Kamera"),
+                                      Text(
+                                        time,
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          color: mine
+                                              ? m8GoldLight
+                                              : const Color(0xFF536273),
+                                        ),
                                       ),
-                                      _AttachmentItem(
-                                        icon: Icons.photo_library_rounded,
-                                        label: "Galeri",
-                                        onTap: () => selectAttachment("Galeri"),
-                                      ),
-                                      _AttachmentItem(
-                                        icon: Icons.insert_drive_file_rounded,
-                                        label: "Dokumen",
-                                        onTap: () =>
-                                            selectAttachment("Dokumen"),
-                                      ),
-                                      _AttachmentItem(
-                                        icon: Icons.location_on_rounded,
-                                        label: "Lokasi",
-                                        onTap: () => selectAttachment("Lokasi"),
-                                      ),
-                                      _AttachmentItem(
-                                        icon: Icons.person_rounded,
-                                        label: "Kontak M8",
-                                        onTap: () =>
-                                            selectAttachment("Kontak M8"),
-                                      ),
+                                      if (mine) ...[
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          statusLabel,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            color: status == "read"
+                                                ? m8CreamLight
+                                                : m8GoldLight,
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ],
                               ),
                             ),
-                          );
-                        },
-                      );
-                    },
-                    icon: const Icon(Icons.add_circle_outline, color: m8Gold),
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      onChanged: (_) => handleTyping(),
-                      minLines: 1,
-                      maxLines: 5,
-                      textInputAction: TextInputAction.newline,
-                      style: const TextStyle(
-                        color: Color(0xFF172033),
-                        fontSize: 15,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: "Tulis pesan...",
-                        hintStyle: TextStyle(color: m8TextMuted),
-                        filled: true,
-                        fillColor: m8Cream,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 10,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(19),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            if (otherTyping)
+              const Padding(
+                padding: EdgeInsets.only(left: 18, bottom: 6),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "sedang mengetik...",
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: m8TextMuted,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
-                  const SizedBox(width: 5),
-                  IconButton.filled(
-                    onPressed: sending ? null : sendMessage,
-                    style: IconButton.styleFrom(
-                      backgroundColor: m8Gold,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: sending
-                        ? const SizedBox(
-                            width: 19,
-                            height: 19,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                ),
+              ),
+            SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(7, 6, 7, 8),
+                decoration: const BoxDecoration(
+                  color: m8CreamLight,
+                  border: Border(top: BorderSide(color: m8Gold, width: 0.8)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.white,
+                          showDragHandle: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(24),
                             ),
-                          )
-                        : const Icon(Icons.send_rounded, size: 20),
-                  ),
-                ],
+                          ),
+                          builder: (sheetContext) {
+                            Future<void> selectAttachment(String label) async {
+                              Navigator.pop(sheetContext);
+
+                              if (label == "Galeri") {
+                                try {
+                                  final picker = ImagePicker();
+                                  final image = await picker.pickImage(
+                                    source: ImageSource.gallery,
+                                    imageQuality: 85,
+                                  );
+
+                                  if (image == null || !context.mounted) return;
+
+                                  setState(() {
+                                    pendingImage = image;
+                                  });
+                                } catch (e) {
+                                  if (!context.mounted) return;
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Gagal memilih foto: $e"),
+                                    ),
+                                  );
+                                }
+                                return;
+                              }
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "$label — fitur M8 akan kita aktifkan berikutnya.",
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+
+                            return SafeArea(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  18,
+                                  4,
+                                  18,
+                                  24,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        "Kirim ke M8",
+                                        style: TextStyle(
+                                          fontSize: 19,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF172033),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 18),
+                                    GridView.count(
+                                      shrinkWrap: true,
+                                      crossAxisCount: 4,
+                                      mainAxisSpacing: 18,
+                                      crossAxisSpacing: 12,
+                                      children: [
+                                        _AttachmentItem(
+                                          icon: Icons.camera_alt_rounded,
+                                          label: "Kamera",
+                                          onTap: () =>
+                                              selectAttachment("Kamera"),
+                                        ),
+                                        _AttachmentItem(
+                                          icon: Icons.photo_library_rounded,
+                                          label: "Galeri",
+                                          onTap: () =>
+                                              selectAttachment("Galeri"),
+                                        ),
+                                        _AttachmentItem(
+                                          icon: Icons.insert_drive_file_rounded,
+                                          label: "Dokumen",
+                                          onTap: () =>
+                                              selectAttachment("Dokumen"),
+                                        ),
+                                        _AttachmentItem(
+                                          icon: Icons.location_on_rounded,
+                                          label: "Lokasi",
+                                          onTap: () =>
+                                              selectAttachment("Lokasi"),
+                                        ),
+                                        _AttachmentItem(
+                                          icon: Icons.person_rounded,
+                                          label: "Kontak M8",
+                                          onTap: () =>
+                                              selectAttachment("Kontak M8"),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      icon: const Icon(Icons.add_circle_outline, color: m8Gold),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        onChanged: (_) => handleTyping(),
+                        minLines: 1,
+                        maxLines: 5,
+                        textInputAction: TextInputAction.newline,
+                        style: const TextStyle(
+                          color: Color(0xFF172033),
+                          fontSize: 15,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: "Tulis pesan...",
+                          hintStyle: TextStyle(color: m8TextMuted),
+                          filled: true,
+                          fillColor: m8Cream,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 15,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(19),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    IconButton.filled(
+                      onPressed: sending ? null : sendMessage,
+                      style: IconButton.styleFrom(
+                        backgroundColor: m8Gold,
+                        foregroundColor: Colors.white,
+                      ),
+                      icon: sending
+                          ? const SizedBox(
+                              width: 19,
+                              height: 19,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.send_rounded, size: 20),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -2416,8 +2430,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           ],
         ),
       ),
-    ),
-  );
+    );
   }
 }
 
