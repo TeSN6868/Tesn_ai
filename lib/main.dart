@@ -9,17 +9,17 @@ import 'package:http/http.dart' as http;
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
-const m8Navy = Color(0xFF071A2E);
-const m8Navy2 = Color(0xFF0D223D);
-const m8Navy3 = Color(0xFF14284D);
+const m8Navy = Color(0xFF243B53);
+const m8Navy2 = Color(0xFF1B3045);
+const m8Navy3 = Color(0xFF304A63);
 
-const m8Gold = Color(0xFFC9A227);
-const m8GoldLight = Color(0xFFF2D078);
+const m8Gold = Color(0xFFD8B86A);
+const m8GoldLight = Color(0xFFE8D39A);
 
-const m8Cream = Color(0xFFF7E7B6);
-const m8CreamLight = Color(0xFFFFF8EA);
-const m8Text = Color(0xFF172033);
-const m8TextMuted = Color(0x9E172033);
+const m8Cream = Color(0xFFF8F3E7);
+const m8CreamLight = Color(0xFFFBF7EA);
+const m8Text = Color(0xFF263238);
+const m8TextMuted = Color(0x8A263238);
 
 void main() {
   runApp(const M8App());
@@ -165,39 +165,6 @@ class _LoginPageState extends State<LoginPage> {
                 constraints: const BoxConstraints(maxWidth: 430),
                 child: Column(
                   children: [
-                    Container(
-                      width: 108,
-                      height: 108,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(32),
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [m8GoldLight, m8Gold],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 30,
-                            offset: Offset(0, 14),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          '8',
-                          style: TextStyle(
-                            fontSize: 72,
-                            height: .9,
-                            fontWeight: FontWeight.w900,
-                            color: darkBlue,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 22),
-
                     const Text(
                       'M8',
                       style: TextStyle(
@@ -1916,13 +1883,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           );
                                         }
 
-                                        final base64Data = payload.substring(
-                                          separator + 1,
-                                        );
+                                        final base64Data = payload
+                                            .substring(separator + 1)
+                                            .replaceAll(RegExp(r'\s+'), '');
 
-                                        final imageBytes = base64Decode(
-                                          base64Data,
-                                        );
+                                        final imageBytes = base64Decode(base64Data);
 
                                         return ClipRRect(
                                           borderRadius: BorderRadius.circular(
