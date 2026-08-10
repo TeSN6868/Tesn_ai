@@ -2206,11 +2206,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             Future<void> selectAttachment(String label) async {
                               Navigator.pop(sheetContext);
 
-                              if (label == "Galeri") {
+                              if (label == "Kamera" || label == "Galeri") {
                                 try {
                                   final picker = ImagePicker();
                                   final image = await picker.pickImage(
-                                    source: ImageSource.gallery,
+                                    source: label == "Kamera"
+                                        ? ImageSource.camera
+                                        : ImageSource.gallery,
                                     imageQuality: 85,
                                   );
 
@@ -2224,7 +2226,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text("Gagal memilih foto: $e"),
+                                      content: Text(
+                                        label == "Kamera"
+                                            ? "Gagal membuka kamera: $e"
+                                            : "Gagal memilih foto: $e",
+                                      ),
                                     ),
                                   );
                                 }
