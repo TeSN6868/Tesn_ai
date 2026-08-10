@@ -9,17 +9,17 @@ import 'package:http/http.dart' as http;
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
-const m8Navy = Color(0xFF243B53);
-const m8Navy2 = Color(0xFF1B3045);
-const m8Navy3 = Color(0xFF304A63);
+const m8Navy = Color(0xFF12335F);
+const m8Navy2 = Color(0xFF1E477A);
+const m8Navy3 = Color(0xFF274F7C);
 
-const m8Gold = Color(0xFFD8B86A);
-const m8GoldLight = Color(0xFFE8D39A);
+const m8Gold = Color(0xFF3A6EA5);
+const m8GoldLight = Color(0xFF5B84AE);
 
-const m8Cream = Color(0xFFF8F3E7);
-const m8CreamLight = Color(0xFFFBF7EA);
-const m8Text = Color(0xFF263238);
-const m8TextMuted = Color(0x8A263238);
+const m8Cream = Color(0xFFEEF3F7);
+const m8CreamLight = Color(0xFFFFFFFF);
+const m8Text = Color(0xFF0F1B2E);
+const m8TextMuted = Color(0xFF6B7C93);
 
 void main() {
   runApp(const M8App());
@@ -961,7 +961,7 @@ class _HomePageState extends State<HomePage> {
         indicatorColor: m8Gold,
         surfaceTintColor: Colors.transparent,
         labelTextStyle: WidgetStatePropertyAll(
-          TextStyle(color: Color(0xFFF8F5EA), fontWeight: FontWeight.w600),
+          TextStyle(color: Color(0xFFEEF3F7), fontWeight: FontWeight.w600),
         ),
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
@@ -1703,7 +1703,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       color: const Color(0xFF35D07F),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFF071A2E),
+                        color: const Color(0xFF0F1B2E),
                         width: 2,
                       ),
                     ),
@@ -1805,7 +1805,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           ),
         ],
       ),
-      body: Column(
+      body: Container(
+        color: m8Cream,
+        child: Column(
         children: [
           Expanded(
             child: loading
@@ -1854,7 +1856,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             padding: const EdgeInsets.fromLTRB(13, 9, 11, 6),
                             decoration: BoxDecoration(
                               color: mine
-                                  ? m8Navy2
+                                  ? const Color(0xFFDCE9F4)
                                   : m8CreamLight,
                               borderRadius: BorderRadius.only(
                                 topLeft: const Radius.circular(5),
@@ -1907,7 +1909,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                     color: mine
                                                         ? m8Navy2
                                                         : const Color(
-                                                            0xFFFFF8E8,
+                                                            0xFFFFFFFF,
                                                           ),
                                                     child: const Icon(
                                                       Icons
@@ -1954,7 +1956,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         height: 1.3,
                                         color: mine
                                             ? m8CreamLight
-                                            : const Color(0xFF071A2E),
+                                            : const Color(0xFF0F1B2E),
                                       ),
                                     ),
                                   ),
