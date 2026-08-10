@@ -973,11 +973,6 @@ class _HomePageState extends State<HomePage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        iconTheme: WidgetStatePropertyAll(
-          IconThemeData(
-            color: Color(0xFFC6A15B),
-          ),
-        ),
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           setState(() {
