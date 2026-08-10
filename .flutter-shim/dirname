@@ -1,0 +1,6 @@
+#!/data/data/com.termux/files/usr/bin/sh
+case "$1" in
+  */*) p=${1%/*}; [ -z "$p" ] && p=/ ;;
+  *) p=. ;;
+esac
+printf '%s\n' "$p"

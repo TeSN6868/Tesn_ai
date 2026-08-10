@@ -9,6 +9,17 @@ import 'package:http/http.dart' as http;
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
+const m8Navy = Color(0xFF071A2E);
+const m8Navy2 = Color(0xFF0D223D);
+const m8Navy3 = Color(0xFF14284D);
+
+const m8Gold = Color(0xFFC9A227);
+const m8GoldLight = Color(0xFFF2D078);
+
+const m8Cream = Color(0xFFF7E7B6);
+const m8CreamLight = Color(0xFFFFF8EA);
+const m8Text = Color(0xFF172033);
+
 void main() {
   runApp(const M8App());
 }
@@ -24,8 +35,20 @@ class M8App extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
-        colorSchemeSeed: const Color(0xFFC6A15B),
-        scaffoldBackgroundColor: const Color(0xFF071A2E),
+        scaffoldBackgroundColor: m8Navy,
+        colorScheme: const ColorScheme.dark(
+          primary: m8Gold,
+          secondary: m8GoldLight,
+          surface: m8Navy2,
+          onPrimary: m8Navy,
+          onSecondary: m8Navy,
+          onSurface: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: m8Navy,
+          foregroundColor: m8GoldLight,
+          elevation: 0,
+        ),
       ),
       home: const LoginPage(),
     );
@@ -120,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     const lightBlue = Color(0xFFD8B978);
-    const blue = Color(0xFFC6A15B);
+    const blue = m8Gold;
     const darkBlue = Color(0xFF0B2239);
 
     return Scaffold(
@@ -213,7 +236,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: .13),
                         borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: Color(0xFFC6A15B)),
+                        border: Border.all(color: m8Gold),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black26,
@@ -607,7 +630,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFFC6A15B), width: 1.5),
+        borderSide: const BorderSide(color: m8Gold, width: 1.5),
       ),
     );
   }
@@ -615,10 +638,10 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF4DE),
+      backgroundColor: m8Navy,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF071A2E),
-        foregroundColor: const Color(0xFFF8F5EA),
+        backgroundColor: m8Navy,
+        foregroundColor: m8GoldLight,
         title: const Text('Daftar M8'),
       ),
       body: SafeArea(
@@ -643,7 +666,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   Text(
                     'Daftar untuk mulai menggunakan M8 Messenger',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white.withValues(alpha: .65)),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: .65),
+                    ),
                   ),
 
                   const SizedBox(height: 32),
@@ -804,10 +829,10 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF4DE),
+      backgroundColor: m8Cream,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF071A2E),
-        foregroundColor: const Color(0xFFF8F5EA),
+        backgroundColor: m8Navy,
+        foregroundColor: m8GoldLight,
         title: Text(
           currentIndex == 0
               ? 'M8 Messenger'
@@ -964,14 +989,11 @@ class _HomePageState extends State<HomePage> {
       ),
       body: pages[currentIndex],
       bottomNavigationBar: NavigationBar(
-        backgroundColor: const Color(0xFF071A2E),
-        indicatorColor: const Color(0xFFC6A15B),
+        backgroundColor: m8Navy,
+        indicatorColor: m8Gold,
         surfaceTintColor: Colors.transparent,
         labelTextStyle: WidgetStatePropertyAll(
-          TextStyle(
-            color: Color(0xFFF8F5EA),
-            fontWeight: FontWeight.w600,
-          ),
+          TextStyle(color: Color(0xFFF8F5EA), fontWeight: FontWeight.w600),
         ),
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
@@ -1139,11 +1161,7 @@ class _ChatsPageState extends State<ChatsPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.forum_outlined,
-                    size: 70,
-                    color: Color(0xFFC6A15B),
-                  ),
+                  Icon(Icons.forum_outlined, size: 70, color: m8Gold),
                   const SizedBox(height: 20),
                   const Text(
                     'Belum ada percakapan',
@@ -1290,11 +1308,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => VoiceCallPage(
-          myPin: widget.myPin,
-          otherPin: other,
-          call: call,
-        ),
+        builder: (_) =>
+            VoiceCallPage(myPin: widget.myPin, otherPin: other, call: call),
       ),
     );
   }
@@ -1431,7 +1446,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               if (m is Map) {
                 final msg = m['message']?.toString() ?? '';
                 final prefix = msg.length > 35 ? msg.substring(0, 35) : msg;
-          debugPrint(
+                debugPrint(
                   'M8 DEBUG id=${m['id']} '
                   'len=${msg.length} '
                   'prefix=$prefix',
@@ -1694,10 +1709,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     final other = p1 == widget.myPin ? p2 : p1;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF4DE),
+      backgroundColor: m8Cream,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF071A2E),
-        foregroundColor: Colors.white,
+        backgroundColor: m8Navy,
+        foregroundColor: m8GoldLight,
         elevation: 0,
         toolbarHeight: 68,
         titleSpacing: 0,
@@ -1756,10 +1771,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         actions: [
           IconButton(
             onPressed: () => startVoiceCall(other),
-            icon: const Icon(
-              Icons.call_outlined,
-              color: Color(0xFFC6A15B),
-            ),
+            icon: const Icon(Icons.call_outlined, color: m8Gold),
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
@@ -1829,9 +1841,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         children: [
           Expanded(
             child: loading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFC6A15B)),
-                  )
+                ? const Center(child: CircularProgressIndicator(color: m8Gold))
                 : messages.isEmpty
                 ? const Center(
                     child: Text(
@@ -1884,10 +1894,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 bottomLeft: Radius.circular(mine ? 16 : 5),
                                 bottomRight: Radius.circular(mine ? 5 : 16),
                               ),
-                              border: Border.all(
-                                color: const Color(0xFFC6A15B),
-                                width: 0.8,
-                              ),
+                              border: Border.all(color: m8Gold, width: 0.8),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
@@ -1954,9 +1961,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           alignment: Alignment.center,
                                           padding: const EdgeInsets.all(10),
                                           decoration: BoxDecoration(
-                                            color: mine
-                                                ? const Color(0xFF0B2239)
-                                                : const Color(0xFFFFF8E8),
+                                            color: mine ? m8Gold : m8CreamLight,
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
@@ -2045,10 +2050,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: Container(
               padding: const EdgeInsets.fromLTRB(7, 6, 7, 8),
               decoration: const BoxDecoration(
-                color: Color(0xFFFFF9E8),
-                border: Border(
-                  top: BorderSide(color: Color(0xFFC6A15B), width: 0.6),
-                ),
+                color: m8CreamLight,
+                border: Border(top: BorderSide(color: m8Gold, width: 0.8)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -2163,10 +2166,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         },
                       );
                     },
-                    icon: const Icon(
-                      Icons.add_circle_outline,
-                      color: Color(0xFFC6A15B),
-                    ),
+                    icon: const Icon(Icons.add_circle_outline, color: m8Gold),
                   ),
                   Expanded(
                     child: TextField(
@@ -2199,7 +2199,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   IconButton.filled(
                     onPressed: sending ? null : sendMessage,
                     style: IconButton.styleFrom(
-                      backgroundColor: const Color(0xFFC6A15B),
+                      backgroundColor: m8Gold,
                       foregroundColor: Colors.white,
                     ),
                     icon: sending
@@ -2249,7 +2249,7 @@ class _AttachmentItem extends StatelessWidget {
               color: const Color(0xFFFFF8E8),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: const Color(0xFFC6A15B), size: 25),
+            child: Icon(icon, color: m8Gold, size: 25),
           ),
           const SizedBox(height: 7),
           Text(
@@ -2266,7 +2266,6 @@ class _AttachmentItem extends StatelessWidget {
     );
   }
 }
-
 
 class VoiceCallPage extends StatefulWidget {
   final String myPin;
@@ -2323,11 +2322,9 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
         callStatus = 'Panggilan gagal';
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Panggilan gagal: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Panggilan gagal: $e')));
     }
   }
 
@@ -2358,7 +2355,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF071A2E),
+      backgroundColor: m8Navy,
       body: SafeArea(
         child: Column(
           children: [
@@ -2366,12 +2363,8 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
             const CircleAvatar(
               radius: 58,
-              backgroundColor: Color(0xFFC6A15B),
-              child: Icon(
-                Icons.person,
-                size: 62,
-                color: Colors.white,
-              ),
+              backgroundColor: m8Gold,
+              child: Icon(Icons.person, size: 62, color: Colors.white),
             ),
 
             const SizedBox(height: 22),
@@ -2389,10 +2382,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
             Text(
               'M8 PIN: ${widget.otherPin}',
-              style: const TextStyle(
-                color: Color(0xFFA69B86),
-                fontSize: 13,
-              ),
+              style: const TextStyle(color: Color(0xFFA69B86), fontSize: 13),
             ),
 
             const SizedBox(height: 18),
@@ -2412,10 +2402,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
             if (!connecting && callStatus == 'Terhubung')
               Text(
                 durationText,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 18),
               ),
 
             const Spacer(),
@@ -2423,11 +2410,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _CallButton(
-                  icon: Icons.mic,
-                  label: 'Mikrofon',
-                  onTap: () {},
-                ),
+                _CallButton(icon: Icons.mic, label: 'Mikrofon', onTap: () {}),
                 _CallButton(
                   icon: Icons.volume_up,
                   label: 'Speaker',
@@ -2459,10 +2442,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
             const Text(
               'Akhiri',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
 
             const SizedBox(height: 45),
@@ -2497,19 +2477,12 @@ class _CallButton extends StatelessWidget {
               color: Color(0xFF102D46),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 27,
-            ),
+            child: Icon(icon, color: Colors.white, size: 27),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
       ),
@@ -2526,7 +2499,7 @@ class CallsPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.call, size: 70, color: Color(0xFFC6A15B)),
+          Icon(Icons.call, size: 70, color: m8Gold),
           const SizedBox(height: 18),
           const Text(
             'Panggilan M8',
@@ -2569,7 +2542,7 @@ class ProfilePage extends StatelessWidget {
             const CircleAvatar(
               radius: 48,
               backgroundColor: Color(0xFFFFF8E8),
-              child: Icon(Icons.person, size: 52, color: Color(0xFFC6A15B)),
+              child: Icon(Icons.person, size: 52, color: m8Gold),
             ),
 
             const SizedBox(width: 20),
@@ -2624,7 +2597,7 @@ class ProfilePage extends StatelessWidget {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFC6A15B),
+              color: m8Gold,
             ),
           ),
         ),
