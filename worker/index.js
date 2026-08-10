@@ -84,7 +84,7 @@ export default {
         return json({
           success: true,
           key,
-          url: `${url.origin}/api/media/${encodeURIComponent(key)}`,
+          url: `${url.origin}/api/media/${key}`,
         }, 201);
       }
 
