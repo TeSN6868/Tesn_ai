@@ -2062,7 +2062,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                     Align(
                                       alignment: Alignment.centerLeft,
                                       child: Text(
-                                        "HI",
+                                        "Hi !",
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w900,
@@ -2312,7 +2312,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         ),
                       ),
                       child: const Text(
-                        "HI",
+                        "Hi !",
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
