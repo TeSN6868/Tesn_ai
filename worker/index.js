@@ -47,6 +47,22 @@ export default {
           }, 413);
         }
 
+        const body = await request.arrayBuffer();
+
+        if (!body || body.byteLength === 0) {
+          return json({
+            success: false,
+            error: "File gambar kosong.",
+          }, 400);
+        }
+
+        if (body.byteLength > 5 * 1024 * 1024) {
+          return json({
+            success: false,
+            error: "Ukuran foto maksimal 5 MB.",
+          }, 413);
+        }
+
         const ext = contentType === "image/png"
           ? "png"
           : contentType === "image/webp"
@@ -58,7 +74,7 @@ export default {
         const key =
           `messages/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
-        await env.MEDIA.put(key, request.body, {
+        await env.MEDIA.put(key, body, {
           httpMetadata: {
             contentType,
             cacheControl: "public, max-age=31536000, immutable",
