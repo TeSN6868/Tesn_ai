@@ -1890,28 +1890,52 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   if (text.startsWith("__M8_IMAGE_URL__:"))
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.network(
-                                        text.substring(
-                                          "__M8_IMAGE_URL__:".length,
-                                        ),
-                                        width: 220,
-                                        height: 220,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return const SizedBox(
-                                                width: 220,
-                                                height: 120,
-                                                child: Center(
-                                                  child: Icon(
-                                                    Icons.broken_image_rounded,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                      ),
+                                    Builder(
+                                      builder: (context) {
+                                        final imageUrl = text
+                                            .substring(
+                                              "__M8_IMAGE_URL__:".length,
+                                            )
+                                            .trim();
+
+                                        return ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          child: Image.network(
+                                            imageUrl,
+                                            width: 220,
+                                            height: 220,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder:
+                                                (context, child, progress) {
+                                                  if (progress == null)
+                                                    return child;
+                                                  return const SizedBox(
+                                                    width: 220,
+                                                    height: 220,
+                                                    child: Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                  );
+                                                },
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return Container(
+                                                    width: 220,
+                                                    height: 120,
+                                                    alignment: Alignment.center,
+                                                    child: const Icon(
+                                                      Icons
+                                                          .broken_image_rounded,
+                                                      size: 36,
+                                                    ),
+                                                  );
+                                                },
+                                          ),
+                                        );
+                                      },
                                     )
                                   else if (text.startsWith(
                                     "__M8_IMAGE_BASE64__:",
