@@ -1543,6 +1543,41 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     });
   }
 
+  Future<void> sendHI() async {
+    if (sending) return;
+
+    const messageText = '__M8_HI__';
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/messages'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'chat_id': widget.chat['id'],
+          'sender_pin': widget.myPin,
+          'message': messageText,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 201 || data['success'] != true) {
+        throw Exception(data['error']?.toString() ?? 'Gagal mengirim HI.');
+      }
+
+      await loadMessages();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('HI gagal dikirim: $e')));
+      }
+    }
+  }
+
   Future<void> sendMessage() async {
     final text = controller.text.trim();
     final image = pendingImage;
@@ -2023,6 +2058,21 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         }
                                       },
                                     )
+                                  else if (text == "__M8_HI__")
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        "HI",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 1.2,
+                                          color: mine
+                                              ? m8Navy2
+                                              : const Color(0xFF0F1B2E),
+                                        ),
+                                      ),
+                                    )
                                   else
                                     Align(
                                       alignment: Alignment.centerLeft,
@@ -2248,6 +2298,30 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     ),
                     const SizedBox(width: 5),
                     IconButton.filled(
+                      TextButton(
+                        onPressed: sending ? null : sendHI,
+                        style: TextButton.styleFrom(
+                          foregroundColor: m8Navy2,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 11,
+                            vertical: 9,
+                          ),
+                          minimumSize: const Size(0, 40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(17),
+                            side: const BorderSide(color: m8Gold, width: 1),
+                          ),
+                        ),
+                        child: const Text(
+                          "HI",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
                       onPressed: sending ? null : sendMessage,
                       style: IconButton.styleFrom(
                         backgroundColor: m8Gold,
