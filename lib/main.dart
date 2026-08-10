@@ -19,6 +19,7 @@ const m8GoldLight = Color(0xFFF2D078);
 const m8Cream = Color(0xFFF7E7B6);
 const m8CreamLight = Color(0xFFFFF8EA);
 const m8Text = Color(0xFF172033);
+const m8TextMuted = Color(0x9E172033);
 
 void main() {
   runApp(const M8App());
@@ -1171,7 +1172,7 @@ class _ChatsPageState extends State<ChatsPage> {
                   Text(
                     'Mulai percakapan pertama kamu di M8.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: m8Text.withValues(alpha: .62)),
+                    style: TextStyle(color: m8TextMuted),
                   ),
                 ],
               ),
@@ -1756,7 +1757,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     "M8 PIN: $other",
                     style: const TextStyle(
                       fontSize: 11,
-                      color: m8Text.withValues(alpha: .62),
+                      color: m8TextMuted,
                     ),
                   ),
                   const Text(
@@ -1846,7 +1847,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ? const Center(
                     child: Text(
                       "Mulai percakapan di M8",
-                      style: TextStyle(color: m8Text.withValues(alpha: .62)),
+                      style: TextStyle(color: m8TextMuted),
                     ),
                   )
                 : ListView.builder(
@@ -2037,7 +2038,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   "sedang mengetik...",
                   style: TextStyle(
                     fontSize: 11,
-                    color: m8Text.withValues(alpha: .62),
+                    color: m8TextMuted,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -2179,7 +2180,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       ),
                       decoration: InputDecoration(
                         hintText: "Tulis pesan...",
-                        hintStyle: TextStyle(color: m8Text.withValues(alpha: .62)),
+                        hintStyle: TextStyle(color: m8TextMuted),
                         filled: true,
                         fillColor: m8Cream,
                         contentPadding: const EdgeInsets.symmetric(
@@ -2255,7 +2256,7 @@ class _AttachmentItem extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 11,
-              color: m8Text.withValues(alpha: .62),
+              color: m8TextMuted,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -2380,7 +2381,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
             Text(
               'M8 PIN: ${widget.otherPin}',
-              style: TextStyle(color: m8Text.withValues(alpha: .62), fontSize: 13),
+              style: TextStyle(color: m8TextMuted, fontSize: 13),
             ),
 
             const SizedBox(height: 18),
@@ -2506,7 +2507,7 @@ class CallsPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Fitur panggilan akan kita aktifkan berikutnya.',
-            style: TextStyle(color: m8Text.withValues(alpha: .62)),
+            style: TextStyle(color: m8TextMuted),
           ),
         ],
       ),
