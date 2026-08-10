@@ -1392,6 +1392,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Future<void> loadMessages() async {
+    debugPrint('M8 DEBUG CHAT ID = $chatId');
     try {
       final response = await http.get(
         Uri.parse('$apiBase/api/messages?chat_id=$chatId'),
