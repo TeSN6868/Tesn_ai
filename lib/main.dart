@@ -10,14 +10,14 @@ import 'package:http/http.dart' as http;
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
 const m8Navy = Color(0xFF071A2E);
-m8Navy2 = Color(0xFF0D223D);
+const m8Navy2 = Color(0xFF0D223D);
 const m8Navy3 = Color(0xFF14284D);
 
 const m8Gold = Color(0xFFC9A227);
-m8GoldLight = Color(0xFFF2D078);
+const m8GoldLight = Color(0xFFF2D078);
 
-m8Cream = Color(0xFFF7E7B6);
-m8CreamLight = Color(0xFFFFF8EA);
+const m8Cream = Color(0xFFF7E7B6);
+const m8CreamLight = Color(0xFFFFF8EA);
 const m8Text = Color(0xFF172033);
 
 void main() {
