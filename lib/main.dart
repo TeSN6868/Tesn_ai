@@ -3196,12 +3196,28 @@ class _ProfilePageState extends State<ProfilePage> {
       );
 
       await _heyPlayer.setVolume(1.0);
+
+      _heyPlayer.onPlayerStateChanged.listen((state) {
+        if (!mounted) return;
+
+        final message = state == PlayerState.playing
+            ? '🔊 HEY PLAYING'
+            : 'HEY: $state';
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      });
+
       await _heyPlayer.play(AssetSource('sounds/m8_hey.wav'));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Nada HEY gagal diputar: $e')));
+        ).showSnackBar(SnackBar(content: Text('❌ Nada HEY gagal diputar: $e')));
       }
     }
   }
