@@ -1488,6 +1488,10 @@ class ChatRoomPage extends StatefulWidget {
 }
 
 class _ChatRoomPageState extends State<ChatRoomPage> {
+  final AudioPlayer _chatHeyPlayer = AudioPlayer();
+  bool _chatLoadedOnce = false;
+  final Set<String> _heyPlayedMessageIds = <String>{};
+
   final controller = TextEditingController();
   Timer? typingTimer;
   Timer? typingPollTimer;
@@ -1519,6 +1523,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     typingPollTimer?.cancel();
     setTyping(false);
     controller.dispose();
+    _chatHeyPlayer.dispose();
     super.dispose();
   }
 
@@ -1644,6 +1649,30 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     }
   }
 
+  Future<void> _playChatHey() async {
+    try {
+      await _chatHeyPlayer.stop();
+
+      await _chatHeyPlayer.setAudioContext(
+        AudioContext(
+          android: AudioContextAndroid(
+            usageType: AndroidUsageType.notification,
+            contentType: AndroidContentType.sonification,
+            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+          ),
+        ),
+      );
+
+      await _chatHeyPlayer.setVolume(1.0);
+
+      await _chatHeyPlayer.play(AssetSource('sounds/m8_hey.wav'));
+
+      debugPrint('M8 HEY CHAT: SOUND PLAY');
+    } catch (e) {
+      debugPrint('M8 HEY CHAT ERROR: $e');
+    }
+  }
+
   Future<void> loadMessages() async {
     debugPrint('M8 DEBUG CHAT ID = $chatId');
     try {
@@ -1679,6 +1708,36 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
           if (mounted) {
             final loadedMessages = List<Map<String, dynamic>>.from(list ?? []);
+
+            if (_chatLoadedOnce) {
+              for (final msg in loadedMessages) {
+                final messageId = msg['id']?.toString() ?? '';
+                final sender = msg['sender_pin']?.toString() ?? '';
+                final message = msg['message']?.toString() ?? '';
+
+                if (messageId.isEmpty) continue;
+
+                if (sender != widget.myPin &&
+                    message == '__M8_HI__' &&
+                    !_heyPlayedMessageIds.contains(messageId)) {
+                  _heyPlayedMessageIds.add(messageId);
+
+                  debugPrint('M8 HEY CHAT: HI BARU dari $sender id=$messageId');
+
+                  await _playChatHey();
+                }
+              }
+            } else {
+              for (final msg in loadedMessages) {
+                final messageId = msg['id']?.toString() ?? '';
+
+                if (messageId.isNotEmpty) {
+                  _heyPlayedMessageIds.add(messageId);
+                }
+              }
+
+              _chatLoadedOnce = true;
+            }
 
             debugPrint('M8 DEBUG GET messages count=${loadedMessages.length}');
 
