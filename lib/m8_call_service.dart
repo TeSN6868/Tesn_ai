@@ -140,6 +140,24 @@ class M8CallService {
     }
   }
 
+  Future<void> _sendSignal(
+    String type,
+    Map<String, dynamic> payload,
+  ) async {
+    if (callId == null || myPin == null) return;
+
+    await http.post(
+      Uri.parse('$apiBase/api/calls/signal'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'call_id': callId,
+        'sender_pin': myPin,
+        'type': type,
+        'payload': payload,
+      }),
+    );
+  }
+
   Future<void> _handleSignal(Map<String, dynamic> signal) async {
     final type = signal['type'];
     final payload = Map<String, dynamic>.from(
