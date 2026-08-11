@@ -830,10 +830,8 @@ class _HomePageState extends State<HomePage> {
                     break;
 
                   case 'settings':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Pengaturan M8 segera hadir.'),
-                      ),
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsPage()),
                     );
                     break;
 
@@ -986,6 +984,217 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Profil',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  final AudioPlayer _heyPlayer = AudioPlayer();
+
+  bool soundEnabled = true;
+  bool vibrationEnabled = true;
+
+  Future<void> _testHeySound() async {
+    try {
+      await _heyPlayer.stop();
+
+      await _heyPlayer.setAudioContext(
+        AudioContext(
+          android: AudioContextAndroid(
+            usageType: AndroidUsageType.notification,
+            contentType: AndroidContentType.sonification,
+            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+          ),
+        ),
+      );
+
+      await _heyPlayer.setVolume(1.0);
+      await _heyPlayer.play(AssetSource('sounds/m8_hey.wav'));
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Nada HEY gagal diputar: $e')));
+    }
+  }
+
+  @override
+  void dispose() {
+    _heyPlayer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8Cream,
+      appBar: AppBar(
+        title: const Text('Pengaturan'),
+        backgroundColor: m8Navy,
+        foregroundColor: m8GoldLight,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+            'Notifikasi',
+            style: TextStyle(
+              color: m8Navy,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          Card(
+            color: m8CreamLight,
+            child: Column(
+              children: [
+                SwitchListTile(
+                  value: soundEnabled,
+                  activeThumbColor: m8Gold,
+                  title: const Text(
+                    'Suara pesan masuk',
+                    style: TextStyle(
+                      color: m8Text,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Putar nada saat pesan baru diterima',
+                    style: TextStyle(color: m8TextMuted),
+                  ),
+                  secondary: const Icon(
+                    Icons.volume_up_outlined,
+                    color: m8Navy,
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      soundEnabled = value;
+                    });
+                  },
+                ),
+
+                const Divider(height: 1),
+
+                SwitchListTile(
+                  value: vibrationEnabled,
+                  activeThumbColor: m8Gold,
+                  title: const Text(
+                    'Getar',
+                    style: TextStyle(
+                      color: m8Text,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Getarkan perangkat saat pesan baru diterima',
+                    style: TextStyle(color: m8TextMuted),
+                  ),
+                  secondary: const Icon(Icons.vibration, color: m8Navy),
+                  onChanged: (value) {
+                    setState(() {
+                      vibrationEnabled = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            'Nada HEY',
+            style: TextStyle(
+              color: m8Navy,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Card(
+            color: m8CreamLight,
+            child: Column(
+              children: [
+                const ListTile(
+                  leading: Icon(
+                    Icons.notifications_active_outlined,
+                    color: m8Navy,
+                  ),
+                  title: Text(
+                    'HEY',
+                    style: TextStyle(
+                      color: m8Text,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Nada pesan M8',
+                    style: TextStyle(color: m8TextMuted),
+                  ),
+                ),
+
+                const Divider(height: 1),
+
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: soundEnabled ? _testHeySound : null,
+                      icon: const Icon(Icons.volume_up),
+                      label: const Text('Tes Nada HEY'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            'Tentang M8',
+            style: TextStyle(
+              color: m8Navy,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Card(
+            color: m8CreamLight,
+            child: const ListTile(
+              leading: Icon(Icons.info_outline, color: m8Navy),
+              title: Text(
+                'M8 Messenger',
+                style: TextStyle(color: m8Text, fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(
+                'Messenger dengan identitas M8 PIN',
+                style: TextStyle(color: m8TextMuted),
+              ),
+            ),
           ),
         ],
       ),
