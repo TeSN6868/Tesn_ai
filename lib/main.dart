@@ -3184,6 +3184,18 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _testHeySound() async {
     try {
       await _heyPlayer.stop();
+
+      await _heyPlayer.setAudioContext(
+        AudioContext(
+          android: AudioContextAndroid(
+            usageType: AndroidUsageType.notification,
+            contentType: AndroidContentType.sonification,
+            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+          ),
+        ),
+      );
+
+      await _heyPlayer.setVolume(1.0);
       await _heyPlayer.play(AssetSource('sounds/m8_hey.wav'));
     } catch (e) {
       if (mounted) {
