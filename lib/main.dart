@@ -1012,16 +1012,6 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       await _heyPlayer.stop();
 
-      await _heyPlayer.setAudioContext(
-        AudioContext(
-          android: AudioContextAndroid(
-            usageType: AndroidUsageType.notification,
-            contentType: AndroidContentType.sonification,
-            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
-          ),
-        ),
-      );
-
       await _heyPlayer.setVolume(1.0);
       await _heyPlayer.play(AssetSource('sounds/m8_hey.wav'));
     } catch (e) {
@@ -1039,30 +1029,87 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 10),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: m8Navy,
+          fontSize: 19,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _settingsCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+    Widget? trailing,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 0,
+      color: m8CreamLight,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: m8Navy.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: m8Navy),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(color: m8Text, fontWeight: FontWeight.w700),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 3),
+          child: Text(
+            subtitle,
+            style: const TextStyle(color: m8TextMuted, fontSize: 12.5),
+          ),
+        ),
+        trailing:
+            trailing ??
+            const Icon(Icons.chevron_right_rounded, color: m8TextMuted),
+        onTap: onTap,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: m8Cream,
       appBar: AppBar(
-        title: const Text('Pengaturan'),
+        title: const Text(
+          'Pengaturan',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
         backgroundColor: m8Navy,
         foregroundColor: m8GoldLight,
+        elevation: 0,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         children: [
-          const Text(
-            'Notifikasi',
-            style: TextStyle(
-              color: m8Navy,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
+          _sectionTitle('Notifikasi'),
 
           Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            elevation: 0,
             color: m8CreamLight,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
               children: [
                 SwitchListTile(
@@ -1072,7 +1119,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     'Suara pesan masuk',
                     style: TextStyle(
                       color: m8Text,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: const Text(
@@ -1089,9 +1136,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     });
                   },
                 ),
-
                 const Divider(height: 1),
-
                 SwitchListTile(
                   value: vibrationEnabled,
                   activeThumbColor: m8Gold,
@@ -1099,14 +1144,17 @@ class _SettingsPageState extends State<SettingsPage> {
                     'Getar',
                     style: TextStyle(
                       color: m8Text,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: const Text(
                     'Getarkan perangkat saat pesan baru diterima',
                     style: TextStyle(color: m8TextMuted),
                   ),
-                  secondary: const Icon(Icons.vibration, color: m8Navy),
+                  secondary: const Icon(
+                    Icons.vibration_outlined,
+                    color: m8Navy,
+                  ),
                   onChanged: (value) {
                     setState(() {
                       vibrationEnabled = value;
@@ -1117,24 +1165,21 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
 
-          const Text(
-            'Nada HEY',
-            style: TextStyle(
-              color: m8Navy,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-
-          const SizedBox(height: 10),
+          _sectionTitle('Nada HEY'),
 
           Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            elevation: 0,
             color: m8CreamLight,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
               children: [
                 const ListTile(
+                  contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 4),
                   leading: Icon(
                     Icons.notifications_active_outlined,
                     color: m8Navy,
@@ -1143,24 +1188,21 @@ class _SettingsPageState extends State<SettingsPage> {
                     'HEY',
                     style: TextStyle(
                       color: m8Text,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   subtitle: Text(
-                    'Nada pesan M8',
+                    'Nada khas pesan M8 Messenger',
                     style: TextStyle(color: m8TextMuted),
                   ),
                 ),
-
-                const Divider(height: 1),
-
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
                       onPressed: soundEnabled ? _testHeySound : null,
-                      icon: const Icon(Icons.volume_up),
+                      icon: const Icon(Icons.volume_up_rounded),
                       label: const Text('Tes Nada HEY'),
                     ),
                   ),
@@ -1169,30 +1211,87 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
 
-          const Text(
-            'Tentang M8',
-            style: TextStyle(
-              color: m8Navy,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            ),
+          _sectionTitle('Chat'),
+
+          _settingsCard(
+            icon: Icons.keyboard_return_rounded,
+            title: 'Pengiriman pesan',
+            subtitle: 'Atur cara pesan dikirim',
           ),
 
-          const SizedBox(height: 10),
+          _settingsCard(
+            icon: Icons.photo_library_outlined,
+            title: 'Media',
+            subtitle: 'Pengaturan foto dan media chat',
+          ),
+
+          _settingsCard(
+            icon: Icons.done_all_rounded,
+            title: 'Status pesan',
+            subtitle: 'Terkirim, diterima, dan dibaca',
+          ),
+
+          const SizedBox(height: 18),
+
+          _sectionTitle('Privasi & Keamanan'),
+
+          _settingsCard(
+            icon: Icons.lock_outline_rounded,
+            title: 'Keamanan',
+            subtitle: 'Kelola keamanan akun M8',
+          ),
+
+          _settingsCard(
+            icon: Icons.block_outlined,
+            title: 'Kontak diblokir',
+            subtitle: 'Kelola kontak yang diblokir',
+          ),
+
+          const SizedBox(height: 18),
+
+          _sectionTitle('Akun'),
+
+          _settingsCard(
+            icon: Icons.person_outline_rounded,
+            title: 'Profil',
+            subtitle: 'Nama dan informasi akun M8',
+          ),
+
+          _settingsCard(
+            icon: Icons.pin_outlined,
+            title: 'M8 PIN',
+            subtitle: 'PIN unik untuk terhubung dengan pengguna lain',
+          ),
+
+          const SizedBox(height: 18),
+
+          _sectionTitle('Tentang M8'),
 
           Card(
+            elevation: 0,
             color: m8CreamLight,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: const ListTile(
-              leading: Icon(Icons.info_outline, color: m8Navy),
+              contentPadding: EdgeInsets.all(16),
+              leading: Icon(
+                Icons.info_outline_rounded,
+                color: m8Navy,
+                size: 30,
+              ),
               title: Text(
                 'M8 Messenger',
-                style: TextStyle(color: m8Text, fontWeight: FontWeight.w700),
+                style: TextStyle(color: m8Text, fontWeight: FontWeight.w800),
               ),
-              subtitle: Text(
-                'Messenger dengan identitas M8 PIN',
-                style: TextStyle(color: m8TextMuted),
+              subtitle: Padding(
+                padding: EdgeInsets.only(top: 5),
+                child: Text(
+                  'Messenger dengan identitas M8 PIN',
+                  style: TextStyle(color: m8TextMuted),
+                ),
               ),
             ),
           ),
@@ -1652,16 +1751,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   Future<void> _playChatHey() async {
     try {
       await _chatHeyPlayer.stop();
-
-      await _chatHeyPlayer.setAudioContext(
-        AudioContext(
-          android: AudioContextAndroid(
-            usageType: AndroidUsageType.notification,
-            contentType: AndroidContentType.sonification,
-            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
-          ),
-        ),
-      );
 
       await _chatHeyPlayer.setVolume(1.0);
 
@@ -3426,16 +3515,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _testHeySound() async {
     try {
       await _heyPlayer.stop();
-
-      await _heyPlayer.setAudioContext(
-        AudioContext(
-          android: AudioContextAndroid(
-            usageType: AndroidUsageType.notification,
-            contentType: AndroidContentType.sonification,
-            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
-          ),
-        ),
-      );
 
       await _heyPlayer.setVolume(1.0);
 
