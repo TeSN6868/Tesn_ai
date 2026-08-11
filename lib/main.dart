@@ -1512,7 +1512,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     markMessagesAsRead();
 
     typingPollTimer = Timer.periodic(
-      const Duration(seconds: 2),
+      const Duration(seconds: 4),
       (_) => checkOtherTyping(),
     );
   }
@@ -1687,25 +1687,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         if (data['success'] == true) {
           final list = data['messages'];
 
-          debugPrint(
-            'M8 DEBUG messages count: '
-            '${list is List ? list.length : 'NOT_LIST'}',
-          );
-
-          if (list is List) {
-            for (final m in list) {
-              if (m is Map) {
-                final msg = m['message']?.toString() ?? '';
-                final prefix = msg.length > 35 ? msg.substring(0, 35) : msg;
-                debugPrint(
-                  'M8 DEBUG id=${m['id']} '
-                  'len=${msg.length} '
-                  'prefix=$prefix',
-                );
-              }
-            }
-          }
-
           if (mounted) {
             final loadedMessages = List<Map<String, dynamic>>.from(list ?? []);
 
@@ -1737,17 +1718,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               }
 
               _chatLoadedOnce = true;
-            }
-
-            debugPrint('M8 DEBUG GET messages count=${loadedMessages.length}');
-
-            for (final msg in loadedMessages) {
-              final raw = msg['message']?.toString() ?? '';
-              debugPrint(
-                'M8 DEBUG message id=${msg['id']} '
-                'prefix=${raw.length > 30 ? raw.substring(0, 30) : raw} '
-                'length=${raw.length}',
-              );
             }
 
             setState(() {
@@ -1837,9 +1807,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         final data = jsonDecode(response.body);
 
         if (mounted && data['success'] == true) {
-          setState(() {
-            otherTyping = data['typing'] == true;
-          });
+          final newTyping = data['typing'] == true;
+
+          if (newTyping != otherTyping) {
+            setState(() {
+              otherTyping = newTyping;
+            });
+          }
         }
       }
     } catch (_) {}
