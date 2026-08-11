@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -3265,8 +3266,13 @@ class VoiceCallPage extends StatefulWidget {
 class _VoiceCallPageState extends State<VoiceCallPage> {
   Timer? timer;
   int seconds = 0;
+
   bool connecting = true;
-  String callStatus = 'Memanggil...';
+  bool muted = false;
+  bool cameraOff = false;
+  bool speakerOn = true;
+
+  String callStatus = 'Menghubungkan...';
 
   @override
   void initState() {
@@ -3276,6 +3282,8 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
   Future<void> _startCall() async {
     try {
+      await widget.call.initializeRenderers();
+
       await widget.call.startCall(
         callerPin: widget.myPin,
         calleePin: widget.otherPin,
@@ -3285,14 +3293,17 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
       setState(() {
         connecting = false;
-        callStatus = 'Terhubung';
+        callStatus = 'Memanggil...';
       });
 
-      timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) {
-          setState(() => seconds++);
-        }
-      });
+      timer = Timer.periodic(
+        const Duration(seconds: 1),
+        (_) {
+          if (mounted) {
+            setState(() => seconds++);
+          }
+        },
+      );
     } catch (e) {
       if (!mounted) return;
 
@@ -3301,16 +3312,68 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
         callStatus = 'Panggilan gagal';
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Panggilan gagal: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Panggilan gagal: $e'),
+        ),
+      );
     }
   }
 
   String get durationText {
     final minutes = seconds ~/ 60;
     final secs = seconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${secs.toString().padLeft(2, '0')}';
+  }
+
+  void toggleMute() {
+    final stream = widget.call.localStream;
+    if (stream == null) return;
+
+    for (final track in stream.getAudioTracks()) {
+      track.enabled = !track.enabled;
+    }
+
+    setState(() {
+      muted = !muted;
+    });
+  }
+
+  void toggleCamera() {
+    final stream = widget.call.localStream;
+    if (stream == null) return;
+
+    for (final track in stream.getVideoTracks()) {
+      track.enabled = !track.enabled;
+    }
+
+    setState(() {
+      cameraOff = !cameraOff;
+    });
+  }
+
+  Future<void> switchCamera() async {
+    final stream = widget.call.localStream;
+    if (stream == null) return;
+
+    final tracks = stream.getVideoTracks();
+    if (tracks.isEmpty) return;
+
+    await Helper.switchCamera(tracks.first);
+  }
+
+  Future<void> toggleSpeaker() async {
+    final newState = !speakerOn;
+
+    setState(() {
+      speakerOn = newState;
+    });
+
+    try {
+      await Helper.setSpeakerphoneOn(newState);
+    } catch (_) {}
   }
 
   Future<void> hangUp() async {
@@ -3331,100 +3394,274 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
     super.dispose();
   }
 
+  Widget _controlButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool active = true,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: active
+                  ? Colors.white.withOpacity(0.12)
+                  : Colors.white.withOpacity(0.25),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.12),
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: m8Navy,
+      backgroundColor: Colors.black,
       body: SafeArea(
-        child: Column(
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            const SizedBox(height: 70),
-
-            const CircleAvatar(
-              radius: 58,
-              backgroundColor: m8Gold,
-              child: Icon(Icons.person, size: 62, color: Colors.white),
+            Positioned.fill(
+              child: widget.call.remoteRenderer.srcObject != null
+                  ? RTCVideoView(
+                      widget.call.remoteRenderer,
+                      objectFit:
+                          RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                    )
+                  : Container(
+                      color: m8Navy,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircleAvatar(
+                              radius: 52,
+                              backgroundColor: m8Gold,
+                              child: Icon(
+                                Icons.person,
+                                size: 55,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'M8 User',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'M8 PIN: ${widget.otherPin}',
+                              style: TextStyle(
+                                color: m8TextMuted,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Text(
+                              callStatus,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                            if (connecting) ...[
+                              const SizedBox(height: 16),
+                              const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: m8Gold,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
             ),
 
-            const SizedBox(height: 22),
-
-            const Text(
-              'M8 User',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 23,
-                fontWeight: FontWeight.w700,
+            Positioned(
+              top: 18,
+              left: 18,
+              right: 18,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: hangUp,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.35),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        callStatus,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      if (!connecting)
+                        Text(
+                          durationText,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 44),
+                ],
               ),
             ),
 
-            const SizedBox(height: 8),
-
-            Text(
-              'M8 PIN: ${widget.otherPin}',
-              style: TextStyle(color: m8TextMuted, fontSize: 13),
-            ),
-
-            const SizedBox(height: 18),
-
-            Text(
-              callStatus,
-              style: TextStyle(
-                color: callStatus == 'Panggilan gagal'
-                    ? Colors.redAccent
-                    : const Color(0xFF35D07F),
-                fontSize: 15,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            if (!connecting && callStatus == 'Terhubung')
-              Text(
-                durationText,
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-              ),
-
-            const Spacer(),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _CallButton(icon: Icons.mic, label: 'Mikrofon', onTap: () {}),
-                _CallButton(
-                  icon: Icons.volume_up,
-                  label: 'Speaker',
-                  onTap: () {},
+            if (widget.call.localRenderer.srcObject != null)
+              Positioned(
+                top: 82,
+                right: 18,
+                child: Container(
+                  width: 105,
+                  height: 145,
+                  decoration: BoxDecoration(
+                    color: m8Navy,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.7),
+                      width: 1.5,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        blurRadius: 14,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: cameraOff
+                      ? const Center(
+                          child: Icon(
+                            Icons.videocam_off,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        )
+                      : RTCVideoView(
+                          widget.call.localRenderer,
+                          mirror: true,
+                          objectFit:
+                              RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        ),
                 ),
-              ],
-            ),
+              ),
 
-            const SizedBox(height: 45),
-
-            GestureDetector(
-              onTap: hangUp,
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.call_end,
-                  color: Colors.white,
-                  size: 34,
-                ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 28,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _controlButton(
+                        icon: muted ? Icons.mic_off : Icons.mic,
+                        label: muted ? 'Nyalakan' : 'Bisukan',
+                        onTap: toggleMute,
+                        active: !muted,
+                      ),
+                      _controlButton(
+                        icon: speakerOn
+                            ? Icons.volume_up
+                            : Icons.volume_off,
+                        label: 'Speaker',
+                        onTap: toggleSpeaker,
+                        active: speakerOn,
+                      ),
+                      _controlButton(
+                        icon: cameraOff
+                            ? Icons.videocam_off
+                            : Icons.videocam,
+                        label: 'Kamera',
+                        onTap: toggleCamera,
+                        active: !cameraOff,
+                      ),
+                      _controlButton(
+                        icon: Icons.flip_camera_ios,
+                        label: 'Balik',
+                        onTap: switchCamera,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: hangUp,
+                    child: Container(
+                      width: 68,
+                      height: 68,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.call_end,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Akhiri',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 15),
-
-            const Text(
-              'Akhiri',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
-            ),
-
-            const SizedBox(height: 45),
           ],
         ),
       ),
