@@ -1698,8 +1698,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   String get chatId => widget.chat['id'].toString();
 
   void _scrollChatToBottom({bool animated = false}) {
-    if (!_chatScrollController.hasClients) return;
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_chatScrollController.hasClients) return;
 
@@ -1714,6 +1712,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       } else {
         _chatScrollController.jumpTo(position);
       }
+
+      // Pastikan ListView sudah selesai menghitung semua pesan.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_chatScrollController.hasClients) return;
+
+        final latestPosition =
+            _chatScrollController.position.maxScrollExtent;
+
+        if (_chatScrollController.offset < latestPosition) {
+          _chatScrollController.jumpTo(latestPosition);
+        }
+      });
     });
   }
 
@@ -1737,6 +1747,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     setTyping(false);
     controller.dispose();
     _chatHeyPlayer.dispose();
+    _chatScrollController.dispose();
     super.dispose();
   }
 
