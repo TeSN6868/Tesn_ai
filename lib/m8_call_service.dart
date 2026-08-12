@@ -225,16 +225,21 @@ class M8CallService {
       }
     };
 
-    localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
-      'video': videoCall
-          ? {
-              'facingMode': 'user',
-              'width': {'ideal': 1280},
-              'height': {'ideal': 720},
-            }
-          : false,
-    });
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({
+        'audio': true,
+        'video': videoCall
+            ? {
+                'facingMode': 'user',
+                'width': {'ideal': 1280},
+                'height': {'ideal': 720},
+              }
+            : false,
+      });
+    } catch (e) {
+      print('[M8 VCALL] CAMERA/MIC ERROR: $e');
+      throw Exception('Kamera atau mikrofon gagal dibuka: $e');
+    }
 
     localRenderer.srcObject = localStream;
 
