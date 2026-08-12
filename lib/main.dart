@@ -1764,9 +1764,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   @override
   void initState() {
     super.initState();
-    loadMessages();
-    markMessagesAsDelivered();
-    markMessagesAsRead();
+    _initializeChatStatus();
 
     typingPollTimer = Timer.periodic(
       const Duration(seconds: 4),
@@ -1777,6 +1775,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       const Duration(seconds: 2),
       (_) => loadMessages(),
     );
+  }
+
+  Future<void> _initializeChatStatus() async {
+    await loadMessages();
+    await markMessagesAsDelivered();
+    await markMessagesAsRead();
+
+    if (mounted) {
+      await loadMessages();
+    }
   }
 
   @override
@@ -1941,6 +1949,28 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       debugPrint('M8 HEY CHAT: SOUND PLAY');
     } catch (e) {
       debugPrint('M8 HEY CHAT ERROR: $e');
+    }
+  }
+
+  String _formatChatDate(String raw) {
+    try {
+      final dt = DateTime.parse(raw).toLocal();
+      const months = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    } catch (_) {
+      return raw;
+    }
+  }
+
+  String _formatChatTime(String raw) {
+    try {
+      final dt = DateTime.parse(raw).toLocal();
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return raw.length >= 16 ? raw.substring(11, 16) : raw;
     }
   }
 
