@@ -168,6 +168,18 @@ class M8CallService {
       );
     };
 
+    peer!.onIceConnectionState = (state) {
+      print("[M8 WEBRTC] ICE: $state");
+    };
+    peer!.onConnectionState = (state) {
+      print("[M8 WEBRTC] CONNECTION: $state");
+    };
+    peer!.onIceGatheringState = (state) {
+      print("[M8 WEBRTC] GATHERING: $state");
+    };
+    peer!.onSignalingState = (state) {
+      print("[M8 WEBRTC] SIGNALING: $state");
+    };
     peer!.onTrack = (event) {
       if (event.streams.isNotEmpty) {
         remoteRenderer.srcObject = event.streams.first;
