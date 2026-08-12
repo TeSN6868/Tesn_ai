@@ -184,8 +184,6 @@ class M8CallService {
       print("[M8 WEBRTC] SIGNALING STATE: $state");
     };
 
-    peer!.onIceCandidateError = (event) {
-      print("[M8 WEBRTC] ICE CANDIDATE ERROR: $event");
     };
     peer!.onTrack = (event) {
       if (event.streams.isNotEmpty) {
