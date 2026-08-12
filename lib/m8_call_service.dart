@@ -184,7 +184,6 @@ class M8CallService {
       print("[M8 WEBRTC] SIGNALING STATE: $state");
     };
 
-    };
     peer!.onTrack = (event) {
       if (event.streams.isNotEmpty) {
         remoteRenderer.srcObject = event.streams.first;
