@@ -780,6 +780,98 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
 
+  final M8CallService _incomingCallService = M8CallService();
+  Timer? _incomingCallTimer;
+  String? _lastIncomingCallId;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _incomingCallTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => _checkIncomingCalls(),
+    );
+
+    _checkIncomingCalls();
+  }
+
+  Future<void> _checkIncomingCalls() async {
+    final calls = await _incomingCallService.getIncomingCalls(pin);
+
+    if (!mounted || calls.isEmpty) return;
+
+    final call = calls.first;
+    final incomingId = call['id']?.toString();
+
+    if (incomingId == null || incomingId == _lastIncomingCallId) {
+      return;
+    }
+
+    _lastIncomingCallId = incomingId;
+
+    final callerPin = call['caller_pin']?.toString() ?? '';
+
+    if (callerPin.isEmpty) return;
+
+    final accepted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Panggilan masuk'),
+          content: Text(
+            'Ada panggilan masuk dari PIN $callerPin.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                try {
+                  await _incomingCallService.rejectCall(
+                    incomingCallId: incomingId,
+                    calleePin: pin,
+                  );
+                } finally {
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop(false);
+                  }
+                }
+              },
+              child: const Text('Tolak'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text('Terima'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || accepted != true) return;
+
+    final callService = M8CallService();
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => VoiceCallPage(
+          myPin: pin,
+          otherPin: callerPin,
+          call: callService,
+          incomingCallId: incomingId,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _incomingCallTimer?.cancel();
+    super.dispose();
+  }
+
   String get name => widget.user['name']?.toString() ?? 'M8 User';
 
   String get pin => widget.user['m8_pin']?.toString() ?? '';
@@ -1640,6 +1732,23 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 
+  Future<void> startVideoCall(String other) async {
+    final call = M8CallService();
+
+    if (!mounted) return;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => VoiceCallPage(
+          myPin: widget.myPin,
+          otherPin: other,
+          call: call,
+          videoCall: true,
+        ),
+      ),
+    );
+  }
+
   Future<void> editMessage(Map<String, dynamic> msg) async {
     final messageId = msg["id"];
     final currentText = msg["message"]?.toString() ?? "";
@@ -2167,6 +2276,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           IconButton(
             onPressed: () => startVoiceCall(other),
             icon: const Icon(Icons.call_outlined, color: m8Gold),
+          ),
+          IconButton(
+            tooltip: 'Panggilan video',
+            onPressed: () => startVideoCall(other),
+            icon: const Icon(Icons.videocam_outlined, color: m8Gold),
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
@@ -2722,9 +2836,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         const SizedBox(height: 18),
                                         GridView.count(
                                           shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
                                           crossAxisCount: 4,
-                                          mainAxisSpacing: 18,
-                                          crossAxisSpacing: 12,
+                                          mainAxisSpacing: 12,
+                                          crossAxisSpacing: 8,
+                                          childAspectRatio: 0.75,
                                           children: [
                                             _AttachmentItem(
                                               icon: Icons.camera_alt_rounded,
@@ -3251,12 +3367,16 @@ class VoiceCallPage extends StatefulWidget {
   final String myPin;
   final String otherPin;
   final M8CallService call;
+  final bool videoCall;
+  final String? incomingCallId;
 
   const VoiceCallPage({
     super.key,
     required this.myPin,
     required this.otherPin,
     required this.call,
+    this.videoCall = false,
+    this.incomingCallId,
   });
 
   @override
@@ -3284,17 +3404,37 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
     try {
       await widget.call.initializeRenderers();
 
-      await widget.call.startCall(
-        callerPin: widget.myPin,
-        calleePin: widget.otherPin,
-      );
+      if (widget.incomingCallId != null) {
+        await widget.call.acceptCall(
+          incomingCallId: widget.incomingCallId!,
+          calleePin: widget.myPin,
+          videoCall: widget.videoCall,
+        );
+      } else {
+        await widget.call.startCall(
+          callerPin: widget.myPin,
+          calleePin: widget.otherPin,
+          videoCall: widget.videoCall,
+        );
+      }
 
       if (!mounted) return;
 
+      // Voice Call = audio saja.
+      // Video Call = kamera tetap aktif.
+      if (!widget.videoCall) {
+        final stream = widget.call.localStream;
+        for (final track in stream?.getVideoTracks() ?? []) {
+          track.enabled = false;
+        }
+      }
+
       setState(() {
         connecting = false;
-        cameraOff = false;
-        callStatus = 'Memanggil...';
+        cameraOff = !widget.videoCall;
+        callStatus = widget.videoCall
+            ? 'Video call...'
+            : 'Panggilan suara...';
       });
 
       timer = Timer.periodic(
@@ -3320,6 +3460,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
       );
     }
   }
+
 
   String get durationText {
     final minutes = seconds ~/ 60;
