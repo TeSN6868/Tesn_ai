@@ -69,41 +69,76 @@ class M8CallService {
   }) async {
     myPin = callerPin;
 
-    final response = await http.post(
-      Uri.parse('$apiBase/api/calls'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'caller_pin': callerPin,
-        'callee_pin': calleePin,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/calls'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'caller_pin': callerPin,
+          'callee_pin': calleePin,
+        }),
+      );
 
-    final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
 
-    if (data['success'] != true) {
-      throw Exception(data['error'] ?? 'Gagal memulai panggilan');
+      if (data['success'] != true) {
+        throw Exception(data['error'] ?? 'Gagal memulai panggilan');
+      }
+
+      callId = data['call_id'].toString();
+
+      await _createPeer(videoCall: videoCall);
+
+      final offer = await peer!.createOffer({
+        'offerToReceiveAudio': 1,
+        'offerToReceiveVideo': 1,
+      });
+
+      await peer!.setLocalDescription(offer);
+
+      await _sendSignal(
+        'offer',
+        {
+          'type': offer.type,
+          'sdp': offer.sdp,
+        },
+      );
+      _startSignalPolling();
+    } catch (e) {
+      try {
+        if (callId != null && myPin != null) {
+          await http.post(
+            Uri.parse('$apiBase/api/calls/end'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'call_id': callId,
+              'm8_pin': myPin,
+            }),
+          );
+        }
+      } catch (_) {}
+
+      _signalTimer?.cancel();
+
+      for (final track in localStream?.getTracks() ?? []) {
+        track.stop();
+      }
+
+      await localStream?.dispose();
+      await peer?.close();
+
+      localRenderer.srcObject = null;
+      remoteRenderer.srcObject = null;
+
+      localStream = null;
+      peer = null;
+      callId = null;
+      myPin = null;
+      _signalTimer = null;
+      _lastSignalId = 0;
+
+      throw Exception('Panggilan gagal: $e');
     }
-
-    callId = data['call_id'].toString();
-
-    await _createPeer(videoCall: videoCall);
-
-    final offer = await peer!.createOffer({
-      'offerToReceiveAudio': 1,
-      'offerToReceiveVideo': 1,
-    });
-
-    await peer!.setLocalDescription(offer);
-
-    await _sendSignal(
-      'offer',
-      {
-        'type': offer.type,
-        'sdp': offer.sdp,
-      },
-    );
-
-    _startSignalPolling();
   }
 
   Future<void> acceptCall({
