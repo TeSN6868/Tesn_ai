@@ -784,6 +784,30 @@ class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
 
   final M8CallService _incomingCallService = M8CallService();
+  final AudioPlayer _incomingRingtonePlayer = AudioPlayer();
+
+  Future<void> _startIncomingRingtone() async {
+    try {
+      await _incomingRingtonePlayer.stop();
+      await _incomingRingtonePlayer.setReleaseMode(ReleaseMode.loop);
+      await _incomingRingtonePlayer.setVolume(1.0);
+      await _incomingRingtonePlayer.play(
+        AssetSource('sounds/m8_ringtone.wav'),
+      );
+      debugPrint('M8 RINGTONE: START');
+    } catch (e) {
+      debugPrint('M8 RINGTONE ERROR: $e');
+    }
+  }
+
+  Future<void> _stopIncomingRingtone() async {
+    try {
+      await _incomingRingtonePlayer.stop();
+      debugPrint('M8 RINGTONE: STOP');
+    } catch (e) {
+      debugPrint('M8 RINGTONE STOP ERROR: $e');
+    }
+  }
   Timer? _incomingCallTimer;
   String? _lastIncomingCallId;
 
@@ -817,6 +841,7 @@ class _HomePageState extends State<HomePage> {
 
     if (callerPin.isEmpty) return;
 
+    await _startIncomingRingtone();
     final accepted = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -853,6 +878,8 @@ class _HomePageState extends State<HomePage> {
       },
     );
 
+    await _stopIncomingRingtone();
+
     if (!mounted || accepted != true) return;
 
     final callService = M8CallService();
@@ -872,6 +899,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _incomingCallTimer?.cancel();
+    _incomingRingtonePlayer.stop();
+    _incomingRingtonePlayer.dispose();
     super.dispose();
   }
 
