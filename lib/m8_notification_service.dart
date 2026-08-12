@@ -24,10 +24,11 @@ class M8NotificationService {
 
     await _notifications.initialize(settings);
 
-    final android = _notifications
-        .resolvePlatformSpecificImplementation<
+    final android =
+        _notifications.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
 
+    await android?.requestNotificationsPermission();
     await android?.createNotificationChannel(_chatChannel);
   }
 
