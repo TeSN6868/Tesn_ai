@@ -1685,6 +1685,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final Set<String> _heyPlayedMessageIds = <String>{};
 
   final controller = TextEditingController();
+  final ScrollController _chatScrollController = ScrollController();
   Timer? typingTimer;
   Timer? typingPollTimer;
 
@@ -1695,6 +1696,26 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   XFile? pendingImage;
 
   String get chatId => widget.chat['id'].toString();
+
+  void _scrollChatToBottom({bool animated = false}) {
+    if (!_chatScrollController.hasClients) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_chatScrollController.hasClients) return;
+
+      final position = _chatScrollController.position.maxScrollExtent;
+
+      if (animated) {
+        _chatScrollController.animateTo(
+          position,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      } else {
+        _chatScrollController.jumpTo(position);
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -1923,6 +1944,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               messages = loadedMessages;
               loading = false;
             });
+                            _scrollChatToBottom();
           }
           return;
         }
@@ -2363,6 +2385,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       ),
                     )
                   : ListView.builder(
+                      controller: _chatScrollController,
                       padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
                       itemCount: messages.length,
                       itemBuilder: (context, index) {
