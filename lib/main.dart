@@ -3293,6 +3293,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
 
       setState(() {
         connecting = false;
+        cameraOff = false;
         callStatus = 'Memanggil...';
       });
 

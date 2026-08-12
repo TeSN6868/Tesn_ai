@@ -135,6 +135,15 @@ class M8CallService {
 
     localRenderer.srcObject = localStream;
 
+    // Kamera depan langsung aktif saat panggilan dimulai.
+    for (final track in localStream!.getVideoTracks()) {
+      track.enabled = true;
+    }
+
+    for (final track in localStream!.getAudioTracks()) {
+      track.enabled = true;
+    }
+
     for (final track in localStream!.getTracks()) {
       await peer!.addTrack(track, localStream!);
     }
