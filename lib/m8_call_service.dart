@@ -28,9 +28,44 @@ class M8CallService {
     await remoteRenderer.initialize();
   }
 
+  Future<List<Map<String, dynamic>>> getIncomingCalls(
+    String pin,
+  ) async {
+    if (pin.trim().isEmpty) return [];
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/calls/incoming'
+          '?m8_pin=${Uri.encodeComponent(pin.trim())}',
+        ),
+      );
+
+      if (response.statusCode != 200) return [];
+
+      final data = jsonDecode(response.body);
+
+      if (data['success'] != true) return [];
+
+      final calls = data['calls'];
+
+      if (calls is! List) return [];
+
+      return calls
+          .whereType<Map>()
+          .map(
+            (item) => Map<String, dynamic>.from(item),
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   Future<void> startCall({
     required String callerPin,
     required String calleePin,
+    bool videoCall = false,
   }) async {
     myPin = callerPin;
 
@@ -51,7 +86,7 @@ class M8CallService {
 
     callId = data['call_id'].toString();
 
-    await _createPeer();
+    await _createPeer(videoCall: videoCall);
 
     final offer = await peer!.createOffer({
       'offerToReceiveAudio': 1,
@@ -74,6 +109,7 @@ class M8CallService {
   Future<void> acceptCall({
     required String incomingCallId,
     required String calleePin,
+    bool videoCall = false,
   }) async {
     callId = incomingCallId;
     myPin = calleePin;
@@ -93,11 +129,25 @@ class M8CallService {
       throw Exception(data['error'] ?? 'Gagal menerima panggilan');
     }
 
-    await _createPeer();
+    await _createPeer(videoCall: videoCall);
     _startSignalPolling();
   }
 
-  Future<void> _createPeer() async {
+  Future<void> rejectCall({
+    required String incomingCallId,
+    required String calleePin,
+  }) async {
+    await http.post(
+      Uri.parse('$apiBase/api/calls/reject'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'call_id': incomingCallId,
+        'm8_pin': calleePin,
+      }),
+    );
+  }
+
+  Future<void> _createPeer({bool videoCall = false}) async {
     peer = await createPeerConnection({
       'iceServers': [
         {'urls': 'stun:stun.l.google.com:19302'},
@@ -126,11 +176,13 @@ class M8CallService {
 
     localStream = await navigator.mediaDevices.getUserMedia({
       'audio': true,
-      'video': {
-        'facingMode': 'user',
-        'width': {'ideal': 1280},
-        'height': {'ideal': 720},
-      },
+      'video': videoCall
+          ? {
+              'facingMode': 'user',
+              'width': {'ideal': 1280},
+              'height': {'ideal': 720},
+            }
+          : false,
     });
 
     localRenderer.srcObject = localStream;
