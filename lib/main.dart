@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'm8_call_service.dart';
+import 'm8_notification_service.dart';
 import 'package:http/http.dart' as http;
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
@@ -24,7 +25,9 @@ const m8CreamLight = Color(0xFFFFFFFF);
 const m8Text = Color(0xFF0F1B2E);
 const m8TextMuted = Color(0xFF6B7C93);
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await M8NotificationService.initialize();
   runApp(const M8App());
 }
 
@@ -1683,11 +1686,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final AudioPlayer _chatHeyPlayer = AudioPlayer();
   bool _chatLoadedOnce = false;
   final Set<String> _heyPlayedMessageIds = <String>{};
+  final Set<String> _notificationShownMessageIds = <String>{};
 
   final controller = TextEditingController();
   final ScrollController _chatScrollController = ScrollController();
   Timer? typingTimer;
   Timer? typingPollTimer;
+  Timer? messagePollTimer;
 
   List<Map<String, dynamic>> messages = [];
   bool loading = true;
@@ -1738,12 +1743,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       const Duration(seconds: 4),
       (_) => checkOtherTyping(),
     );
+
+    messagePollTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => loadMessages(),
+    );
   }
 
   @override
   void dispose() {
     typingTimer?.cancel();
     typingPollTimer?.cancel();
+    messagePollTimer?.cancel();
     setTyping(false);
     controller.dispose();
     _chatHeyPlayer.dispose();
@@ -1930,6 +1941,23 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 if (messageId.isEmpty) continue;
 
                 if (sender != widget.myPin &&
+                      !_notificationShownMessageIds.contains(messageId)) {
+                    _notificationShownMessageIds.add(messageId);
+
+                    final notificationMessage =
+                        message == '__M8_HI__' ? 'Mengirim HI 👋' : message;
+
+                    debugPrint(
+                      'M8 NOTIFICATION: pesan baru dari $sender id=$messageId',
+                    );
+
+                    await M8NotificationService.showChatNotification(
+                      sender: sender,
+                      message: notificationMessage,
+                    );
+                  }
+
+                  if (sender != widget.myPin &&
                     message == '__M8_HI__' &&
                     !_heyPlayedMessageIds.contains(messageId)) {
                   _heyPlayedMessageIds.add(messageId);
