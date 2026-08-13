@@ -26,6 +26,17 @@ class M8CallService {
   bool audioEnabled = true;
   bool videoEnabled = true;
 
+  // Status panggilan untuk UI M8.
+  // connecting -> ringing -> connected -> ended/failed/rejected
+  String callStatus = 'connecting';
+  void Function(String status)? onCallStatusChanged;
+
+  void _setCallStatus(String status) {
+    callStatus = status;
+    onCallStatusChanged?.call(status);
+    print('[M8 CALL STATUS] $status');
+  }
+
   Future<void> initializeRenderers() async {
     await localRenderer.initialize();
     await remoteRenderer.initialize();
@@ -82,6 +93,9 @@ class M8CallService {
       }
 
       callId = data['call_id'].toString();
+
+      // Sesi panggilan sudah dibuat di server.
+      _setCallStatus('ringing');
 
       await _createPeer(videoCall: videoCall);
 
@@ -152,6 +166,7 @@ class M8CallService {
     }
 
     await _createPeer(videoCall: videoCall);
+    _setCallStatus('connecting');
     _startSignalPolling();
   }
 
@@ -159,6 +174,8 @@ class M8CallService {
     required String incomingCallId,
     required String calleePin,
   }) async {
+    _setCallStatus('rejected');
+
     await http.post(
       Uri.parse('$apiBase/api/calls/reject'),
       headers: <String, String>{'Content-Type': 'application/json'},
@@ -189,10 +206,32 @@ class M8CallService {
 
     peer!.onIceConnectionState = (state) {
       print("[M8 WEBRTC] ICE CONNECTION STATE: $state");
+
+      final value = state.toString().toLowerCase();
+
+      if (value.contains('connected') || value.contains('completed')) {
+        _setCallStatus('connected');
+      } else if (value.contains('failed')) {
+        _setCallStatus('failed');
+      } else if (value.contains('disconnected')) {
+        _setCallStatus('disconnected');
+      }
     };
 
     peer!.onConnectionState = (state) {
       print("[M8 WEBRTC] PEER CONNECTION STATE: $state");
+
+      final value = state.toString().toLowerCase();
+
+      if (value.contains('connected')) {
+        _setCallStatus('connected');
+      } else if (value.contains('failed')) {
+        _setCallStatus('failed');
+      } else if (value.contains('disconnected')) {
+        _setCallStatus('disconnected');
+      } else if (value.contains('closed')) {
+        _setCallStatus('ended');
+      }
     };
 
     peer!.onIceGatheringState = (state) {
@@ -403,6 +442,7 @@ class M8CallService {
   }
 
   Future<void> hangUp() async {
+    _setCallStatus('ended');
     _signalTimer?.cancel();
 
     if (callId != null && myPin != null) {

@@ -8,9 +8,63 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
+
 import 'm8_call_service.dart';
 import 'm8_notification_service.dart';
 import 'package:http/http.dart' as http;
+
+final AudioPlayer _m8CallSoundPlayer = AudioPlayer();
+
+/// ================= M8 CALL SOUNDS =================
+
+Future<void> _m8StartCallRinging() async {
+  try {
+    await _m8CallSoundPlayer.stop();
+    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.loop);
+    await _m8CallSoundPlayer.setVolume(1.0);
+    await _m8CallSoundPlayer.play(AssetSource('sounds/m8_call_ringing.wav'));
+    debugPrint('[M8 CALL SOUND] RINGING LOOP');
+  } catch (e) {
+    debugPrint('[M8 CALL SOUND] RINGING ERROR: $e');
+  }
+}
+
+Future<void> _m8StopCallSound() async {
+  try {
+    await _m8CallSoundPlayer.stop();
+    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.release);
+  } catch (e) {
+    debugPrint('[M8 CALL SOUND] STOP ERROR: $e');
+  }
+}
+
+Future<void> _m8PlayCallSound(String asset) async {
+  try {
+    await _m8CallSoundPlayer.stop();
+    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.release);
+    await _m8CallSoundPlayer.setVolume(1.0);
+    await _m8CallSoundPlayer.play(AssetSource(asset));
+    debugPrint('[M8 CALL SOUND] PLAY: $asset');
+  } catch (e) {
+    debugPrint('[M8 CALL SOUND] PLAY ERROR: $e');
+  }
+}
+
+Future<void> _m8CallConnectedSound() async {
+  await _m8PlayCallSound('sounds/m8_call_connected.wav');
+}
+
+Future<void> _m8CallRejectedSound() async {
+  await _m8PlayCallSound('sounds/m8_call_rejected.wav');
+}
+
+Future<void> _m8CallFailedSound() async {
+  await _m8PlayCallSound('sounds/m8_call_failed.wav');
+}
+
+Future<void> _m8CallEndedSound() async {
+  await _m8PlayCallSound('sounds/m8_call_ended.wav');
+}
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
@@ -3809,7 +3863,73 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   @override
   void initState() {
     super.initState();
+
+    widget.call.onCallStatusChanged = _handleCallStatus;
+
     _startCall();
+  }
+
+  void _handleCallStatus(String status) {
+    if (!mounted) return;
+
+    setState(() {
+      switch (status) {
+        case 'ringing':
+          callStatus = 'Berdering...';
+          connecting = true;
+          break;
+
+        case 'connecting':
+          callStatus = 'Menghubungkan...';
+          connecting = true;
+          break;
+
+        case 'connected':
+          callStatus = widget.videoCall
+              ? 'Video call terhubung'
+              : 'Panggilan suara terhubung';
+          connecting = false;
+
+          timer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+            if (mounted) {
+              setState(() => seconds++);
+            }
+          });
+          break;
+
+        case 'disconnected':
+          timer?.cancel();
+          timer = null;
+          callStatus = 'Koneksi terputus';
+          connecting = false;
+          break;
+
+        case 'failed':
+          timer?.cancel();
+          timer = null;
+          callStatus = 'Panggilan gagal';
+          connecting = false;
+          break;
+
+        case 'rejected':
+          timer?.cancel();
+          timer = null;
+          callStatus = 'Panggilan ditolak';
+          connecting = false;
+          break;
+
+        case 'ended':
+          timer?.cancel();
+          timer = null;
+          callStatus = 'Panggilan berakhir';
+          connecting = false;
+          break;
+
+        default:
+          callStatus = status;
+          connecting = true;
+      }
+    });
   }
 
   Future<void> _startCall() async {
@@ -3842,16 +3962,14 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
       }
 
       setState(() {
-        connecting = false;
         cameraOff = !widget.videoCall;
-        callStatus = widget.videoCall ? 'Video call...' : 'Panggilan suara...';
       });
 
-      timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) {
-          setState(() => seconds++);
-        }
-      });
+      // Status panggilan dan timer dikendalikan oleh
+      // M8CallService melalui onCallStatusChanged.
+      if (widget.call.callStatus == 'connected') {
+        _handleCallStatus('connected');
+      }
     } catch (e) {
       if (!mounted) return;
 
@@ -3925,13 +4043,16 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   Future<void> hangUp() async {
     timer?.cancel();
 
-    try {
-      await widget.call.hangUp();
-    } catch (_) {}
-
+    // Tutup halaman Video Call saja.
+    // Jangan menunggu proses cleanup WebRTC sebelum kembali ke aplikasi.
     if (mounted) {
       Navigator.of(context).pop();
     }
+
+    // Cleanup koneksi WebRTC setelah halaman ditutup.
+    try {
+      await widget.call.hangUp();
+    } catch (_) {}
   }
 
   @override
