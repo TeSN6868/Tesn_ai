@@ -6,27 +6,26 @@ class M8NotificationService {
 
   static const AndroidNotificationChannel _chatChannel =
       AndroidNotificationChannel(
-    'm8_chat_v3',
-    'M8 Chat',
-    description: 'Notifikasi pesan masuk M8',
-    importance: Importance.high,
-    playSound: true,
-  );
+        'm8_chat_v4',
+        'M8 Chat',
+        description: 'Notifikasi pesan masuk M8',
+        importance: Importance.high,
+        playSound: true,
+      );
 
   static Future<void> initialize() async {
     const androidSettings = AndroidInitializationSettings(
       '@mipmap/ic_launcher',
     );
 
-    const settings = InitializationSettings(
-      android: androidSettings,
-    );
+    const settings = InitializationSettings(android: androidSettings);
 
     await _notifications.initialize(settings);
 
-    final android =
-        _notifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    final android = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     await android?.requestNotificationsPermission();
     await android?.createNotificationChannel(_chatChannel);
@@ -37,7 +36,7 @@ class M8NotificationService {
     required String message,
   }) async {
     const details = AndroidNotificationDetails(
-      'm8_chat_v3',
+      'm8_chat_v4',
       'M8 Chat',
       channelDescription: 'Notifikasi pesan masuk M8',
       importance: Importance.high,
