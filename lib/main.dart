@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
           )
           .timeout(const Duration(seconds: 20));
 
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (!mounted) return;
 
@@ -791,9 +791,7 @@ class _HomePageState extends State<HomePage> {
       await _incomingRingtonePlayer.stop();
       await _incomingRingtonePlayer.setReleaseMode(ReleaseMode.loop);
       await _incomingRingtonePlayer.setVolume(1.0);
-      await _incomingRingtonePlayer.play(
-        AssetSource('sounds/m8_ringtone.wav'),
-      );
+      await _incomingRingtonePlayer.play(AssetSource('sounds/m8_ringtone.wav'));
       debugPrint('M8 RINGTONE: START');
     } catch (e) {
       debugPrint('M8 RINGTONE ERROR: $e');
@@ -808,6 +806,7 @@ class _HomePageState extends State<HomePage> {
       debugPrint('M8 RINGTONE STOP ERROR: $e');
     }
   }
+
   Timer? _incomingCallTimer;
   String? _lastIncomingCallId;
 
@@ -848,9 +847,7 @@ class _HomePageState extends State<HomePage> {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Panggilan masuk'),
-          content: Text(
-            'Ada panggilan masuk dari PIN $callerPin.',
-          ),
+          content: Text('Ada panggilan masuk dari PIN $callerPin.'),
           actions: [
             TextButton(
               onPressed: () async {
@@ -1733,6 +1730,43 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   String get chatId => widget.chat['id'].toString();
 
+  String _chatDateLabel(String rawDate) {
+    if (rawDate.isEmpty) return '';
+
+    try {
+      final millis = int.parse(rawDate);
+      final date = DateTime.fromMillisecondsSinceEpoch(millis).toLocal();
+
+      final now = DateTime.now();
+
+      final today = DateTime(now.year, now.month, now.day);
+      final messageDay = DateTime(date.year, date.month, date.day);
+      final difference = today.difference(messageDay).inDays;
+
+      if (difference == 0) return 'Hari ini';
+      if (difference == 1) return 'Kemarin';
+
+      const months = [
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
+      ];
+
+      return '${date.day} ${months[date.month - 1]} ${date.year}';
+    } catch (_) {
+      return '';
+    }
+  }
+
   void _scrollChatToBottom({bool animated = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_chatScrollController.hasClients) return;
@@ -1753,8 +1787,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!_chatScrollController.hasClients) return;
 
-        final latestPosition =
-            _chatScrollController.position.maxScrollExtent;
+        final latestPosition = _chatScrollController.position.maxScrollExtent;
 
         if (_chatScrollController.offset < latestPosition) {
           _chatScrollController.jumpTo(latestPosition);
@@ -1779,23 +1812,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
       _chatInitializing = false;
 
-      typingPollTimer = Timer.periodic(
-        const Duration(seconds: 4),
-        (_) {
-          if (mounted) {
-            checkOtherTyping();
-          }
-        },
-      );
+      typingPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+        if (mounted) {
+          checkOtherTyping();
+        }
+      });
 
-      messagePollTimer = Timer.periodic(
-        const Duration(seconds: 2),
-        (_) {
-          if (mounted && !_chatInitializing) {
-            loadMessages();
-          }
-        },
-      );
+      messagePollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+        if (mounted && !_chatInitializing) {
+          loadMessages();
+        }
+      });
     }
   }
 
@@ -1967,8 +1994,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     try {
       final dt = DateTime.parse(raw).toLocal();
       const months = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
       ];
       return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
     } catch (_) {
@@ -2014,23 +2051,24 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 if (messageId.isEmpty) continue;
 
                 if (sender != widget.myPin &&
-                      !_notificationShownMessageIds.contains(messageId)) {
-                    _notificationShownMessageIds.add(messageId);
+                    !_notificationShownMessageIds.contains(messageId)) {
+                  _notificationShownMessageIds.add(messageId);
 
-                    final notificationMessage =
-                        message == '__M8_HI__' ? 'Mengirim HI 👋' : message;
+                  final notificationMessage = message == '__M8_HI__'
+                      ? 'Mengirim HI 👋'
+                      : message;
 
-                    debugPrint(
-                      'M8 NOTIFICATION: pesan baru dari $sender id=$messageId',
-                    );
+                  debugPrint(
+                    'M8 NOTIFICATION: pesan baru dari $sender id=$messageId',
+                  );
 
-                    await M8NotificationService.showChatNotification(
-                      sender: sender,
-                      message: notificationMessage,
-                    );
-                  }
+                  await M8NotificationService.showChatNotification(
+                    sender: sender,
+                    message: notificationMessage,
+                  );
+                }
 
-                  if (sender != widget.myPin &&
+                if (sender != widget.myPin &&
                     message == '__M8_HI__' &&
                     !_heyPlayedMessageIds.contains(messageId)) {
                   _heyPlayedMessageIds.add(messageId);
@@ -2056,7 +2094,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               messages = loadedMessages;
               loading = false;
             });
-                            _scrollChatToBottom();
+            _scrollChatToBottom();
           }
           return;
         }
@@ -2514,303 +2552,395 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             : status == "delivered"
                             ? "D"
                             : "✓";
-                        final rawTime = msg["created_at"]?.toString() ?? "";
-                        final time = rawTime.length >= 16
-                            ? rawTime.substring(11, 16)
-                            : rawTime;
 
-                        return Align(
-                          alignment: mine
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: GestureDetector(
-                            onLongPress:
-                                mine &&
-                                    !text.startsWith("__M8_IMAGE_BASE64__:") &&
-                                    !text.startsWith("__M8_IMAGE_URL__:")
-                                ? () => editMessage(msg)
-                                : null,
-                            child: Container(
-                              constraints: BoxConstraints(
-                                maxWidth:
-                                    MediaQuery.of(context).size.width * .78,
-                              ),
-                              margin: const EdgeInsets.only(bottom: 7),
-                              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              decoration: BoxDecoration(
-                                color: mine
-                                    ? const Color(0xFFDCE9F4)
-                                    : m8CreamLight,
-                                borderRadius: BorderRadius.only(
-                                  topLeft: const Radius.circular(5),
-                                  topRight: const Radius.circular(16),
-                                  bottomLeft: Radius.circular(mine ? 16 : 5),
-                                  bottomRight: Radius.circular(mine ? 5 : 16),
+                        final statusColor = status == "read"
+                            ? const Color(0xFF0E5F91)
+                            : const Color(0xFF7A8794);
+                        final rawTime = msg["timestamp"]?.toString() ?? "";
+
+                        String time = "";
+                        if (rawTime.isNotEmpty) {
+                          try {
+                            final millis = int.parse(rawTime);
+                            final date = DateTime.fromMillisecondsSinceEpoch(
+                              millis,
+                            ).toLocal();
+
+                            time =
+                                '${date.hour.toString().padLeft(2, '0')}:'
+                                '${date.minute.toString().padLeft(2, '0')}';
+                          } catch (_) {
+                            time = "";
+                          }
+                        }
+
+                        final currentDateLabel = _chatDateLabel(rawTime);
+                        final previousDateLabel = index > 0
+                            ? _chatDateLabel(
+                                messages[index - 1]["timestamp"]?.toString() ??
+                                    "",
+                              )
+                            : "";
+
+                        final showDateSeparator =
+                            currentDateLabel.isNotEmpty &&
+                            currentDateLabel != previousDateLabel;
+
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (showDateSeparator)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
                                 ),
-                                border: Border.all(color: m8Gold, width: 0.8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: m8CreamLight,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: m8Gold.withOpacity(0.45),
+                                      width: 0.6,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    currentDateLabel,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: m8TextMuted,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  if (text.startsWith("__M8_IMAGE_URL__:"))
-                                    Builder(
-                                      builder: (context) {
-                                        final imageUrl = text
-                                            .substring(
-                                              "__M8_IMAGE_URL__:".length,
-                                            )
-                                            .trim();
-
-                                        return GestureDetector(
-                                          onTap: () {
-                                            showDialog(
-                                              context: context,
-                                              barrierColor: Colors.black87,
-                                              builder: (_) {
-                                                return Scaffold(
-                                                  backgroundColor: Colors.black,
-                                                  appBar: AppBar(
-                                                    backgroundColor:
-                                                        Colors.transparent,
-                                                    foregroundColor:
-                                                        Colors.white,
-                                                    elevation: 0,
-                                                  ),
-                                                  body: Center(
-                                                    child: InteractiveViewer(
-                                                      minScale: 1.0,
-                                                      maxScale: 4.0,
-                                                      child: Image.network(
-                                                        imageUrl,
-                                                        fit: BoxFit.contain,
-                                                        loadingBuilder:
-                                                            (
-                                                              context,
-                                                              child,
-                                                              progress,
-                                                            ) {
-                                                              if (progress ==
-                                                                  null) {
-                                                                return child;
-                                                              }
-                                                              return const SizedBox(
-                                                                width: 42,
-                                                                height: 42,
-                                                                child: CircularProgressIndicator(
-                                                                  color: Colors
-                                                                      .white,
-                                                                ),
-                                                              );
-                                                            },
-                                                        errorBuilder:
-                                                            (
-                                                              context,
-                                                              error,
-                                                              stackTrace,
-                                                            ) {
-                                                              return const Icon(
-                                                                Icons
-                                                                    .broken_image_rounded,
-                                                                color: Colors
-                                                                    .white,
-                                                                size: 56,
-                                                              );
-                                                            },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                            child: Image.network(
-                                              imageUrl,
-                                              width: 220,
-                                              height: 220,
-                                              fit: BoxFit.cover,
-                                              loadingBuilder:
-                                                  (context, child, progress) {
-                                                    if (progress == null) {
-                                                      return child;
-                                                    }
-                                                    return const SizedBox(
-                                                      width: 220,
-                                                      height: 220,
-                                                      child: Center(
-                                                        child:
-                                                            CircularProgressIndicator(),
-                                                      ),
-                                                    );
-                                                  },
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return Container(
-                                                      width: 220,
-                                                      height: 120,
-                                                      alignment:
-                                                          Alignment.center,
-                                                      child: const Icon(
-                                                        Icons
-                                                            .broken_image_rounded,
-                                                        size: 36,
-                                                      ),
-                                                    );
-                                                  },
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  else if (text.startsWith(
-                                    "__M8_IMAGE_BASE64__:",
-                                  ))
-                                    Builder(
-                                      builder: (context) {
-                                        try {
-                                          final payload = text.substring(
-                                            "__M8_IMAGE_BASE64__:".length,
-                                          );
-
-                                          final separator = payload.indexOf(
-                                            ":",
-                                          );
-
-                                          if (separator <= 0) {
-                                            throw Exception(
-                                              "Format gambar invalid",
-                                            );
-                                          }
-
-                                          final base64Data = payload
-                                              .substring(separator + 1)
-                                              .replaceAll(RegExp(r'\s+'), '');
-
-                                          final imageBytes = base64Decode(
-                                            base64Data,
-                                          );
-
-                                          return ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                            child: Image.memory(
-                                              imageBytes,
-                                              width: 220,
-                                              height: 220,
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return Container(
-                                                      width: 220,
-                                                      height: 120,
-                                                      alignment:
-                                                          Alignment.center,
-                                                      color: mine
-                                                          ? m8Navy2
-                                                          : const Color(
-                                                              0xFFFFFFFF,
-                                                            ),
-                                                      child: const Icon(
-                                                        Icons
-                                                            .broken_image_rounded,
-                                                        size: 36,
-                                                      ),
-                                                    );
-                                                  },
-                                            ),
-                                          );
-                                        } catch (e) {
-                                          return Container(
-                                            width: 220,
-                                            height: 120,
-                                            alignment: Alignment.center,
-                                            padding: const EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color: mine
-                                                  ? m8Gold
-                                                  : m8CreamLight,
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            child: Text(
-                                              "Gambar gagal dibaca\\n${e.toString()}",
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: mine
-                                                    ? Colors.white
-                                                    : const Color(0xFF172033),
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    )
-                                  else if (text == "__M8_HI__")
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        "Hi !",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 1.2,
-                                          color: mine
-                                              ? m8Navy2
-                                              : const Color(0xFF0F1B2E),
-                                        ),
+                            Align(
+                              alignment: mine
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: GestureDetector(
+                                onLongPress:
+                                    mine &&
+                                        !text.startsWith(
+                                          "__M8_IMAGE_BASE64__:",
+                                        ) &&
+                                        !text.startsWith("__M8_IMAGE_URL__:")
+                                    ? () => editMessage(msg)
+                                    : null,
+                                child: Container(
+                                  constraints: BoxConstraints(
+                                    maxWidth:
+                                        MediaQuery.of(context).size.width * .78,
+                                  ),
+                                  margin: const EdgeInsets.only(bottom: 7),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    10,
+                                    5,
+                                    10,
+                                    5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: mine
+                                        ? const Color(0xFFDCE9F4)
+                                        : m8CreamLight,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: const Radius.circular(5),
+                                      topRight: const Radius.circular(16),
+                                      bottomLeft: Radius.circular(
+                                        mine ? 16 : 5,
                                       ),
-                                    )
-                                  else
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        text,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          height: 1.3,
-                                          color: mine
-                                              ? m8Navy2
-                                              : const Color(0xFF0F1B2E),
-                                        ),
+                                      bottomRight: Radius.circular(
+                                        mine ? 5 : 16,
                                       ),
                                     ),
-                                  const SizedBox(height: 3),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
+                                    border: Border.all(
+                                      color: m8Gold,
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      Text(
-                                        time,
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          color: mine
-                                              ? m8GoldLight
-                                              : const Color(0xFF536273),
-                                        ),
-                                      ),
-                                      if (mine) ...[
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          statusLabel,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w800,
-                                            color: status == "read"
-                                                ? m8CreamLight
-                                                : m8GoldLight,
+                                      if (text.startsWith("__M8_IMAGE_URL__:"))
+                                        Builder(
+                                          builder: (context) {
+                                            final imageUrl = text
+                                                .substring(
+                                                  "__M8_IMAGE_URL__:".length,
+                                                )
+                                                .trim();
+
+                                            return GestureDetector(
+                                              onTap: () {
+                                                showDialog(
+                                                  context: context,
+                                                  barrierColor: Colors.black87,
+                                                  builder: (_) {
+                                                    return Scaffold(
+                                                      backgroundColor:
+                                                          Colors.black,
+                                                      appBar: AppBar(
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        elevation: 0,
+                                                      ),
+                                                      body: Center(
+                                                        child: InteractiveViewer(
+                                                          minScale: 1.0,
+                                                          maxScale: 4.0,
+                                                          child: Image.network(
+                                                            imageUrl,
+                                                            fit: BoxFit.contain,
+                                                            loadingBuilder:
+                                                                (
+                                                                  context,
+                                                                  child,
+                                                                  progress,
+                                                                ) {
+                                                                  if (progress ==
+                                                                      null) {
+                                                                    return child;
+                                                                  }
+                                                                  return const SizedBox(
+                                                                    width: 42,
+                                                                    height: 42,
+                                                                    child: CircularProgressIndicator(
+                                                                      color: Colors
+                                                                          .white,
+                                                                    ),
+                                                                  );
+                                                                },
+                                                            errorBuilder:
+                                                                (
+                                                                  context,
+                                                                  error,
+                                                                  stackTrace,
+                                                                ) {
+                                                                  return const Icon(
+                                                                    Icons
+                                                                        .broken_image_rounded,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    size: 56,
+                                                                  );
+                                                                },
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                child: Image.network(
+                                                  imageUrl,
+                                                  width: 220,
+                                                  height: 220,
+                                                  fit: BoxFit.cover,
+                                                  loadingBuilder:
+                                                      (
+                                                        context,
+                                                        child,
+                                                        progress,
+                                                      ) {
+                                                        if (progress == null) {
+                                                          return child;
+                                                        }
+                                                        return const SizedBox(
+                                                          width: 220,
+                                                          height: 220,
+                                                          child: Center(
+                                                            child:
+                                                                CircularProgressIndicator(),
+                                                          ),
+                                                        );
+                                                      },
+                                                  errorBuilder:
+                                                      (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) {
+                                                        return Container(
+                                                          width: 220,
+                                                          height: 120,
+                                                          alignment:
+                                                              Alignment.center,
+                                                          child: const Icon(
+                                                            Icons
+                                                                .broken_image_rounded,
+                                                            size: 36,
+                                                          ),
+                                                        );
+                                                      },
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      else if (text.startsWith(
+                                        "__M8_IMAGE_BASE64__:",
+                                      ))
+                                        Builder(
+                                          builder: (context) {
+                                            try {
+                                              final payload = text.substring(
+                                                "__M8_IMAGE_BASE64__:".length,
+                                              );
+
+                                              final separator = payload.indexOf(
+                                                ":",
+                                              );
+
+                                              if (separator <= 0) {
+                                                throw Exception(
+                                                  "Format gambar invalid",
+                                                );
+                                              }
+
+                                              final base64Data = payload
+                                                  .substring(separator + 1)
+                                                  .replaceAll(
+                                                    RegExp(r'\s+'),
+                                                    '',
+                                                  );
+
+                                              final imageBytes = base64Decode(
+                                                base64Data,
+                                              );
+
+                                              return ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                child: Image.memory(
+                                                  imageBytes,
+                                                  width: 220,
+                                                  height: 220,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder:
+                                                      (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) {
+                                                        return Container(
+                                                          width: 220,
+                                                          height: 120,
+                                                          alignment:
+                                                              Alignment.center,
+                                                          color: mine
+                                                              ? m8Navy2
+                                                              : const Color(
+                                                                  0xFFFFFFFF,
+                                                                ),
+                                                          child: const Icon(
+                                                            Icons
+                                                                .broken_image_rounded,
+                                                            size: 36,
+                                                          ),
+                                                        );
+                                                      },
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              return Container(
+                                                width: 220,
+                                                height: 120,
+                                                alignment: Alignment.center,
+                                                padding: const EdgeInsets.all(
+                                                  10,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: mine
+                                                      ? m8Gold
+                                                      : m8CreamLight,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  "Gambar gagal dibaca\\n${e.toString()}",
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: mine
+                                                        ? Colors.white
+                                                        : const Color(
+                                                            0xFF172033,
+                                                          ),
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        )
+                                      else if (text == "__M8_HI__")
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            "Hi !",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 1.2,
+                                              color: mine
+                                                  ? m8Navy2
+                                                  : const Color(0xFF0F1B2E),
+                                            ),
+                                          ),
+                                        )
+                                      else
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            text,
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              height: 1.3,
+                                              color: mine
+                                                  ? m8Navy2
+                                                  : const Color(0xFF0F1B2E),
+                                            ),
                                           ),
                                         ),
-                                      ],
+                                      const SizedBox(height: 3),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            time,
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: mine
+                                                  ? m8GoldLight
+                                                  : const Color(0xFF536273),
+                                            ),
+                                          ),
+                                          if (mine) ...[
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              statusLabel,
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w900,
+                                                color: statusColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
                                     ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         );
                       },
                     ),
@@ -2974,7 +3104,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         const SizedBox(height: 18),
                                         GridView.count(
                                           shrinkWrap: true,
-                                          physics: const NeverScrollableScrollPhysics(),
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
                                           crossAxisCount: 4,
                                           mainAxisSpacing: 12,
                                           crossAxisSpacing: 8,
@@ -3570,19 +3701,14 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
       setState(() {
         connecting = false;
         cameraOff = !widget.videoCall;
-        callStatus = widget.videoCall
-            ? 'Video call...'
-            : 'Panggilan suara...';
+        callStatus = widget.videoCall ? 'Video call...' : 'Panggilan suara...';
       });
 
-      timer = Timer.periodic(
-        const Duration(seconds: 1),
-        (_) {
-          if (mounted) {
-            setState(() => seconds++);
-          }
-        },
-      );
+      timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) {
+          setState(() => seconds++);
+        }
+      });
     } catch (e) {
       if (!mounted) return;
 
@@ -3591,14 +3717,11 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
         callStatus = 'Panggilan gagal';
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Panggilan gagal: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Panggilan gagal: $e')));
     }
   }
-
 
   String get durationText {
     final minutes = seconds ~/ 60;
@@ -3693,23 +3816,14 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                   ? Colors.white.withValues(alpha: 0.12)
                   : Colors.white.withValues(alpha: 0.25),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24,
-            ),
+            child: Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(height: 7),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
           ),
         ],
       ),
@@ -3852,10 +3966,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                       width: 1.5,
                     ),
                     boxShadow: const [
-                      BoxShadow(
-                        blurRadius: 14,
-                        spreadRadius: 1,
-                      ),
+                      BoxShadow(blurRadius: 14, spreadRadius: 1),
                     ],
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -3892,17 +4003,13 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                         active: !muted,
                       ),
                       _controlButton(
-                        icon: speakerOn
-                            ? Icons.volume_up
-                            : Icons.volume_off,
+                        icon: speakerOn ? Icons.volume_up : Icons.volume_off,
                         label: 'Speaker',
                         onTap: toggleSpeaker,
                         active: speakerOn,
                       ),
                       _controlButton(
-                        icon: cameraOff
-                            ? Icons.videocam_off
-                            : Icons.videocam,
+                        icon: cameraOff ? Icons.videocam_off : Icons.videocam,
                         label: 'Kamera',
                         onTap: toggleCamera,
                         active: !cameraOff,
@@ -3934,10 +4041,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                   const SizedBox(height: 8),
                   const Text(
                     'Akhiri',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
