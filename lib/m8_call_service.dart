@@ -31,7 +31,7 @@ class M8CallService {
   Future<List<Map<String, dynamic>>> getIncomingCalls(
     String pin,
   ) async {
-    if (pin.trim().isEmpty) return [];
+    if (pin.trim().isEmpty) return <Map<String, dynamic>>[];
 
     try {
       final response = await http.get(
@@ -41,24 +41,19 @@ class M8CallService {
         ),
       );
 
-      if (response.statusCode != 200) return [];
+      if (response.statusCode != 200) return <Map<String, dynamic>>[];
 
-      final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
 
-      if (data['success'] != true) return [];
+      if (data['success'] != true) return <Map<String, dynamic>>[];
 
       final calls = data['calls'];
 
-      if (calls is! List) return [];
+      if (calls is! List) return <Map<String, dynamic>>[];
 
-      return calls
-          .whereType<Map>()
-          .map(
-            (item) => Map<String, dynamic>.from(item),
-          )
-          .toList();
+        return calls            .whereType<Map>()            .map<Map<String, dynamic>>((item) => Map<String, dynamic>.from(item))            .toList();
     } catch (_) {
-      return [];
+      return <Map<String, dynamic>>[];
     }
   }
 
@@ -72,14 +67,14 @@ class M8CallService {
     try {
       final response = await http.post(
         Uri.parse('$apiBase/api/calls'),
-        headers: {'Content-Type': 'application/json'},
+        headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode({
           'caller_pin': callerPin,
           'callee_pin': calleePin,
         }),
       );
 
-      final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (data['success'] != true) {
         throw Exception(data['error'] ?? 'Gagal memulai panggilan');
@@ -89,7 +84,7 @@ class M8CallService {
 
       await _createPeer(videoCall: videoCall);
 
-      final offer = await peer!.createOffer({
+      final offer = await peer!.createOffer(<String, dynamic>{
         'offerToReceiveAudio': 1,
         'offerToReceiveVideo': 1,
       });
@@ -98,7 +93,7 @@ class M8CallService {
 
       await _sendSignal(
         'offer',
-        {
+        <String, dynamic>{
           'type': offer.type,
           'sdp': offer.sdp,
         },
@@ -109,7 +104,7 @@ class M8CallService {
         if (callId != null && myPin != null) {
           await http.post(
             Uri.parse('$apiBase/api/calls/end'),
-            headers: {'Content-Type': 'application/json'},
+            headers: <String, String>{'Content-Type': 'application/json'},
             body: jsonEncode({
               'call_id': callId,
               'm8_pin': myPin,
@@ -151,14 +146,14 @@ class M8CallService {
 
     final response = await http.post(
       Uri.parse('$apiBase/api/calls/accept'),
-      headers: {'Content-Type': 'application/json'},
+      headers: <String, String>{'Content-Type': 'application/json'},
       body: jsonEncode({
         'call_id': callId,
         'm8_pin': calleePin,
       }),
     );
 
-    final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
     if (data['success'] != true) {
       throw Exception(data['error'] ?? 'Gagal menerima panggilan');
@@ -174,7 +169,7 @@ class M8CallService {
   }) async {
     await http.post(
       Uri.parse('$apiBase/api/calls/reject'),
-      headers: {'Content-Type': 'application/json'},
+      headers: <String, String>{'Content-Type': 'application/json'},
       body: jsonEncode({
         'call_id': incomingCallId,
         'm8_pin': calleePin,
@@ -183,7 +178,7 @@ class M8CallService {
   }
 
   Future<void> _createPeer({bool videoCall = false}) async {
-    peer = await createPeerConnection({
+    peer = await createPeerConnection(<String, dynamic>{
       'iceServers': [
         {'urls': 'stun:stun.l.google.com:19302'},
         {'urls': 'stun:stun1.l.google.com:19302'},
@@ -195,7 +190,7 @@ class M8CallService {
 
       await _sendSignal(
         'ice',
-        {
+        <String, dynamic>{
           'candidate': candidate.candidate,
           'sdpMid': candidate.sdpMid,
           'sdpMLineIndex': candidate.sdpMLineIndex,
@@ -226,7 +221,7 @@ class M8CallService {
     };
 
     try {
-      localStream = await navigator.mediaDevices.getUserMedia({
+      localStream = await navigator.mediaDevices.getUserMedia(<String, dynamic>{
         'audio': true,
         'video': videoCall
             ? {
@@ -265,7 +260,7 @@ class M8CallService {
 
     await http.post(
       Uri.parse('$apiBase/api/calls/signal'),
-      headers: {'Content-Type': 'application/json'},
+      headers: <String, String>{'Content-Type': 'application/json'},
       body: jsonEncode({
         'call_id': callId,
         'sender_pin': myPin,
@@ -294,7 +289,7 @@ class M8CallService {
         ),
       );
 
-      final answer = await peer!.createAnswer({
+      final answer = await peer!.createAnswer(<String, dynamic>{
         'offerToReceiveAudio': 1,
         'offerToReceiveVideo': 1,
       });
@@ -303,7 +298,7 @@ class M8CallService {
 
       await _sendSignal(
         'answer',
-        {
+        <String, dynamic>{
           'type': answer.type,
           'sdp': answer.sdp,
         },
@@ -400,7 +395,7 @@ class M8CallService {
     if (callId != null && myPin != null) {
       await http.post(
         Uri.parse('$apiBase/api/calls/end'),
-        headers: {'Content-Type': 'application/json'},
+        headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode({
           'call_id': callId,
           'm8_pin': myPin,

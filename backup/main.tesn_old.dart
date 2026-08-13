@@ -175,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                   Text(
                     'Private. Secure. Connected.',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(.65),
+                      color: Colors.white.withValues(alpha: .65),
                       fontSize: 15,
                     ),
                   ),
@@ -190,7 +190,7 @@ class _LoginPageState extends State<LoginPage> {
                       hintText: 'Contoh: TEST0002',
                       prefixIcon: const Icon(Icons.badge_outlined),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(.05),
+                      fillColor: Colors.white.withValues(alpha: .05),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -219,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(.05),
+                      fillColor: Colors.white.withValues(alpha: .05),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -257,7 +257,7 @@ class _LoginPageState extends State<LoginPage> {
                     'M8 Messenger API • Online',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(.45),
+                      color: Colors.white.withValues(alpha: .45),
                     ),
                   ),
                 ],
@@ -519,7 +519,7 @@ class _ChatsPageState extends State<ChatsPage> {
                   Icon(
                     Icons.forum_outlined,
                     size: 70,
-                    color: Colors.white.withOpacity(.3),
+                    color: Colors.white.withValues(alpha: .3),
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -534,7 +534,7 @@ class _ChatsPageState extends State<ChatsPage> {
                     'Mulai percakapan pertama kamu di M8.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(.6),
+                      color: Colors.white.withValues(alpha: .6),
                     ),
                   ),
                 ],
@@ -675,13 +675,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   Icon(
                     Icons.lock_outline,
                     size: 42,
-                    color: Colors.white.withOpacity(.3),
+                    color: Colors.white.withValues(alpha: .3),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Percakapan M8',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(.5),
+                      color: Colors.white.withValues(alpha: .5),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -689,7 +689,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     'Chat ID: ${widget.chat['id']}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(.35),
+                      color: Colors.white.withValues(alpha: .35),
                     ),
                   ),
                 ],
@@ -712,7 +712,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     decoration: InputDecoration(
                       hintText: 'Tulis pesan...',
                       filled: true,
-                      fillColor: Colors.white.withOpacity(.06),
+                      fillColor: Colors.white.withValues(alpha: .06),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(22),
                         borderSide: BorderSide.none,
@@ -750,7 +750,7 @@ class CallsPage extends StatelessWidget {
           Icon(
             Icons.call,
             size: 70,
-            color: Colors.white.withOpacity(.25),
+            color: Colors.white.withValues(alpha: .25),
           ),
           const SizedBox(height: 18),
           const Text(
@@ -764,7 +764,7 @@ class CallsPage extends StatelessWidget {
           Text(
             'Fitur panggilan akan kita aktifkan berikutnya.',
             style: TextStyle(
-              color: Colors.white.withOpacity(.55),
+              color: Colors.white.withValues(alpha: .55),
             ),
           ),
         ],
@@ -821,7 +821,7 @@ class ProfilePage extends StatelessWidget {
           child: Text(
             pin,
             style: TextStyle(
-              color: Colors.white.withOpacity(.55),
+              color: Colors.white.withValues(alpha: .55),
             ),
           ),
         ),

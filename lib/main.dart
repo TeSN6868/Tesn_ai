@@ -95,12 +95,12 @@ class _LoginPageState extends State<LoginPage> {
       final response = await http
           .post(
             Uri.parse('$apiBase/api/login'),
-            headers: {'Content-Type': 'application/json'},
+            headers: <String, String>{'Content-Type': 'application/json'},
             body: jsonEncode({'m8_pin': m8Pin, 'password': password}),
           )
           .timeout(const Duration(seconds: 20));
 
-      final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (!mounted) return;
 
@@ -159,8 +159,8 @@ class _LoginPageState extends State<LoginPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [m8Navy, m8Navy2, m8Navy],
-            stops: [0.0, 0.48, 1.0],
+            colors: <Color>[m8Navy, m8Navy2, m8Navy],
+            stops: <double>[0.0, 0.48, 1.0],
           ),
         ),
         child: SafeArea(
@@ -170,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 430),
                 child: Column(
-                  children: [
+                  children: <Widget>[
                     const Text(
                       'M8',
                       style: TextStyle(
@@ -211,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: Colors.white.withValues(alpha: .13),
                         borderRadius: BorderRadius.circular(28),
                         border: Border.all(color: m8Gold),
-                        boxShadow: [
+                        boxShadow: <BoxShadow>[
                           BoxShadow(
                             color: Colors.black26,
                             blurRadius: 30,
@@ -220,7 +220,7 @@ class _LoginPageState extends State<LoginPage> {
                         ],
                       ),
                       child: Column(
-                        children: [
+                        children: <Widget>[
                           TextField(
                             controller: pinController,
                             textInputAction: TextInputAction.next,
@@ -443,7 +443,7 @@ class _RegisterPageState extends State<RegisterPage> {
       final response = await http
           .post(
             Uri.parse('$apiBase/api/register'),
-            headers: {'Content-Type': 'application/json'},
+            headers: <String, String>{'Content-Type': 'application/json'},
             body: jsonEncode({
               'name': name,
               'email': isEmail ? identifier : '',
@@ -993,11 +993,11 @@ class _HomePageState extends State<HomePage> {
                     break;
                 }
               },
-              itemBuilder: (context) => const [
+              itemBuilder: (context) => [
                 PopupMenuItem<String>(
                   value: 'profile',
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       Icon(Icons.person_outline),
                       SizedBox(width: 12),
                       Text('Profil Saya'),
@@ -1007,7 +1007,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuItem<String>(
                   value: 'contacts',
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       Icon(Icons.people_outline),
                       SizedBox(width: 12),
                       Text('Kontak'),
@@ -1017,7 +1017,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuItem<String>(
                   value: 'settings',
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       Icon(Icons.settings_outlined),
                       SizedBox(width: 12),
                       Text('Pengaturan'),
@@ -1027,7 +1027,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuItem<String>(
                   value: 'notifications',
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       Icon(Icons.notifications_none),
                       SizedBox(width: 12),
                       Text('Notifikasi'),
@@ -1037,7 +1037,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuItem<String>(
                   value: 'appearance',
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       Icon(Icons.palette_outlined),
                       SizedBox(width: 12),
                       Text('Tampilan'),
@@ -1047,7 +1047,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuItem<String>(
                   value: 'privacy',
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       Icon(Icons.lock_outline),
                       SizedBox(width: 12),
                       Text('Privasi'),
@@ -1057,7 +1057,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuItem<String>(
                   value: 'help',
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       Icon(Icons.help_outline),
                       SizedBox(width: 12),
                       Text('Bantuan'),
@@ -1068,7 +1068,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuItem<String>(
                   value: 'logout',
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       Icon(Icons.logout),
                       SizedBox(width: 12),
                       Text('Keluar'),
@@ -1085,7 +1085,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: m8Navy,
         indicatorColor: m8Gold,
         surfaceTintColor: Colors.transparent,
-        labelTextStyle: WidgetStatePropertyAll(
+        labelTextStyle: const WidgetStatePropertyAll<TextStyle?>(
           TextStyle(color: Color(0xFFEEF3F7), fontWeight: FontWeight.w600),
         ),
         selectedIndex: currentIndex,
@@ -1094,7 +1094,7 @@ class _HomePageState extends State<HomePage> {
             currentIndex = index;
           });
         },
-        destinations: const [
+        destinations: <Widget>[
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
             selectedIcon: Icon(Icons.chat_bubble),
@@ -1186,7 +1186,7 @@ class _SettingsPageState extends State<SettingsPage> {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: m8Navy.withOpacity(0.08),
+            color: m8Navy.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: m8Navy),
@@ -1727,6 +1727,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   bool loading = true;
   bool sending = false;
   bool otherTyping = false;
+  bool _loadingMessagesInProgress = false;
+  bool _chatInitializing = true;
   XFile? pendingImage;
 
   String get chatId => widget.chat['id'].toString();
@@ -1765,16 +1767,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   void initState() {
     super.initState();
     _initializeChatStatus();
-
-    typingPollTimer = Timer.periodic(
-      const Duration(seconds: 4),
-      (_) => checkOtherTyping(),
-    );
-
-    messagePollTimer = Timer.periodic(
-      const Duration(seconds: 2),
-      (_) => loadMessages(),
-    );
   }
 
   Future<void> _initializeChatStatus() async {
@@ -1784,6 +1776,26 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
     if (mounted) {
       await loadMessages();
+
+      _chatInitializing = false;
+
+      typingPollTimer = Timer.periodic(
+        const Duration(seconds: 4),
+        (_) {
+          if (mounted) {
+            checkOtherTyping();
+          }
+        },
+      );
+
+      messagePollTimer = Timer.periodic(
+        const Duration(seconds: 2),
+        (_) {
+          if (mounted && !_chatInitializing) {
+            loadMessages();
+          }
+        },
+      );
     }
   }
 
@@ -1792,7 +1804,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     typingTimer?.cancel();
     typingPollTimer?.cancel();
     messagePollTimer?.cancel();
-    setTyping(false);
     controller.dispose();
     _chatHeyPlayer.dispose();
     _chatScrollController.dispose();
@@ -1975,6 +1986,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Future<void> loadMessages() async {
+    if (_loadingMessagesInProgress) return;
+    _loadingMessagesInProgress = true;
+
     debugPrint('M8 DEBUG CHAT ID = $chatId');
     try {
       final response = await http.get(
@@ -2059,6 +2073,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           loading = false;
         });
       }
+    } finally {
+      _loadingMessagesInProgress = false;
     }
   }
 
@@ -2431,7 +2447,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   break;
               }
             },
-            itemBuilder: (context) => const [
+            itemBuilder: (context) => [
               PopupMenuItem<String>(
                 value: 'profile',
                 child: Row(
@@ -2898,8 +2914,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         imageQuality: 85,
                                       );
 
-                                      if (image == null || !context.mounted)
+                                      if (image == null || !context.mounted) {
                                         return;
+                                      }
 
                                       setState(() {
                                         pendingImage = image;
@@ -3673,11 +3690,11 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
             height: 54,
             decoration: BoxDecoration(
               color: active
-                  ? Colors.white.withOpacity(0.12)
-                  : Colors.white.withOpacity(0.25),
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.white.withValues(alpha: 0.25),
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withOpacity(0.12),
+                color: Colors.white.withValues(alpha: 0.12),
               ),
             ),
             child: Icon(
@@ -3784,7 +3801,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.35),
+                        color: Colors.black.withValues(alpha: 0.35),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -3831,7 +3848,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                     color: m8Navy,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       width: 1.5,
                     ),
                     boxShadow: const [
