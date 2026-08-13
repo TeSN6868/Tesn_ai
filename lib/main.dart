@@ -2642,14 +2642,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 child: Container(
                                   constraints: BoxConstraints(
                                     maxWidth:
-                                        MediaQuery.of(context).size.width * .60,
+                                        MediaQuery.of(context).size.width * .78,
                                   ),
                                   margin: const EdgeInsets.only(bottom: 7),
                                   padding: const EdgeInsets.fromLTRB(
                                     8,
-                                    4,
+                                    2,
                                     8,
-                                    4,
+                                    2,
                                   ),
                                   decoration: BoxDecoration(
                                     color: mine
