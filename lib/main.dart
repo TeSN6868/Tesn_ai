@@ -1126,9 +1126,62 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final AudioPlayer _heyPlayer = AudioPlayer();
+  final AudioPlayer _ringtonePlayer = AudioPlayer();
 
   bool soundEnabled = true;
   bool vibrationEnabled = true;
+
+  String selectedRingtone = 'M8 Sound Pack 01';
+
+  static const List<Map<String, String>> ringtonePacks = [
+    {'name': 'M8 Sound Pack 01', 'asset': 'sounds/m8_ringtone.wav'},
+    {'name': 'M8 Sound Pack 02', 'asset': 'sounds/m8_ringtone_02.wav'},
+    {'name': 'M8 Sound Pack 03', 'asset': 'sounds/m8_ringtone_03.wav'},
+    {'name': 'M8 Sound Pack 04', 'asset': 'sounds/m8_ringtone_04.wav'},
+    {'name': 'M8 Sound Pack 05', 'asset': 'sounds/m8_ringtone_05.wav'},
+    {'name': 'M8 Sound Pack 06', 'asset': 'sounds/m8_ringtone_06.wav'},
+  ];
+
+  Future<void> _loadRingtonePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('m8_selected_ringtone');
+
+    if (!mounted) return;
+
+    if (saved != null && ringtonePacks.any((pack) => pack['name'] == saved)) {
+      setState(() {
+        selectedRingtone = saved;
+      });
+    }
+  }
+
+  Future<void> _selectRingtone(String name) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString('m8_selected_ringtone', name);
+
+    if (!mounted) return;
+
+    setState(() {
+      selectedRingtone = name;
+    });
+  }
+
+  Future<void> _previewRingtone(String asset) async {
+    if (!soundEnabled) return;
+
+    try {
+      await _ringtonePlayer.stop();
+      await _ringtonePlayer.setVolume(1.0);
+      await _ringtonePlayer.play(AssetSource(asset));
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Nada dering gagal diputar: $e')));
+    }
+  }
 
   Future<void> _testHeySound() async {
     try {
@@ -1146,8 +1199,15 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadRingtonePreference();
+  }
+
+  @override
   void dispose() {
     _heyPlayer.dispose();
+    _ringtonePlayer.dispose();
     super.dispose();
   }
 
@@ -1289,6 +1349,79 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 18),
 
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.music_note_rounded, color: m8Navy),
+            title: const Text(
+              'Nada dering',
+              style: TextStyle(color: m8Text, fontWeight: FontWeight.w700),
+            ),
+            subtitle: Text(
+              selectedRingtone,
+              style: const TextStyle(color: m8TextMuted),
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded, color: m8Navy),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: m8Cream,
+                builder: (context) {
+                  return SafeArea(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        const ListTile(
+                          title: Text(
+                            'Nada Dering M8',
+                            style: TextStyle(
+                              color: m8Navy,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        ...ringtonePacks.map((pack) {
+                          final name = pack['name']!;
+                          final asset = pack['asset']!;
+                          final selected = selectedRingtone == name;
+
+                          return ListTile(
+                            leading: Icon(
+                              selected
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_off,
+                              color: selected ? m8Gold : m8Navy,
+                            ),
+                            title: Text(
+                              name,
+                              style: const TextStyle(
+                                color: m8Text,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(
+                                Icons.play_circle_outline_rounded,
+                                color: m8Navy,
+                              ),
+                              onPressed: () => _previewRingtone(asset),
+                            ),
+                            onTap: () async {
+                              await _selectRingtone(name);
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                            },
+                          );
+                        }),
+                        const SizedBox(height: 18),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
           _sectionTitle('Nada HEY'),
 
           Card(

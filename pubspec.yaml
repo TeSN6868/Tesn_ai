@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  shared_preferences: ^2.5.3
   flutter:
     sdk: flutter
 
@@ -66,6 +67,11 @@ flutter:
   assets:
     - assets/sounds/m8_hey.wav
     - assets/sounds/m8_ringtone.wav
+    - assets/sounds/m8_ringtone_02.wav
+    - assets/sounds/m8_ringtone_03.wav
+    - assets/sounds/m8_ringtone_04.wav
+    - assets/sounds/m8_ringtone_05.wav
+    - assets/sounds/m8_ringtone_06.wav
     - assets/sounds/m8_notification.wav
 
   # To add assets to your application, add an assets section, like this:
