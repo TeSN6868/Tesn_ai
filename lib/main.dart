@@ -2090,11 +2090,20 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               _chatLoadedOnce = true;
             }
 
+            final wasNearBottom =
+                !_chatScrollController.hasClients ||
+                (_chatScrollController.position.maxScrollExtent -
+                        _chatScrollController.offset) <
+                    120;
+
             setState(() {
               messages = loadedMessages;
               loading = false;
             });
-            _scrollChatToBottom();
+
+            if (wasNearBottom) {
+              _scrollChatToBottom();
+            }
           }
           return;
         }
