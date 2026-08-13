@@ -5,8 +5,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:http/http.dart' as http;
 
 class M8CallService {
-  static const apiBase =
-      'https://m8-messenger-api.coolalaga686.workers.dev';
+  static const apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
   RTCPeerConnection? peer;
   MediaStream? localStream;
@@ -20,6 +19,10 @@ class M8CallService {
   Timer? _signalTimer;
   int _lastSignalId = 0;
 
+  // ICE candidate yang datang sebelum remote description siap
+  final List<RTCIceCandidate> _pendingIceCandidates = [];
+  bool _remoteDescriptionSet = false;
+
   bool audioEnabled = true;
   bool videoEnabled = true;
 
@@ -28,9 +31,7 @@ class M8CallService {
     await remoteRenderer.initialize();
   }
 
-  Future<List<Map<String, dynamic>>> getIncomingCalls(
-    String pin,
-  ) async {
+  Future<List<Map<String, dynamic>>> getIncomingCalls(String pin) async {
     if (pin.trim().isEmpty) return <Map<String, dynamic>>[];
 
     try {
@@ -43,7 +44,7 @@ class M8CallService {
 
       if (response.statusCode != 200) return <Map<String, dynamic>>[];
 
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (data['success'] != true) return <Map<String, dynamic>>[];
 
@@ -51,7 +52,10 @@ class M8CallService {
 
       if (calls is! List) return <Map<String, dynamic>>[];
 
-        return calls            .whereType<Map>()            .map<Map<String, dynamic>>((item) => Map<String, dynamic>.from(item))            .toList();
+      return calls
+          .whereType<Map>()
+          .map<Map<String, dynamic>>((item) => Map<String, dynamic>.from(item))
+          .toList();
     } catch (_) {
       return <Map<String, dynamic>>[];
     }
@@ -68,13 +72,10 @@ class M8CallService {
       final response = await http.post(
         Uri.parse('$apiBase/api/calls'),
         headers: <String, String>{'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'caller_pin': callerPin,
-          'callee_pin': calleePin,
-        }),
+        body: jsonEncode({'caller_pin': callerPin, 'callee_pin': calleePin}),
       );
 
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (data['success'] != true) {
         throw Exception(data['error'] ?? 'Gagal memulai panggilan');
@@ -91,13 +92,10 @@ class M8CallService {
 
       await peer!.setLocalDescription(offer);
 
-      await _sendSignal(
-        'offer',
-        <String, dynamic>{
-          'type': offer.type,
-          'sdp': offer.sdp,
-        },
-      );
+      await _sendSignal('offer', <String, dynamic>{
+        'type': offer.type,
+        'sdp': offer.sdp,
+      });
       _startSignalPolling();
     } catch (e) {
       try {
@@ -105,10 +103,7 @@ class M8CallService {
           await http.post(
             Uri.parse('$apiBase/api/calls/end'),
             headers: <String, String>{'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'call_id': callId,
-              'm8_pin': myPin,
-            }),
+            body: jsonEncode({'call_id': callId, 'm8_pin': myPin}),
           );
         }
       } catch (_) {}
@@ -147,13 +142,10 @@ class M8CallService {
     final response = await http.post(
       Uri.parse('$apiBase/api/calls/accept'),
       headers: <String, String>{'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'call_id': callId,
-        'm8_pin': calleePin,
-      }),
+      body: jsonEncode({'call_id': callId, 'm8_pin': calleePin}),
     );
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
 
     if (data['success'] != true) {
       throw Exception(data['error'] ?? 'Gagal menerima panggilan');
@@ -170,14 +162,14 @@ class M8CallService {
     await http.post(
       Uri.parse('$apiBase/api/calls/reject'),
       headers: <String, String>{'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'call_id': incomingCallId,
-        'm8_pin': calleePin,
-      }),
+      body: jsonEncode({'call_id': incomingCallId, 'm8_pin': calleePin}),
     );
   }
 
   Future<void> _createPeer({bool videoCall = false}) async {
+    _pendingIceCandidates.clear();
+    _remoteDescriptionSet = false;
+
     peer = await createPeerConnection(<String, dynamic>{
       'iceServers': [
         {'urls': 'stun:stun.l.google.com:19302'},
@@ -188,14 +180,11 @@ class M8CallService {
     peer!.onIceCandidate = (candidate) async {
       if (candidate.candidate == null) return;
 
-      await _sendSignal(
-        'ice',
-        <String, dynamic>{
-          'candidate': candidate.candidate,
-          'sdpMid': candidate.sdpMid,
-          'sdpMLineIndex': candidate.sdpMLineIndex,
-        },
-      );
+      await _sendSignal('ice', <String, dynamic>{
+        'candidate': candidate.candidate,
+        'sdpMid': candidate.sdpMid,
+        'sdpMLineIndex': candidate.sdpMLineIndex,
+      });
     };
 
     peer!.onIceConnectionState = (state) {
@@ -215,8 +204,15 @@ class M8CallService {
     };
 
     peer!.onTrack = (event) {
+      print(
+        '[M8 WEBRTC] REMOTE TRACK: '
+        'kind=${event.track.kind}, '
+        'streams=${event.streams.length}',
+      );
+
       if (event.streams.isNotEmpty) {
         remoteRenderer.srcObject = event.streams.first;
+        print('[M8 WEBRTC] REMOTE STREAM DITERIMA');
       }
     };
 
@@ -252,10 +248,7 @@ class M8CallService {
     }
   }
 
-  Future<void> _sendSignal(
-    String type,
-    Map<String, dynamic> payload,
-  ) async {
+  Future<void> _sendSignal(String type, Map<String, dynamic> payload) async {
     if (callId == null || myPin == null) return;
 
     await http.post(
@@ -272,9 +265,7 @@ class M8CallService {
 
   Future<void> _handleSignal(Map<String, dynamic> signal) async {
     final type = signal['type'];
-    final payload = Map<String, dynamic>.from(
-      signal['payload'] ?? {},
-    );
+    final payload = Map<String, dynamic>.from(signal['payload'] ?? {});
 
     if (type == 'offer') {
       final sdp = payload['sdp'];
@@ -282,12 +273,21 @@ class M8CallService {
 
       if (sdp == null) return;
 
-      await peer!.setRemoteDescription(
-        RTCSessionDescription(
-          sdp,
-          offerType,
-        ),
-      );
+      await peer!.setRemoteDescription(RTCSessionDescription(sdp, offerType));
+
+      _remoteDescriptionSet = true;
+
+      // Masukkan candidate yang sudah datang lebih dulu.
+      for (final candidate in List<RTCIceCandidate>.from(
+        _pendingIceCandidates,
+      )) {
+        try {
+          await peer!.addCandidate(candidate);
+        } catch (e) {
+          print('[M8 WEBRTC] queued ICE error: $e');
+        }
+      }
+      _pendingIceCandidates.clear();
 
       final answer = await peer!.createAnswer(<String, dynamic>{
         'offerToReceiveAudio': 1,
@@ -296,37 +296,53 @@ class M8CallService {
 
       await peer!.setLocalDescription(answer);
 
-      await _sendSignal(
-        'answer',
-        <String, dynamic>{
-          'type': answer.type,
-          'sdp': answer.sdp,
-        },
-      );
+      await _sendSignal('answer', <String, dynamic>{
+        'type': answer.type,
+        'sdp': answer.sdp,
+      });
     } else if (type == 'answer') {
       final sdp = payload['sdp'];
       final answerType = payload['type'];
 
       if (sdp == null) return;
 
-      await peer!.setRemoteDescription(
-        RTCSessionDescription(
-          sdp,
-          answerType,
-        ),
-      );
+      await peer!.setRemoteDescription(RTCSessionDescription(sdp, answerType));
+
+      _remoteDescriptionSet = true;
+
+      // Masukkan candidate yang tertahan selama answer belum siap.
+      for (final candidate in List<RTCIceCandidate>.from(
+        _pendingIceCandidates,
+      )) {
+        try {
+          await peer!.addCandidate(candidate);
+        } catch (e) {
+          print('[M8 WEBRTC] queued ICE error: $e');
+        }
+      }
+      _pendingIceCandidates.clear();
     } else if (type == 'ice') {
       final candidate = payload['candidate'];
 
       if (candidate == null) return;
 
-      await peer!.addCandidate(
-        RTCIceCandidate(
-          candidate,
-          payload['sdpMid'],
-          payload['sdpMLineIndex'],
-        ),
+      final iceCandidate = RTCIceCandidate(
+        candidate,
+        payload['sdpMid'],
+        payload['sdpMLineIndex'],
       );
+
+      if (!_remoteDescriptionSet) {
+        _pendingIceCandidates.add(iceCandidate);
+        print('[M8 WEBRTC] ICE queued');
+        return;
+      }
+
+      try {
+        await peer!.addCandidate(iceCandidate);
+      } catch (e) {
+        print('[M8 WEBRTC] ICE add error: $e');
+      }
     }
   }
 
@@ -373,10 +389,7 @@ class M8CallService {
       for (final item in signals) {
         final signal = Map<String, dynamic>.from(item);
 
-        final id = int.tryParse(
-              signal['id']?.toString() ?? '',
-            ) ??
-            0;
+        final id = int.tryParse(signal['id']?.toString() ?? '') ?? 0;
 
         if (id <= _lastSignalId) continue;
 
@@ -396,10 +409,7 @@ class M8CallService {
       await http.post(
         Uri.parse('$apiBase/api/calls/end'),
         headers: <String, String>{'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'call_id': callId,
-          'm8_pin': myPin,
-        }),
+        body: jsonEncode({'call_id': callId, 'm8_pin': myPin}),
       );
     }
 
@@ -422,5 +432,7 @@ class M8CallService {
     myPin = null;
     _signalTimer = null;
     _lastSignalId = 0;
+    _pendingIceCandidates.clear();
+    _remoteDescriptionSet = false;
   }
 }
