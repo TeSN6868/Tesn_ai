@@ -1423,7 +1423,7 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
-          _sectionTitle('Nada HEY'),
+          _sectionTitle('Nada HI !'),
 
           Card(
             margin: const EdgeInsets.only(bottom: 8),
@@ -1441,7 +1441,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     color: m8Navy,
                   ),
                   title: Text(
-                    'HEY',
+                    'HI !',
                     style: TextStyle(
                       color: m8Text,
                       fontWeight: FontWeight.w800,
