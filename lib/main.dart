@@ -1458,7 +1458,7 @@ class _SettingsPageState extends State<SettingsPage> {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: m8Sage.withValues(alpha: 0.08),
+            color: m8WhiteSoft,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: m8Sage),
@@ -3069,8 +3069,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 : "✓";
 
                             final statusColor = status == "read"
-                                ? m8SageDark
-                                : m8TextMuted;
+                                ? m8White
+                                : m8WhiteSoft;
                             final rawTime = msg["timestamp"]?.toString() ?? "";
 
                             String time = "";
@@ -3163,7 +3163,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: mine ? m8SagePale : m8White,
+                                        color: mine ? m8SageDark : m8White,
                                         borderRadius: BorderRadius.only(
                                           topLeft: const Radius.circular(5),
                                           topRight: const Radius.circular(16),
@@ -3429,7 +3429,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   fontWeight: FontWeight.w900,
                                                   letterSpacing: 1.2,
                                                   color: mine
-                                                      ? m8SageDark
+                                                      ? m8White
                                                       : m8Text,
                                                 ),
                                               ),
@@ -3443,7 +3443,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   fontSize: 15,
                                                   height: 1.3,
                                                   color: mine
-                                                      ? m8SageDark
+                                                      ? m8White
                                                       : m8Text,
                                                 ),
                                               ),
@@ -3457,7 +3457,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                 style: TextStyle(
                                                   fontSize: 9,
                                                   color: mine
-                                                      ? m8SageLight
+                                                      ? m8WhiteSoft
                                                       : m8TextMuted,
                                                 ),
                                               ),
