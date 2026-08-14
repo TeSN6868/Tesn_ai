@@ -1,0 +1,40 @@
+name: Verify New M8 Release APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download APK artifact 9216761504
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p verify-apk
+
+          gh api \
+            "repos/${{ github.repository }}/actions/artifacts/9216761504/zip" \
+            > verify-apk/artifact.zip
+
+          unzip -o verify-apk/artifact.zip -d verify-apk
+
+      - name: Verify APK
+        run: |
+          APK=$(find verify-apk -type f -name "*.apk" | head -1)
+
+          echo "=== APK ==="
+          ls -lh "$APK"
+
+          echo
+          echo "=== SIGNATURE ==="
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify \
+            --verbose \
+            --print-certs \
+            "$APK"
+
+          echo
+          echo "=== BADGING ==="
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | \
+            grep -E "package:|sdkVersion|targetSdkVersion"
