@@ -68,16 +68,16 @@ Future<void> _m8CallEndedSound() async {
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
-const m8Sage = Color(0xFF66889A);
-const m8SageDark = Color(0xFF405E6D);
-const m8SageLight = Color(0xFFA9BEC7);
-const m8SagePale = Color(0xFFE2EAED);
+const m8Sage = Color(0xFF17324D);
+const m8SageDark = Color(0xFF0B1D2E);
+const m8SageLight = Color(0xFF6F879B);
+const m8SagePale = Color(0xFFB7C2CB);
 
 const m8White = Color(0xFFFFFFFF);
 const m8WhiteSoft = Color(0xFFF6F8F9);
 
-const m8Text = Color(0xFF26343B);
-const m8TextMuted = Color(0xFF6E7D84);
+const m8Text = Color(0xFF172331);
+const m8TextMuted = Color(0xFF6D7B87);
 
 class M8DenimTexturePainter extends CustomPainter {
   @override
@@ -88,21 +88,17 @@ class M8DenimTexturePainter extends CustomPainter {
 
     // Serat denim diagonal terang.
     final lightThread = Paint()
-      ..color = m8SageLight.withValues(alpha: 0.075)
+      ..color = m8SageLight.withValues(alpha: 0.19)
       ..strokeWidth = 0.85;
 
     // Serat denim diagonal gelap.
     final darkThread = Paint()
-      ..color = m8SageDark.withValues(alpha: 0.065)
+      ..color = m8SageDark.withValues(alpha: 0.16)
       ..strokeWidth = 0.75;
 
-    const double threadStep = 6.5;
+    const double threadStep = 5.0;
 
-    for (
-      double x = -size.height;
-      x < size.width + size.height;
-      x += threadStep
-    ) {
+    for (double x = -size.height; x < size.width + size.height; x += 5.0) {
       canvas.drawLine(
         Offset(x, 0),
         Offset(x + size.height, size.height),
@@ -118,7 +114,7 @@ class M8DenimTexturePainter extends CustomPainter {
 
     // Serat silang sangat tipis.
     final crossThread = Paint()
-      ..color = m8White.withValues(alpha: 0.018)
+      ..color = m8White.withValues(alpha: 0.065)
       ..strokeWidth = 0.55;
 
     for (double y = 0; y < size.height; y += 4.5) {
@@ -166,8 +162,8 @@ class M8DenimTexturePainter extends CustomPainter {
         center: Alignment.center,
         radius: 0.75,
         colors: [
-          m8SageLight.withValues(alpha: 0.075),
-          m8SageLight.withValues(alpha: 0.025),
+          m8SageLight.withValues(alpha: 0.19),
+          m8SageLight.withValues(alpha: 0.045),
           m8SageLight.withValues(alpha: 0.0),
         ],
       ).createShader(rect);
@@ -209,8 +205,8 @@ class M8DenimTexturePainter extends CustomPainter {
       wornPaint.shader = RadialGradient(
         radius: 0.9,
         colors: [
-          m8White.withValues(alpha: 0.035),
-          m8White.withValues(alpha: 0.012),
+          m8White.withValues(alpha: 0.065),
+          m8White.withValues(alpha: 0.025),
           m8White.withValues(alpha: 0.0),
         ],
       ).createShader(rect);
