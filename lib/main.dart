@@ -356,10 +356,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    const lightBlue = m8Sage;
-    const blue = m8SageDark;
-    const darkBlue = m8SageLight;
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -525,8 +521,8 @@ class _LoginPageState extends State<LoginPage> {
                             child: FilledButton(
                               onPressed: loading ? null : login,
                               style: FilledButton.styleFrom(
-                                backgroundColor: m8SageLight,
-                                foregroundColor: m8Sage,
+                                backgroundColor: m8Sage,
+                                foregroundColor: m8White,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(17),
                                 ),
