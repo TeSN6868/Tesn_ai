@@ -68,10 +68,10 @@ Future<void> _m8CallEndedSound() async {
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
-const m8Sage = Color(0xFF5F936A);
-const m8SageDark = Color(0xFF3F6F4A);
-const m8SageLight = Color(0xFFAFC8B5);
-const m8SagePale = Color(0xFFE8EFE9);
+const m8Sage = Color(0xFF4F805B);
+const m8SageDark = Color(0xFF365F40);
+const m8SageLight = Color(0xFF9FBEA6);
+const m8SagePale = Color(0xFFE6EEE8);
 
 const m8White = Color(0xFFFFFFFF);
 const m8WhiteSoft = Color(0xFFF8FBF9);
@@ -1882,11 +1882,11 @@ class M8GamelanWallpaperPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Wallpaper Sage M8: teduh tetapi tetap hidup.
-    final bg = Paint()..color = const Color(0xFFE8EFE9);
+    final bg = Paint()..color = const Color(0xFFE6EEE8);
     canvas.drawRect(Offset.zero & size, bg);
 
     final line = Paint()
-      ..color = const Color(0xFF5F936A).withValues(alpha: 0.18)
+      ..color = const Color(0xFF4F805B).withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.25
       ..strokeCap = StrokeCap.round;
@@ -2764,7 +2764,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     width: 11,
                     height: 11,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF5F936A),
+                      color: const Color(0xFF4F805B),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: const Color(0xFF26352B),
@@ -2790,7 +2790,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ),
                   const Text(
                     "Online",
-                    style: TextStyle(fontSize: 10, color: Color(0xFF5F936A)),
+                    style: TextStyle(fontSize: 10, color: Color(0xFF4F805B)),
                   ),
                 ],
               ),
@@ -2910,7 +2910,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 : "✓";
 
                             final statusColor = status == "read"
-                                ? const Color(0xFF3F6F4A)
+                                ? const Color(0xFF365F40)
                                 : const Color(0xFF68756C);
                             final rawTime = msg["timestamp"]?.toString() ?? "";
 
@@ -3005,7 +3005,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: mine
-                                            ? const Color(0xFFE8EFE9)
+                                            ? const Color(0xFFE6EEE8)
                                             : m8White,
                                         borderRadius: BorderRadius.only(
                                           topLeft: const Radius.circular(5),
@@ -4850,7 +4850,7 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: BoxDecoration(
             color: m8White,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFAFC8B5)),
+            border: Border.all(color: const Color(0xFF9FBEA6)),
           ),
           child: ListTile(
             onTap: widget.onLogout,
