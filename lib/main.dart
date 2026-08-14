@@ -68,10 +68,9 @@ Future<void> _m8CallEndedSound() async {
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
-const m8Sage = Color(0xFF17324D);
-const m8SageDark = Color(0xFF0B1D2E);
-const m8SageLight = Color(0xFF6F879B);
-const m8SagePale = Color(0xFFB7C2CB);
+const m8Blue = Color(0xFF3D7EEB);
+const m8BlueDark = Color(0xFF0B1D2E);
+const m8BlueLight = Color(0xFF3D7EEB);
 
 const m8White = Color(0xFFFFFFFF);
 const m8WhiteSoft = Color(0xFFF6F8F9);
@@ -83,17 +82,17 @@ class M8DenimTexturePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Base washed blue jeans.
-    final basePaint = Paint()..color = m8Sage;
+    final basePaint = Paint()..color = m8Blue;
     canvas.drawRect(Offset.zero & size, basePaint);
 
     // Serat denim diagonal terang.
     final lightThread = Paint()
-      ..color = m8SageLight.withValues(alpha: 0.19)
+      ..color = m8BlueLight.withValues(alpha: 0.19)
       ..strokeWidth = 0.85;
 
     // Serat denim diagonal gelap.
     final darkThread = Paint()
-      ..color = m8SageDark.withValues(alpha: 0.16)
+      ..color = m8BlueDark.withValues(alpha: 0.16)
       ..strokeWidth = 0.75;
 
     const double threadStep = 5.0;
@@ -162,9 +161,9 @@ class M8DenimTexturePainter extends CustomPainter {
         center: Alignment.center,
         radius: 0.75,
         colors: [
-          m8SageLight.withValues(alpha: 0.19),
-          m8SageLight.withValues(alpha: 0.045),
-          m8SageLight.withValues(alpha: 0.0),
+          m8BlueLight.withValues(alpha: 0.19),
+          m8BlueLight.withValues(alpha: 0.045),
+          m8BlueLight.withValues(alpha: 0.0),
         ],
       ).createShader(rect);
 
@@ -249,17 +248,17 @@ class M8App extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: true,
-        scaffoldBackgroundColor: m8Sage,
+        scaffoldBackgroundColor: m8Blue,
         colorScheme: const ColorScheme.dark(
-          primary: m8Sage,
-          secondary: m8SageLight,
-          surface: m8SageDark,
+          primary: m8Blue,
+          secondary: m8BlueLight,
+          surface: m8BlueDark,
           onPrimary: m8White,
           onSecondary: m8White,
           onSurface: Colors.white,
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: m8Sage,
+          backgroundColor: m8Blue,
           foregroundColor: m8White,
           elevation: 0,
         ),
@@ -362,7 +361,7 @@ class _LoginPageState extends State<LoginPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: <Color>[m8Sage, m8SageDark, m8Sage],
+            colors: <Color>[m8Blue, m8BlueDark, m8Blue],
             stops: <double>[0.0, 0.48, 1.0],
           ),
         ),
@@ -413,7 +412,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: .13),
                         borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: m8Sage),
+                        border: Border.all(color: m8Blue),
                         boxShadow: <BoxShadow>[
                           BoxShadow(
                             color: Colors.black26,
@@ -448,7 +447,7 @@ class _LoginPageState extends State<LoginPage> {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(17),
                                 borderSide: BorderSide(
-                                  color: m8SageDark.withValues(alpha: 0.22),
+                                  color: m8BlueDark.withValues(alpha: 0.22),
                                 ),
                               ),
                               focusedBorder: const OutlineInputBorder(
@@ -498,7 +497,7 @@ class _LoginPageState extends State<LoginPage> {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(17),
                                 borderSide: BorderSide(
-                                  color: m8SageDark.withValues(alpha: 0.22),
+                                  color: m8BlueDark.withValues(alpha: 0.22),
                                 ),
                               ),
                               focusedBorder: const OutlineInputBorder(
@@ -521,7 +520,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: FilledButton(
                               onPressed: loading ? null : login,
                               style: FilledButton.styleFrom(
-                                backgroundColor: m8Sage,
+                                backgroundColor: m8Blue,
                                 foregroundColor: m8White,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(17),
@@ -571,7 +570,7 @@ class _LoginPageState extends State<LoginPage> {
                               child: const Text(
                                 'Belum punya akun : Daftar',
                                 style: TextStyle(
-                                  color: m8Sage,
+                                  color: m8Blue,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
                                 ),
@@ -809,11 +808,11 @@ class _RegisterPageState extends State<RegisterPage> {
       fillColor: m8White,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: m8SageDark.withValues(alpha: 0.22)),
+        borderSide: BorderSide(color: m8BlueDark.withValues(alpha: 0.22)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: m8Sage, width: 1.5),
+        borderSide: const BorderSide(color: m8Blue, width: 1.5),
       ),
     );
   }
@@ -821,9 +820,9 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: m8Sage,
+      backgroundColor: m8Blue,
       appBar: AppBar(
-        backgroundColor: m8Sage,
+        backgroundColor: m8Blue,
         foregroundColor: m8White,
         title: const Text('Daftar M8'),
       ),
@@ -1134,7 +1133,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: m8WhiteSoft,
       appBar: AppBar(
-        backgroundColor: m8Sage,
+        backgroundColor: m8Blue,
         foregroundColor: m8White,
         title: Text(
           currentIndex == 0
@@ -1290,8 +1289,8 @@ class _HomePageState extends State<HomePage> {
       ),
       body: M8DenimBackground(child: pages[currentIndex]),
       bottomNavigationBar: NavigationBar(
-        backgroundColor: m8Sage,
-        indicatorColor: m8Sage,
+        backgroundColor: m8Blue,
+        indicatorColor: m8Blue,
         surfaceTintColor: Colors.transparent,
         labelTextStyle: const WidgetStatePropertyAll<TextStyle?>(
           TextStyle(color: m8WhiteSoft, fontWeight: FontWeight.w600),
@@ -1428,7 +1427,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Text(
         title,
         style: const TextStyle(
-          color: m8Sage,
+          color: m8Blue,
           fontSize: 19,
           fontWeight: FontWeight.w800,
         ),
@@ -1457,7 +1456,7 @@ class _SettingsPageState extends State<SettingsPage> {
             color: m8WhiteSoft,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: m8Sage),
+          child: Icon(icon, color: m8Blue),
         ),
         title: Text(
           title,
@@ -1487,7 +1486,7 @@ class _SettingsPageState extends State<SettingsPage> {
           'Pengaturan',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: m8Sage,
+        backgroundColor: m8Blue,
         foregroundColor: m8White,
         elevation: 0,
       ),
@@ -1507,7 +1506,7 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 SwitchListTile(
                   value: soundEnabled,
-                  activeThumbColor: m8Sage,
+                  activeThumbColor: m8Blue,
                   title: const Text(
                     'Suara pesan masuk',
                     style: TextStyle(
@@ -1521,7 +1520,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   secondary: const Icon(
                     Icons.volume_up_outlined,
-                    color: m8Sage,
+                    color: m8Blue,
                   ),
                   onChanged: (value) {
                     setState(() {
@@ -1532,7 +1531,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const Divider(height: 1),
                 SwitchListTile(
                   value: vibrationEnabled,
-                  activeThumbColor: m8Sage,
+                  activeThumbColor: m8Blue,
                   title: const Text(
                     'Getar',
                     style: TextStyle(
@@ -1546,7 +1545,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   secondary: const Icon(
                     Icons.vibration_outlined,
-                    color: m8Sage,
+                    color: m8Blue,
                   ),
                   onChanged: (value) {
                     setState(() {
@@ -1562,7 +1561,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.music_note_rounded, color: m8Sage),
+            leading: const Icon(Icons.music_note_rounded, color: m8Blue),
             title: const Text(
               'Nada dering M8',
               style: TextStyle(color: m8Text, fontWeight: FontWeight.w700),
@@ -1571,7 +1570,7 @@ class _SettingsPageState extends State<SettingsPage> {
               selectedRingtone,
               style: const TextStyle(color: m8TextMuted),
             ),
-            trailing: const Icon(Icons.chevron_right_rounded, color: m8Sage),
+            trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
             onTap: () {
               showModalBottomSheet(
                 context: context,
@@ -1585,7 +1584,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           title: Text(
                             'Nada Dering M8',
                             style: TextStyle(
-                              color: m8Sage,
+                              color: m8Blue,
                               fontSize: 19,
                               fontWeight: FontWeight.w800,
                             ),
@@ -1601,7 +1600,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               selected
                                   ? Icons.radio_button_checked
                                   : Icons.radio_button_off,
-                              color: selected ? m8Sage : m8Sage,
+                              color: selected ? m8Blue : m8Blue,
                             ),
                             title: Text(
                               name,
@@ -1613,7 +1612,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             trailing: IconButton(
                               icon: const Icon(
                                 Icons.play_circle_outline_rounded,
-                                color: m8Sage,
+                                color: m8Blue,
                               ),
                               onPressed: () => _previewRingtone(asset),
                             ),
@@ -1647,7 +1646,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 4),
                   leading: Icon(
                     Icons.notifications_active_outlined,
-                    color: m8Sage,
+                    color: m8Blue,
                   ),
                   title: Text(
                     'HI !',
@@ -1744,7 +1743,7 @@ class _SettingsPageState extends State<SettingsPage> {
               contentPadding: EdgeInsets.all(16),
               leading: Icon(
                 Icons.info_outline_rounded,
-                color: m8Sage,
+                color: m8Blue,
                 size: 30,
               ),
               title: Text(
@@ -1933,7 +1932,7 @@ class _ChatsPageState extends State<ChatsPage> {
                                 Icon(
                                   Icons.forum_outlined,
                                   size: 70,
-                                  color: m8Sage,
+                                  color: m8Blue,
                                 ),
                                 const SizedBox(height: 20),
                                 const Text(
@@ -2044,7 +2043,7 @@ class M8GamelanWallpaperPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, bg);
 
     final line = Paint()
-      ..color = m8Sage.withValues(alpha: 0.18)
+      ..color = m8Blue.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.25
       ..strokeCap = StrokeCap.round;
@@ -2901,7 +2900,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: m8Sage,
+        backgroundColor: m8Blue,
         foregroundColor: m8White,
         elevation: 0,
         toolbarHeight: 74,
@@ -2912,7 +2911,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               children: [
                 const CircleAvatar(
                   radius: 21,
-                  backgroundColor: m8SageDark,
+                  backgroundColor: m8BlueDark,
                   child: Icon(Icons.person, color: Colors.white),
                 ),
                 Positioned(
@@ -2922,7 +2921,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     width: 11,
                     height: 11,
                     decoration: BoxDecoration(
-                      color: m8Sage,
+                      color: m8Blue,
                       shape: BoxShape.circle,
                       border: Border.all(color: m8Text, width: 2),
                     ),
@@ -3038,7 +3037,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 Expanded(
                   child: loading
                       ? const Center(
-                          child: CircularProgressIndicator(color: m8Sage),
+                          child: CircularProgressIndicator(color: m8Blue),
                         )
                       : messages.isEmpty
                       ? const Center(
@@ -3116,7 +3115,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         color: m8White,
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: m8Sage.withOpacity(0.45),
+                                          color: m8Blue.withOpacity(0.45),
                                           width: 0.6,
                                         ),
                                       ),
@@ -3173,7 +3172,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           ),
                                         ),
                                         border: Border.all(
-                                          color: m8Sage,
+                                          color: m8Blue,
                                           width: 0.8,
                                         ),
                                       ),
@@ -3369,7 +3368,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                                   Alignment
                                                                       .center,
                                                               color: mine
-                                                                  ? m8SageDark
+                                                                  ? m8BlueDark
                                                                   : const Color(
                                                                       0xFFFFFFFF,
                                                                     ),
@@ -3393,7 +3392,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                         ),
                                                     decoration: BoxDecoration(
                                                       color: mine
-                                                          ? m8Sage
+                                                          ? m8Blue
                                                           : m8White,
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -3504,7 +3503,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     decoration: const BoxDecoration(
                       color: m8White,
                       border: Border(
-                        top: BorderSide(color: m8Sage, width: 0.8),
+                        top: BorderSide(color: m8Blue, width: 0.8),
                       ),
                     ),
                     child: Column(
@@ -3539,7 +3538,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       width: 22,
                                       height: 22,
                                       decoration: const BoxDecoration(
-                                        color: m8SageDark,
+                                        color: m8BlueDark,
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
@@ -3704,7 +3703,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               },
                               icon: const Icon(
                                 Icons.add_circle_outline,
-                                color: m8Sage,
+                                color: m8Blue,
                               ),
                             ),
                             Expanded(
@@ -3738,7 +3737,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             TextButton(
                               onPressed: sending ? null : sendHI,
                               style: TextButton.styleFrom(
-                                foregroundColor: m8SageDark,
+                                foregroundColor: m8BlueDark,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 11,
                                   vertical: 9,
@@ -3747,7 +3746,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(17),
                                   side: const BorderSide(
-                                    color: m8Sage,
+                                    color: m8Blue,
                                     width: 1,
                                   ),
                                 ),
@@ -3768,7 +3767,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               child: IconButton.filled(
                                 onPressed: sending ? null : sendMessage,
                                 style: IconButton.styleFrom(
-                                  backgroundColor: m8Sage,
+                                  backgroundColor: m8Blue,
                                   foregroundColor: Colors.white,
                                 ),
                                 icon: sending
@@ -3816,7 +3815,7 @@ class _M8StoryRail extends StatelessWidget {
             child: Text(
               'M8 STORY',
               style: TextStyle(
-                color: m8SageDark,
+                color: m8BlueDark,
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 1.3,
@@ -3869,9 +3868,9 @@ class _M8StoryMiniCard extends StatelessWidget {
         width: 128,
         padding: const EdgeInsets.fromLTRB(10, 9, 10, 8),
         decoration: BoxDecoration(
-          color: isMine ? m8SageDark : m8White,
+          color: isMine ? m8BlueDark : m8White,
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: m8Sage.withValues(alpha: 0.7), width: 0.8),
+          border: Border.all(color: m8Blue.withValues(alpha: 0.7), width: 0.8),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3883,18 +3882,18 @@ class _M8StoryMiniCard extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: isMine ? m8Sage : m8SageDark,
+                    color: isMine ? m8Blue : m8BlueDark,
                     borderRadius: BorderRadius.circular(9),
                   ),
                   child: Icon(
                     isMine ? Icons.add_rounded : Icons.auto_awesome_rounded,
                     size: 17,
-                    color: isMine ? m8White : m8SageLight,
+                    color: isMine ? m8White : m8BlueLight,
                   ),
                 ),
                 const Spacer(),
                 if (isMine)
-                  const Icon(Icons.edit_rounded, size: 14, color: m8SageLight),
+                  const Icon(Icons.edit_rounded, size: 14, color: m8BlueLight),
               ],
             ),
             Text(
@@ -3902,7 +3901,7 @@ class _M8StoryMiniCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isMine ? m8White : m8SageDark,
+                color: isMine ? m8White : m8BlueDark,
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
               ),
@@ -3912,7 +3911,7 @@ class _M8StoryMiniCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isMine ? m8SageLight : m8TextMuted,
+                color: isMine ? m8BlueLight : m8TextMuted,
                 fontSize: 10,
               ),
             ),
@@ -3929,9 +3928,9 @@ class StoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: m8SageDark,
+      backgroundColor: m8BlueDark,
       appBar: AppBar(
-        backgroundColor: m8SageDark,
+        backgroundColor: m8BlueDark,
         foregroundColor: m8White,
         elevation: 0,
         title: const Text(
@@ -3942,7 +3941,7 @@ class StoryPage extends StatelessWidget {
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.add_rounded),
-            color: m8SageLight,
+            color: m8BlueLight,
           ),
         ],
       ),
@@ -3952,7 +3951,7 @@ class StoryPage extends StatelessWidget {
           const Text(
             "CERITA SAYA",
             style: TextStyle(
-              color: m8SageLight,
+              color: m8BlueLight,
               fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.2,
@@ -3964,7 +3963,7 @@ class StoryPage extends StatelessWidget {
           const Text(
             "CERITA TERBARU",
             style: TextStyle(
-              color: m8SageLight,
+              color: m8BlueLight,
               fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.2,
@@ -4005,7 +4004,7 @@ class _M8MyStoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: m8White,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: m8Sage, width: 0.8),
+          border: Border.all(color: m8Blue, width: 0.8),
         ),
         child: Row(
           children: [
@@ -4013,13 +4012,13 @@ class _M8MyStoryCard extends StatelessWidget {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                color: m8SageDark,
+                color: m8BlueDark,
                 shape: BoxShape.circle,
-                border: Border.all(color: m8Sage, width: 2),
+                border: Border.all(color: m8Blue, width: 2),
               ),
               child: const Icon(
                 Icons.add_rounded,
-                color: m8SageLight,
+                color: m8BlueLight,
                 size: 28,
               ),
             ),
@@ -4031,7 +4030,7 @@ class _M8MyStoryCard extends StatelessWidget {
                   Text(
                     "Cerita Saya",
                     style: TextStyle(
-                      color: m8SageDark,
+                      color: m8BlueDark,
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
@@ -4044,7 +4043,7 @@ class _M8MyStoryCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: m8Sage),
+            const Icon(Icons.chevron_right_rounded, color: m8Blue),
           ],
         ),
       ),
@@ -4075,7 +4074,7 @@ class _M8StoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: m8White,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: m8Sage.withValues(alpha: 0.55), width: 0.7),
+          border: Border.all(color: m8Blue.withValues(alpha: 0.55), width: 0.7),
         ),
         child: Row(
           children: [
@@ -4083,9 +4082,9 @@ class _M8StoryCard extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: m8SageDark,
+                color: m8BlueDark,
                 shape: BoxShape.circle,
-                border: Border.all(color: m8Sage, width: 1.5),
+                border: Border.all(color: m8Blue, width: 1.5),
               ),
               alignment: Alignment.center,
               child: Text(
@@ -4105,7 +4104,7 @@ class _M8StoryCard extends StatelessWidget {
                   Text(
                     name,
                     style: const TextStyle(
-                      color: m8SageDark,
+                      color: m8BlueDark,
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                     ),
@@ -4121,7 +4120,7 @@ class _M8StoryCard extends StatelessWidget {
                   Text(
                     time,
                     style: const TextStyle(
-                      color: m8Sage,
+                      color: m8Blue,
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                     ),
@@ -4132,7 +4131,7 @@ class _M8StoryCard extends StatelessWidget {
             const Icon(
               Icons.arrow_forward_ios_rounded,
               size: 14,
-              color: m8Sage,
+              color: m8Blue,
             ),
           ],
         ),
@@ -4167,7 +4166,7 @@ class _AttachmentItem extends StatelessWidget {
               color: m8White,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: m8Sage, size: 25),
+            child: Icon(icon, color: m8Blue, size: 25),
           ),
           const SizedBox(height: 7),
           Text(
@@ -4463,14 +4462,14 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                           RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                     )
                   : Container(
-                      color: m8Sage,
+                      color: m8Blue,
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const CircleAvatar(
                               radius: 52,
-                              backgroundColor: m8Sage,
+                              backgroundColor: m8Blue,
                               child: Icon(
                                 Icons.person,
                                 size: 55,
@@ -4509,7 +4508,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                                 height: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: m8Sage,
+                                  color: m8Blue,
                                 ),
                               ),
                             ],
@@ -4576,7 +4575,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                   width: 105,
                   height: 145,
                   decoration: BoxDecoration(
-                    color: m8Sage,
+                    color: m8Blue,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: m8White.withValues(alpha: 0.78),
@@ -4691,7 +4690,7 @@ class _CallButton extends StatelessWidget {
             width: 58,
             height: 58,
             decoration: const BoxDecoration(
-              color: m8SageLight,
+              color: m8BlueLight,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: Colors.white, size: 27),
@@ -4713,7 +4712,7 @@ class CallsPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.call, size: 70, color: m8Sage),
+          Icon(Icons.call, size: 70, color: m8Blue),
           const SizedBox(height: 18),
           const Text(
             'Panggilan M8',
@@ -4798,9 +4797,9 @@ class _ProfilePageState extends State<ProfilePage> {
         Container(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
           decoration: BoxDecoration(
-            color: m8SageDark,
+            color: m8BlueDark,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: m8Sage, width: 1),
+            border: Border.all(color: m8Blue, width: 1),
             boxShadow: const [
               BoxShadow(
                 blurRadius: 18,
@@ -4815,12 +4814,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: m8Sage, width: 2),
+                  border: Border.all(color: m8Blue, width: 2),
                 ),
                 child: const CircleAvatar(
                   radius: 52,
                   backgroundColor: m8White,
-                  child: Icon(Icons.person_rounded, size: 58, color: m8Sage),
+                  child: Icon(Icons.person_rounded, size: 58, color: m8Blue),
                 ),
               ),
 
@@ -4846,7 +4845,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     width: 8,
                     height: 8,
                     decoration: const BoxDecoration(
-                      color: m8SageLight,
+                      color: m8BlueLight,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -4856,7 +4855,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: m8SageLight,
+                      color: m8BlueLight,
                     ),
                   ),
                 ],
@@ -4873,7 +4872,7 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: BoxDecoration(
             color: m8White,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: m8Sage, width: 0.8),
+            border: Border.all(color: m8Blue, width: 0.8),
           ),
           child: Row(
             children: [
@@ -4881,12 +4880,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: m8SageDark,
+                  color: m8BlueDark,
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: const Icon(
                   Icons.key_rounded,
-                  color: m8SageLight,
+                  color: m8BlueLight,
                   size: 22,
                 ),
               ),
@@ -4924,7 +4923,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.2,
-                  color: m8SageDark,
+                  color: m8BlueDark,
                 ),
               ),
             ],
@@ -4944,9 +4943,9 @@ class _ProfilePageState extends State<ProfilePage> {
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: m8SageDark,
+              foregroundColor: m8BlueDark,
               disabledForegroundColor: m8TextMuted,
-              side: const BorderSide(color: m8Sage, width: 1),
+              side: const BorderSide(color: m8Blue, width: 1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -4968,8 +4967,8 @@ class _ProfilePageState extends State<ProfilePage> {
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: m8SageDark,
-              side: const BorderSide(color: m8Sage, width: 1),
+              foregroundColor: m8BlueDark,
+              side: const BorderSide(color: m8Blue, width: 1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -4986,7 +4985,7 @@ class _ProfilePageState extends State<ProfilePage> {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w900,
-              color: m8SageDark,
+              color: m8BlueDark,
             ),
           ),
         ),
@@ -4996,11 +4995,11 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: BoxDecoration(
             color: m8White,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: m8SageLight),
+            border: Border.all(color: m8BlueLight),
           ),
           child: ListTile(
             onTap: widget.onLogout,
-            leading: const Icon(Icons.logout_rounded, color: m8Sage),
+            leading: const Icon(Icons.logout_rounded, color: m8Blue),
             title: const Text(
               'Keluar',
               style: TextStyle(fontWeight: FontWeight.w800, color: m8Text),
