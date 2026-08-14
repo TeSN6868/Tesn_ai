@@ -2883,7 +2883,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: CustomPaint(painter: M8GamelanWallpaperPainter()),
           ),
           Container(
-            color: const Color(0xFFB8D2DE).withValues(alpha: 0.72),
+            color: const Color(0xFFB8D2DE).withValues(alpha: 0.18),
             child: Column(
               children: [
                 Expanded(
