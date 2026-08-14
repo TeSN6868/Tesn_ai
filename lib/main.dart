@@ -68,16 +68,173 @@ Future<void> _m8CallEndedSound() async {
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
-const m8Sage = Color(0xFF4F805B);
-const m8SageDark = Color(0xFF365F40);
-const m8SageLight = Color(0xFF9FBEA6);
-const m8SagePale = Color(0xFFE6EEE8);
+const m8Sage = Color(0xFF66889A);
+const m8SageDark = Color(0xFF405E6D);
+const m8SageLight = Color(0xFFA9BEC7);
+const m8SagePale = Color(0xFFE2EAED);
 
 const m8White = Color(0xFFFFFFFF);
-const m8WhiteSoft = Color(0xFFF8FBF9);
+const m8WhiteSoft = Color(0xFFF6F8F9);
 
-const m8Text = Color(0xFF26352B);
-const m8TextMuted = Color(0xFF68756C);
+const m8Text = Color(0xFF26343B);
+const m8TextMuted = Color(0xFF6E7D84);
+
+class M8DenimTexturePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Base washed blue jeans.
+    final basePaint = Paint()..color = m8Sage;
+    canvas.drawRect(Offset.zero & size, basePaint);
+
+    // Serat denim diagonal terang.
+    final lightThread = Paint()
+      ..color = m8SageLight.withValues(alpha: 0.075)
+      ..strokeWidth = 0.85;
+
+    // Serat denim diagonal gelap.
+    final darkThread = Paint()
+      ..color = m8SageDark.withValues(alpha: 0.065)
+      ..strokeWidth = 0.75;
+
+    const double threadStep = 6.5;
+
+    for (
+      double x = -size.height;
+      x < size.width + size.height;
+      x += threadStep
+    ) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x + size.height, size.height),
+        lightThread,
+      );
+
+      canvas.drawLine(
+        Offset(x + 2.8, 0),
+        Offset(x + size.height + 2.8, size.height),
+        darkThread,
+      );
+    }
+
+    // Serat silang sangat tipis.
+    final crossThread = Paint()
+      ..color = m8White.withValues(alpha: 0.018)
+      ..strokeWidth = 0.55;
+
+    for (double y = 0; y < size.height; y += 4.5) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y + 1.5), crossThread);
+    }
+
+    // Washed / faded patches.
+    final fadePaint = Paint();
+
+    final fades = [
+      Rect.fromLTWH(
+        size.width * 0.02,
+        size.height * 0.06,
+        size.width * 0.38,
+        size.height * 0.20,
+      ),
+      Rect.fromLTWH(
+        size.width * 0.55,
+        size.height * 0.16,
+        size.width * 0.42,
+        size.height * 0.28,
+      ),
+      Rect.fromLTWH(
+        size.width * 0.08,
+        size.height * 0.42,
+        size.width * 0.30,
+        size.height * 0.25,
+      ),
+      Rect.fromLTWH(
+        size.width * 0.48,
+        size.height * 0.55,
+        size.width * 0.45,
+        size.height * 0.22,
+      ),
+      Rect.fromLTWH(
+        size.width * 0.16,
+        size.height * 0.75,
+        size.width * 0.48,
+        size.height * 0.18,
+      ),
+    ];
+
+    for (final rect in fades) {
+      fadePaint.shader = RadialGradient(
+        center: Alignment.center,
+        radius: 0.75,
+        colors: [
+          m8SageLight.withValues(alpha: 0.075),
+          m8SageLight.withValues(alpha: 0.025),
+          m8SageLight.withValues(alpha: 0.0),
+        ],
+      ).createShader(rect);
+
+      canvas.drawOval(rect, fadePaint);
+    }
+
+    // Area aus yang lebih kecil dan tidak beraturan.
+    final wornPaint = Paint();
+
+    final wornAreas = [
+      Rect.fromLTWH(
+        size.width * 0.08,
+        size.height * 0.13,
+        size.width * 0.18,
+        size.height * 0.055,
+      ),
+      Rect.fromLTWH(
+        size.width * 0.67,
+        size.height * 0.38,
+        size.width * 0.20,
+        size.height * 0.065,
+      ),
+      Rect.fromLTWH(
+        size.width * 0.28,
+        size.height * 0.58,
+        size.width * 0.25,
+        size.height * 0.05,
+      ),
+      Rect.fromLTWH(
+        size.width * 0.05,
+        size.height * 0.84,
+        size.width * 0.25,
+        size.height * 0.055,
+      ),
+    ];
+
+    for (final rect in wornAreas) {
+      wornPaint.shader = RadialGradient(
+        radius: 0.9,
+        colors: [
+          m8White.withValues(alpha: 0.035),
+          m8White.withValues(alpha: 0.012),
+          m8White.withValues(alpha: 0.0),
+        ],
+      ).createShader(rect);
+
+      canvas.drawOval(rect, wornPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant M8DenimTexturePainter oldDelegate) {
+    return false;
+  }
+}
+
+class M8DenimBackground extends StatelessWidget {
+  final Widget child;
+
+  const M8DenimBackground({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(painter: M8DenimTexturePainter(), child: child);
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -101,13 +258,13 @@ class M8App extends StatelessWidget {
           primary: m8Sage,
           secondary: m8SageLight,
           surface: m8SageDark,
-          onPrimary: m8Sage,
-          onSecondary: m8Sage,
+          onPrimary: m8White,
+          onSecondary: m8White,
           onSurface: Colors.white,
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: m8Sage,
-          foregroundColor: m8SageLight,
+          foregroundColor: m8White,
           elevation: 0,
         ),
       ),
@@ -279,14 +436,14 @@ class _LoginPageState extends State<LoginPage> {
                             controller: pinController,
                             textInputAction: TextInputAction.next,
                             style: const TextStyle(
-                              color: Color(0xFF26352B),
+                              color: m8Text,
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
                               labelText: 'M8 PIN',
                               hintText: 'Masukkan M8 PIN',
                               labelStyle: const TextStyle(
-                                color: Color(0xFF26352B),
+                                color: m8Text,
                                 fontWeight: FontWeight.w600,
                               ),
                               hintStyle: const TextStyle(color: Colors.black54),
@@ -319,14 +476,12 @@ class _LoginPageState extends State<LoginPage> {
                             obscureText: obscurePassword,
                             onSubmitted: (_) => login(),
                             style: const TextStyle(
-                              color: Color(0xFF26352B),
+                              color: m8Text,
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: const TextStyle(
-                                color: Color(0xFF26352B),
-                              ),
+                              labelStyle: const TextStyle(color: m8Text),
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
                                 color: Colors.white,
@@ -647,8 +802,8 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Color(0xFF26352B)),
-      prefixIcon: Icon(icon, color: Color(0xFF26352B)),
+      labelStyle: const TextStyle(color: m8Text),
+      prefixIcon: Icon(icon, color: m8Text),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: m8White,
@@ -669,7 +824,7 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: m8Sage,
       appBar: AppBar(
         backgroundColor: m8Sage,
-        foregroundColor: m8SageLight,
+        foregroundColor: m8White,
         title: const Text('Daftar M8'),
       ),
       body: SafeArea(
@@ -978,7 +1133,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: m8WhiteSoft,
       appBar: AppBar(
         backgroundColor: m8Sage,
-        foregroundColor: m8SageLight,
+        foregroundColor: m8White,
         title: Text(
           currentIndex == 0
               ? 'M8 Messenger'
@@ -1131,13 +1286,13 @@ class _HomePageState extends State<HomePage> {
           ],
         ],
       ),
-      body: pages[currentIndex],
+      body: M8DenimBackground(child: pages[currentIndex]),
       bottomNavigationBar: NavigationBar(
         backgroundColor: m8Sage,
         indicatorColor: m8Sage,
         surfaceTintColor: Colors.transparent,
         labelTextStyle: const WidgetStatePropertyAll<TextStyle?>(
-          TextStyle(color: Color(0xFFF8FBF9), fontWeight: FontWeight.w600),
+          TextStyle(color: m8WhiteSoft, fontWeight: FontWeight.w600),
         ),
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
@@ -1331,7 +1486,7 @@ class _SettingsPageState extends State<SettingsPage> {
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         backgroundColor: m8Sage,
-        foregroundColor: m8SageLight,
+        foregroundColor: m8White,
         elevation: 0,
       ),
       body: ListView(
@@ -1828,13 +1983,13 @@ class _ChatsPageState extends State<ChatsPage> {
                                 title: Text(
                                   other,
                                   style: const TextStyle(
-                                    color: Color(0xFF26352B),
+                                    color: m8Text,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 subtitle: const Text(
                                   'Percakapan M8',
-                                  style: TextStyle(color: Color(0xFF26352B)),
+                                  style: TextStyle(color: m8Text),
                                 ),
                                 trailing: const Icon(Icons.chevron_right),
                                 onTap: () {
@@ -1882,11 +2037,11 @@ class M8GamelanWallpaperPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Wallpaper Sage M8: teduh tetapi tetap hidup.
-    final bg = Paint()..color = const Color(0xFFE6EEE8);
+    final bg = Paint()..color = m8SagePale;
     canvas.drawRect(Offset.zero & size, bg);
 
     final line = Paint()
-      ..color = const Color(0xFF4F805B).withValues(alpha: 0.18)
+      ..color = m8Sage.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.25
       ..strokeCap = StrokeCap.round;
@@ -2741,10 +2896,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     final other = p1 == widget.myPin ? p2 : p1;
 
     return Scaffold(
-      backgroundColor: m8WhiteSoft,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: m8Sage,
-        foregroundColor: m8SageLight,
+        foregroundColor: m8White,
         elevation: 0,
         toolbarHeight: 68,
         titleSpacing: 0,
@@ -2764,12 +2919,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     width: 11,
                     height: 11,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4F805B),
+                      color: m8Sage,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF26352B),
-                        width: 2,
-                      ),
+                      border: Border.all(color: m8Text, width: 2),
                     ),
                   ),
                 ),
@@ -2786,11 +2938,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ),
                   Text(
                     "M8 PIN: $other",
-                    style: const TextStyle(fontSize: 11, color: m8TextMuted),
+                    style: const TextStyle(fontSize: 11, color: m8SageLight),
                   ),
                   const Text(
                     "Online",
-                    style: TextStyle(fontSize: 10, color: Color(0xFF4F805B)),
+                    style: TextStyle(fontSize: 10, color: m8SageLight),
                   ),
                 ],
               ),
@@ -2800,12 +2952,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         actions: [
           IconButton(
             onPressed: () => startVoiceCall(other),
-            icon: const Icon(Icons.call_outlined, color: m8Sage),
+            icon: const Icon(Icons.call_outlined, color: m8White),
           ),
           IconButton(
             tooltip: 'Panggilan video',
             onPressed: () => startVideoCall(other),
-            icon: const Icon(Icons.videocam_outlined, color: m8Sage),
+            icon: const Icon(Icons.videocam_outlined, color: m8White),
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
@@ -2910,8 +3062,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 : "✓";
 
                             final statusColor = status == "read"
-                                ? const Color(0xFF365F40)
-                                : const Color(0xFF68756C);
+                                ? m8SageDark
+                                : m8TextMuted;
                             final rawTime = msg["timestamp"]?.toString() ?? "";
 
                             String time = "";
@@ -3004,9 +3156,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                         2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: mine
-                                            ? const Color(0xFFE6EEE8)
-                                            : m8White,
+                                        color: mine ? m8SagePale : m8White,
                                         borderRadius: BorderRadius.only(
                                           topLeft: const Radius.circular(5),
                                           topRight: const Radius.circular(16),
@@ -3254,7 +3404,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                         color: mine
                                                             ? Colors.white
                                                             : const Color(
-                                                                0xFF26352B,
+                                                                0xFF1C2820,
                                                               ),
                                                       ),
                                                     ),
@@ -3273,7 +3423,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   letterSpacing: 1.2,
                                                   color: mine
                                                       ? m8SageDark
-                                                      : const Color(0xFF26352B),
+                                                      : m8Text,
                                                 ),
                                               ),
                                             )
@@ -3287,7 +3437,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   height: 1.3,
                                                   color: mine
                                                       ? m8SageDark
-                                                      : const Color(0xFF26352B),
+                                                      : m8Text,
                                                 ),
                                               ),
                                             ),
@@ -3301,7 +3451,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   fontSize: 9,
                                                   color: mine
                                                       ? m8SageLight
-                                                      : const Color(0xFF68756C),
+                                                      : m8TextMuted,
                                                 ),
                                               ),
                                               if (mine) ...[
@@ -3485,7 +3635,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                 style: TextStyle(
                                                   fontSize: 19,
                                                   fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF26352B),
+                                                  color: m8Text,
                                                 ),
                                               ),
                                             ),
@@ -3560,7 +3710,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 maxLines: 5,
                                 textInputAction: TextInputAction.newline,
                                 style: const TextStyle(
-                                  color: Color(0xFF26352B),
+                                  color: m8Text,
                                   fontSize: 15,
                                 ),
                                 decoration: InputDecoration(
@@ -3734,7 +3884,7 @@ class _M8StoryMiniCard extends StatelessWidget {
                   child: Icon(
                     isMine ? Icons.add_rounded : Icons.auto_awesome_rounded,
                     size: 17,
-                    color: isMine ? m8SageDark : m8SageLight,
+                    color: isMine ? m8White : m8SageLight,
                   ),
                 ),
                 const Spacer(),
@@ -3960,10 +4110,7 @@ class _M8StoryCard extends StatelessWidget {
                     text,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF68756C),
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: m8TextMuted, fontSize: 12),
                   ),
                   const SizedBox(height: 3),
                   Text(
@@ -4850,7 +4997,7 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: BoxDecoration(
             color: m8White,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF9FBEA6)),
+            border: Border.all(color: m8SageLight),
           ),
           child: ListTile(
             onTap: widget.onLogout,
