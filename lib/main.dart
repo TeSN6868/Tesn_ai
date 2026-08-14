@@ -1974,7 +1974,7 @@ class _ChatsPageState extends State<ChatsPage> {
                               return Container(
                                 margin: const EdgeInsets.symmetric(
                                   horizontal: 12,
-                                  vertical: 5,
+                                  vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
                                   color: m8White,
@@ -1985,7 +1985,7 @@ class _ChatsPageState extends State<ChatsPage> {
                                 ),
                                 child: ListTile(
                                   leading: CircleAvatar(
-                                    radius: 27,
+                                    radius: 21,
                                     backgroundColor: m8Blue,
                                     child: Text(
                                       other.isNotEmpty
@@ -2007,11 +2007,15 @@ class _ChatsPageState extends State<ChatsPage> {
                                     style: const TextStyle(
                                       color: m8Text,
                                       fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                     ),
                                   ),
                                   subtitle: const Text(
                                     'Percakapan M8',
-                                    style: TextStyle(color: m8TextMuted),
+                                    style: TextStyle(
+                                      color: m8TextMuted,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                   trailing: const Icon(
                                     Icons.chevron_right,
