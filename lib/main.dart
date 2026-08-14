@@ -2044,7 +2044,7 @@ class M8GamelanWallpaperPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Wallpaper Sage M8: teduh tetapi tetap hidup.
-    final bg = Paint()..color = m8SagePale;
+    final bg = Paint()..color = Colors.white;
     canvas.drawRect(Offset.zero & size, bg);
 
     final line = Paint()
@@ -2908,7 +2908,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         backgroundColor: m8Sage,
         foregroundColor: m8White,
         elevation: 0,
-        toolbarHeight: 68,
+        toolbarHeight: 74,
         titleSpacing: 0,
         title: Row(
           children: [
@@ -2945,11 +2945,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ),
                   Text(
                     "M8 PIN: $other",
-                    style: const TextStyle(fontSize: 11, color: m8SageLight),
+                    style: const TextStyle(fontSize: 11, color: m8White),
                   ),
                   const Text(
                     "Online",
-                    style: TextStyle(fontSize: 10, color: m8SageLight),
+                    style: TextStyle(fontSize: 10, color: m8WhiteSoft),
                   ),
                 ],
               ),
@@ -3158,12 +3158,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       margin: const EdgeInsets.only(bottom: 7),
                                       padding: const EdgeInsets.fromLTRB(
                                         8,
-                                        2,
+                                        1,
                                         8,
-                                        2,
+                                        1,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: mine ? m8SageDark : m8White,
+                                        color: mine ? m8Sage : m8White,
                                         borderRadius: BorderRadius.only(
                                           topLeft: const Radius.circular(5),
                                           topRight: const Radius.circular(16),
