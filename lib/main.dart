@@ -3088,8 +3088,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 : "✓";
 
                             final statusColor = status == "read"
-                                ? m8White
-                                : m8WhiteSoft;
+                                ? m8Blue
+                                : const Color(0xFF071A2E);
                             final rawTime = msg["timestamp"]?.toString() ?? "";
 
                             String time = "";
