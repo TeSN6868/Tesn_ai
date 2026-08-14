@@ -442,7 +442,7 @@ class _LoginPageState extends State<LoginPage> {
                                 color: m8Text,
                                 fontWeight: FontWeight.w600,
                               ),
-                              hintStyle: const TextStyle(color: Colors.black54),
+                              hintStyle: const TextStyle(color: m8TextMuted),
                               prefixIcon: const Icon(
                                 Icons.key_rounded,
                                 color: Colors.white,
@@ -451,7 +451,9 @@ class _LoginPageState extends State<LoginPage> {
                               fillColor: m8White,
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(17),
-                                borderSide: BorderSide(color: Colors.black12),
+                                borderSide: BorderSide(
+                                  color: m8SageDark.withValues(alpha: 0.22),
+                                ),
                               ),
                               focusedBorder: const OutlineInputBorder(
                                 borderRadius: BorderRadius.all(
@@ -499,7 +501,9 @@ class _LoginPageState extends State<LoginPage> {
                               fillColor: m8White,
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(17),
-                                borderSide: BorderSide(color: Colors.black12),
+                                borderSide: BorderSide(
+                                  color: m8SageDark.withValues(alpha: 0.22),
+                                ),
                               ),
                               focusedBorder: const OutlineInputBorder(
                                 borderRadius: BorderRadius.all(
@@ -571,6 +575,7 @@ class _LoginPageState extends State<LoginPage> {
                               child: const Text(
                                 'Belum punya akun : Daftar',
                                 style: TextStyle(
+                                  color: m8Sage,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 1,
                                 ),
@@ -585,7 +590,10 @@ class _LoginPageState extends State<LoginPage> {
 
                     Text(
                       'M8 Messenger API • Online',
-                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: m8White.withValues(alpha: 0.72),
+                      ),
                     ),
                   ],
                 ),
@@ -805,7 +813,7 @@ class _RegisterPageState extends State<RegisterPage> {
       fillColor: m8White,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.black12),
+        borderSide: BorderSide(color: m8SageDark.withValues(alpha: 0.22)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -837,7 +845,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const Text(
                     'Buat Akun M8',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: m8Text,
+                    ),
                   ),
 
                   const SizedBox(height: 8),
@@ -845,9 +857,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Text(
                     'Daftar untuk mulai menggunakan M8 Messenger',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: .65),
-                    ),
+                    style: TextStyle(color: m8TextMuted),
                   ),
 
                   const SizedBox(height: 32),
@@ -1935,6 +1945,7 @@ class _ChatsPageState extends State<ChatsPage> {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
+                                    color: m8Text,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -4432,10 +4443,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
             child: Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(height: 7),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 11),
-          ),
+          Text(label, style: const TextStyle(color: m8TextMuted, fontSize: 11)),
         ],
       ),
     );
@@ -4492,7 +4500,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                             Text(
                               callStatus,
                               style: const TextStyle(
-                                color: Colors.white70,
+                                color: m8TextMuted,
                                 fontSize: 14,
                               ),
                             ),
@@ -4551,7 +4559,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                         Text(
                           durationText,
                           style: const TextStyle(
-                            color: Colors.white70,
+                            color: m8TextMuted,
                             fontSize: 13,
                           ),
                         ),
@@ -4573,7 +4581,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                     color: m8Sage,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: m8White.withValues(alpha: 0.78),
                       width: 1.5,
                     ),
                     boxShadow: const [
@@ -4652,7 +4660,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                   const SizedBox(height: 8),
                   const Text(
                     'Akhiri',
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                    style: TextStyle(color: m8TextMuted, fontSize: 12),
                   ),
                 ],
               ),
@@ -4691,10 +4699,7 @@ class _CallButton extends StatelessWidget {
             child: Icon(icon, color: Colors.white, size: 27),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-          ),
+          Text(label, style: const TextStyle(color: m8TextMuted, fontSize: 12)),
         ],
       ),
     );
