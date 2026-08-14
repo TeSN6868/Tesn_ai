@@ -2049,7 +2049,7 @@ class M8GamelanWallpaperPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final fill = Paint()
-      ..color = const Color(0xFF8FB89A).withValues(alpha: 0.065)
+      ..color = const Color(0xFF3D7EEB).withValues(alpha: 0.065)
       ..style = PaintingStyle.fill;
 
     // Motif kecil-kecil dan cukup rapat seperti wallpaper messenger.
@@ -3159,7 +3159,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: mine
-                                            ? const Color(0xFF6F9BB8)
+                                            ? const Color(0xFF3D7EEB)
                                             : m8White,
                                         borderRadius: BorderRadius.only(
                                           topLeft: const Radius.circular(5),
