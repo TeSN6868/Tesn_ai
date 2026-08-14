@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -4756,11 +4757,17 @@ class CallsPage extends StatelessWidget {
 // PROFILE
 // ============================================================
 
+
+
 class ProfilePage extends StatefulWidget {
   final Map<String, dynamic> user;
   final VoidCallback onLogout;
 
-  const ProfilePage({super.key, required this.user, required this.onLogout});
+  const ProfilePage({
+    super.key,
+    required this.user,
+    required this.onLogout,
+  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -4772,32 +4779,115 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _testHeySound() async {
     try {
       await _heyPlayer.stop();
-
       await _heyPlayer.setVolume(1.0);
-
-      _heyPlayer.onPlayerStateChanged.listen((state) {
-        if (!mounted) return;
-
-        final message = state == PlayerState.playing
-            ? '🔊 HEY PLAYING'
-            : 'HEY: $state';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      });
-
-      await _heyPlayer.play(AssetSource('sounds/m8_hey.wav'));
+      await _heyPlayer.play(
+        AssetSource('sounds/m8_hey.wav'),
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('❌ Nada Hi! gagal diputar: $e')));
-      }
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Nada Hi! gagal diputar: $e'),
+        ),
+      );
     }
+  }
+
+  void _copyPin(String pin) {
+    Clipboard.setData(
+      ClipboardData(text: pin),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('M8 PIN berhasil disalin'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _comingSoon(String title) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$title segera hadir di M8.'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 10),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w900,
+          color: m8BlueDark,
+        ),
+      ),
+    );
+  }
+
+  Widget _menuItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+    bool danger = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(
+          color: danger
+              ? Colors.red.withValues(alpha: 0.10)
+              : m8Blue.withValues(alpha: 0.08),
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 5,
+        ),
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: danger
+                ? Colors.red.withValues(alpha: 0.07)
+                : m8Blue.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Icon(
+            icon,
+            color: danger ? Colors.red : m8Blue,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: danger ? Colors.red : m8Text,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(
+            color: m8TextMuted,
+            fontSize: 12,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right_rounded,
+          color: danger ? Colors.red : m8TextMuted,
+        ),
+        onTap: onTap,
+      ),
+    );
   }
 
   @override
@@ -4811,233 +4901,224 @@ class _ProfilePageState extends State<ProfilePage> {
     final name = widget.user['name']?.toString() ?? 'M8 User';
     final pin = widget.user['m8_pin']?.toString() ?? '';
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 30),
-      children: [
-        const SizedBox(height: 8),
-
-        // PROFILE HEADER
-        Container(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
-          decoration: BoxDecoration(
-            color: m8BlueDark,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: m8Blue, width: 1),
-            boxShadow: const [
-              BoxShadow(
-                blurRadius: 18,
-                offset: Offset(0, 8),
-                color: Color(0x22000000),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: m8Blue, width: 2),
+    return Container(
+      color: m8WhiteSoft,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+            decoration: BoxDecoration(
+              color: m8BlueDark,
+              borderRadius: BorderRadius.circular(26),
+              boxShadow: const [
+                BoxShadow(
+                  blurRadius: 18,
+                  offset: Offset(0, 8),
+                  color: Color(0x22000000),
                 ),
-                child: const CircleAvatar(
-                  radius: 52,
-                  backgroundColor: m8White,
-                  child: Icon(Icons.person_rounded, size: 58, color: m8Blue),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              Text(
-                name,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.3,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 7),
-
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: m8BlueLight,
-                      shape: BoxShape.circle,
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: m8Blue,
+                      width: 2,
                     ),
                   ),
-                  const SizedBox(width: 7),
-                  const Text(
-                    'Online',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: m8BlueLight,
+                  child: const CircleAvatar(
+                    radius: 52,
+                    backgroundColor: m8White,
+                    child: Icon(
+                      Icons.person_rounded,
+                      size: 58,
+                      color: m8Blue,
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 18),
-
-        // M8 PIN
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          decoration: BoxDecoration(
-            color: m8White,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: m8Blue, width: 0.8),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: m8BlueDark,
-                  borderRadius: BorderRadius.circular(13),
                 ),
-                child: const Icon(
-                  Icons.key_rounded,
-                  color: m8BlueLight,
-                  size: 22,
+                const SizedBox(height: 16),
+                Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-
-              const SizedBox(width: 13),
-
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'M8 PIN',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: m8TextMuted,
+                    Container(
+                      width: 9,
+                      height: 9,
+                      decoration: const BoxDecoration(
+                        color: m8BlueLight,
+                        shape: BoxShape.circle,
                       ),
                     ),
-                    SizedBox(height: 3),
-                    Text(
-                      'PIN identitas akun',
+                    const SizedBox(width: 7),
+                    const Text(
+                      'Online',
                       style: TextStyle(
-                        fontSize: 14,
+                        color: m8BlueLight,
                         fontWeight: FontWeight.w700,
-                        color: m8Text,
                       ),
                     ),
                   ],
                 ),
-              ),
-
-              Text(
-                pin,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
-                  color: m8BlueDark,
+                const SizedBox(height: 14),
+                const Text(
+                  'Terhubung melalui M8 Messenger',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 14),
-
-        // EDIT PROFILE
-        SizedBox(
-          height: 50,
-          child: OutlinedButton.icon(
-            onPressed: null,
-            icon: const Icon(Icons.edit_rounded),
-            label: const Text(
-              'Edit Profil',
-              style: TextStyle(fontWeight: FontWeight.w800),
+              ],
             ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: m8BlueDark,
-              disabledForegroundColor: m8TextMuted,
-              side: const BorderSide(color: m8Blue, width: 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+          ),
+
+          const SizedBox(height: 14),
+
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: m8Blue.withValues(alpha: 0.12),
               ),
             ),
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        const SizedBox(height: 18),
-
-        SizedBox(
-          height: 50,
-          child: OutlinedButton.icon(
-            onPressed: _testHeySound,
-            icon: const Icon(Icons.volume_up_rounded),
-            label: const Text(
-              'Tes Nada Hi!',
-              style: TextStyle(fontWeight: FontWeight.w800),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: m8BlueDark,
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: const Icon(
+                    Icons.pin_rounded,
+                    color: m8BlueLight,
+                  ),
+                ),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'M8 PIN',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: m8TextMuted,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        pin.isEmpty ? 'Belum tersedia' : pin,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          color: m8BlueDark,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Salin M8 PIN',
+                  onPressed: pin.isEmpty ? null : () => _copyPin(pin),
+                  icon: const Icon(
+                    Icons.copy_rounded,
+                    color: m8Blue,
+                  ),
+                ),
+              ],
             ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: m8BlueDark,
-              side: const BorderSide(color: m8Blue, width: 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
           ),
-        ),
 
-        const SizedBox(height: 24),
+          const SizedBox(height: 18),
 
-        const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 9),
-          child: Text(
-            'Akun',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-              color: m8BlueDark,
-            ),
+          _sectionTitle('Profil Saya'),
+
+          _menuItem(
+            icon: Icons.person_outline_rounded,
+            title: 'Nama',
+            subtitle: name,
+            onTap: () => _comingSoon('Edit nama'),
           ),
-        ),
 
-        // LOGOUT
-        Container(
-          decoration: BoxDecoration(
-            color: m8White,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: m8BlueLight),
+          _menuItem(
+            icon: Icons.photo_camera_outlined,
+            title: 'Foto Profil',
+            subtitle: 'Atur foto profil M8 kamu',
+            onTap: () => _comingSoon('Foto profil'),
           ),
-          child: ListTile(
+
+          _menuItem(
+            icon: Icons.info_outline_rounded,
+            title: 'Tentang Saya',
+            subtitle: 'Tambahkan informasi singkat tentang kamu',
+            onTap: () => _comingSoon('Tentang Saya'),
+          ),
+
+          const SizedBox(height: 8),
+
+          _sectionTitle('Akun'),
+
+          _menuItem(
+            icon: Icons.security_rounded,
+            title: 'Keamanan',
+            subtitle: 'Kelola keamanan akun M8',
+            onTap: () => _comingSoon('Keamanan'),
+          ),
+
+          _menuItem(
+            icon: Icons.pin_outlined,
+            title: 'M8 PIN',
+            subtitle: 'PIN unik untuk terhubung dengan pengguna lain',
+            onTap: () => _comingSoon('M8 PIN'),
+          ),
+
+          _menuItem(
+            icon: Icons.volume_up_outlined,
+            title: 'Nada M8',
+            subtitle: 'Tes nada khas M8 Messenger',
+            onTap: _testHeySound,
+          ),
+
+          const SizedBox(height: 8),
+
+          _sectionTitle('Aplikasi'),
+
+          _menuItem(
+            icon: Icons.info_outline_rounded,
+            title: 'Tentang M8 Messenger',
+            subtitle: 'Messenger dengan identitas M8 PIN',
+            onTap: () => _comingSoon('Tentang M8 Messenger'),
+          ),
+
+          const SizedBox(height: 10),
+
+          _menuItem(
+            icon: Icons.logout_rounded,
+            title: 'Keluar',
+            subtitle: 'Keluar dari akun M8',
+            danger: true,
             onTap: widget.onLogout,
-            leading: const Icon(Icons.logout_rounded, color: m8Blue),
-            title: const Text(
-              'Keluar',
-              style: TextStyle(fontWeight: FontWeight.w800, color: m8Text),
-            ),
-            subtitle: const Text(
-              'Keluar dari akun M8',
-              style: TextStyle(fontSize: 12, color: m8TextMuted),
-            ),
-            trailing: const Icon(
-              Icons.chevron_right_rounded,
-              color: m8TextMuted,
-            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
