@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="m8_sage_dark">#365F40</color>
-    <color name="m8_sage">#4F805B</color>
-    <color name="m8_sage_light">#9FBEA6</color>
+    <color name="m8_blue_dark">#0B1D2E</color>
+    <color name="m8_blue">#3D7EEB</color>
+    <color name="m8_blue_light">#3D7EEB</color>
     <color name="m8_white">#FFFFFF</color>
 </resources>
