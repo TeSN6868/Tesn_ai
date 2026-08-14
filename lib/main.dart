@@ -68,17 +68,17 @@ Future<void> _m8CallEndedSound() async {
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
-const m8Navy = Color(0xFF12335F);
-const m8Navy2 = Color(0xFF1E477A);
-const m8Navy3 = Color(0xFF274F7C);
+const m8Navy = Color(0xFF5F936A);
+const m8Navy2 = Color(0xFF3F6F4A);
+const m8Navy3 = Color(0xFF4F805B);
 
-const m8Gold = Color(0xFF3A6EA5);
-const m8GoldLight = Color(0xFF5B84AE);
+const m8Gold = Color(0xFFB89B5E);
+const m8GoldLight = Color(0xFFD0B978);
 
-const m8Cream = Color(0xFFEEF3F7);
+const m8Cream = Color(0xFFF4F1E7);
 const m8CreamLight = Color(0xFFFFFFFF);
-const m8Text = Color(0xFF0F1B2E);
-const m8TextMuted = Color(0xFF6B7C93);
+const m8Text = Color(0xFF26352B);
+const m8TextMuted = Color(0xFF68756C);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -280,14 +280,14 @@ class _LoginPageState extends State<LoginPage> {
                             controller: pinController,
                             textInputAction: TextInputAction.next,
                             style: const TextStyle(
-                              color: Color(0xFF172033),
+                              color: Color(0xFF26352B),
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
                               labelText: 'M8 PIN',
                               hintText: 'Masukkan M8 PIN',
                               labelStyle: const TextStyle(
-                                color: Color(0xFF172033),
+                                color: Color(0xFF26352B),
                                 fontWeight: FontWeight.w600,
                               ),
                               hintStyle: const TextStyle(color: Colors.black54),
@@ -320,13 +320,13 @@ class _LoginPageState extends State<LoginPage> {
                             obscureText: obscurePassword,
                             onSubmitted: (_) => login(),
                             style: const TextStyle(
-                              color: Color(0xFF172033),
+                              color: Color(0xFF26352B),
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
                               labelText: 'Password',
                               labelStyle: const TextStyle(
-                                color: Color(0xFF172033),
+                                color: Color(0xFF26352B),
                               ),
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
@@ -648,8 +648,8 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Color(0xFF172033)),
-      prefixIcon: Icon(icon, color: Color(0xFF172033)),
+      labelStyle: const TextStyle(color: Color(0xFF26352B)),
+      prefixIcon: Icon(icon, color: Color(0xFF26352B)),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: m8CreamLight,
@@ -1138,7 +1138,7 @@ class _HomePageState extends State<HomePage> {
         indicatorColor: m8Gold,
         surfaceTintColor: Colors.transparent,
         labelTextStyle: const WidgetStatePropertyAll<TextStyle?>(
-          TextStyle(color: Color(0xFFEEF3F7), fontWeight: FontWeight.w600),
+          TextStyle(color: Color(0xFFF4F1E7), fontWeight: FontWeight.w600),
         ),
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
@@ -1829,13 +1829,13 @@ class _ChatsPageState extends State<ChatsPage> {
                                 title: Text(
                                   other,
                                   style: const TextStyle(
-                                    color: Color(0xFF172033),
+                                    color: Color(0xFF26352B),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 subtitle: const Text(
                                   'Percakapan M8',
-                                  style: TextStyle(color: Color(0xFF172033)),
+                                  style: TextStyle(color: Color(0xFF26352B)),
                                 ),
                                 trailing: const Icon(Icons.chevron_right),
                                 onTap: () {
@@ -1882,50 +1882,49 @@ class _ChatsPageState extends State<ChatsPage> {
 class M8GamelanWallpaperPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Dasar biru muda lembut.
-    final bg = Paint()..color = const Color(0xFFB8D2DE);
+    // Wallpaper Sage M8: teduh tetapi tetap hidup.
+    final bg = Paint()..color = const Color(0xFFE8EFE9);
     canvas.drawRect(Offset.zero & size, bg);
 
-    // Pola sangat tipis agar tidak mengganggu teks chat.
     final line = Paint()
-      ..color = const Color(0xFF4A9CC5).withValues(alpha: 0.10)
+      ..color = const Color(0xFF5F936A).withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
+      ..strokeWidth = 1.15
       ..strokeCap = StrokeCap.round;
 
     final fill = Paint()
-      ..color = const Color(0xFF6AAFD0).withValues(alpha: 0.045)
+      ..color = const Color(0xFF8FB89A).withValues(alpha: 0.045)
       ..style = PaintingStyle.fill;
 
-    const w = 92.0;
-    const h = 82.0;
+    // Motif kecil-kecil dan cukup rapat seperti wallpaper messenger.
+    const cellW = 72.0;
+    const cellH = 66.0;
 
-    for (int row = -1; row < (size.height / h).ceil() + 1; row++) {
-      for (int col = -1; col < (size.width / w).ceil() + 1; col++) {
-        final x = col * w + (row.isEven ? 8 : 48);
-        final y = row * h + 8;
+    for (int row = -1; row < (size.height / cellH).ceil() + 1; row++) {
+      for (int col = -1; col < (size.width / cellW).ceil() + 1; col++) {
+        final x = col * cellW + (row.isEven ? 4 : 36);
+        final y = row * cellH + 4;
 
         canvas.save();
         canvas.translate(x, y);
+        canvas.scale(0.75, 0.75);
 
-        switch ((row + col).abs() % 6) {
+        switch ((row * 3 + col).abs() % 5) {
           case 0:
-            _chatBubble(canvas, line, fill);
+            _gong(canvas, line, fill);
             break;
           case 1:
-            _phone(canvas, line, fill);
+            _kendang(canvas, line, fill);
             break;
           case 2:
-            _send(canvas, line, fill);
+            _saron(canvas, line, fill);
             break;
           case 3:
-            _wifi(canvas, line, fill);
-            break;
-          case 4:
-            _message(canvas, line, fill);
+            _bonang(canvas, line, fill);
             break;
           default:
-            _link(canvas, line, fill);
+            _siter(canvas, line, fill);
+            break;
         }
 
         canvas.restore();
@@ -1933,107 +1932,103 @@ class M8GamelanWallpaperPainter extends CustomPainter {
     }
   }
 
-  void _chatBubble(Canvas c, Paint line, Paint fill) {
+  // Gong kecil.
+  void _gong(Canvas c, Paint line, Paint fill) {
+    final oval = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(8, 10, 30, 24),
+      const Radius.circular(15),
+    );
+
+    c.drawRRect(oval, fill);
+    c.drawRRect(oval, line);
+    c.drawCircle(const Offset(23, 22), 4, line);
+    c.drawCircle(const Offset(23, 22), 1.4, line);
+
+    c.drawLine(const Offset(11, 34), const Offset(7, 39), line);
+    c.drawLine(const Offset(35, 34), const Offset(39, 39), line);
+    c.drawLine(const Offset(7, 39), const Offset(39, 39), line);
+  }
+
+  // Kendang kecil.
+  void _kendang(Canvas c, Paint line, Paint fill) {
     final path = Path()
-      ..moveTo(4, 8)
-      ..quadraticBezierTo(4, 4, 8, 4)
-      ..lineTo(30, 4)
-      ..quadraticBezierTo(34, 4, 34, 8)
-      ..lineTo(34, 20)
-      ..quadraticBezierTo(34, 24, 30, 24)
-      ..lineTo(14, 24)
-      ..lineTo(8, 29)
-      ..lineTo(9, 24)
-      ..lineTo(8, 24)
-      ..quadraticBezierTo(4, 24, 4, 20)
+      ..moveTo(10, 12)
+      ..lineTo(34, 12)
+      ..lineTo(31, 32)
+      ..lineTo(13, 32)
       ..close();
 
     c.drawPath(path, fill);
     c.drawPath(path, line);
 
-    c.drawCircle(const Offset(12, 14), 1.2, line);
-    c.drawCircle(const Offset(19, 14), 1.2, line);
-    c.drawCircle(const Offset(26, 14), 1.2, line);
+    c.drawOval(const Rect.fromLTWH(7, 8, 30, 8), line);
+    c.drawOval(const Rect.fromLTWH(9, 28, 26, 8), line);
+
+    c.drawLine(const Offset(14, 15), const Offset(17, 29), line);
+    c.drawLine(const Offset(20, 15), const Offset(21, 29), line);
+    c.drawLine(const Offset(26, 15), const Offset(25, 29), line);
+    c.drawLine(const Offset(32, 15), const Offset(29, 29), line);
   }
 
-  void _phone(Canvas c, Paint line, Paint fill) {
-    final r = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(9, 3, 18, 29),
-      const Radius.circular(4),
+  // Saron kecil.
+  void _saron(Canvas c, Paint line, Paint fill) {
+    final base = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(6, 27, 34, 7),
+      const Radius.circular(2),
     );
 
-    c.drawRRect(r, fill);
-    c.drawRRect(r, line);
+    c.drawRRect(base, fill);
+    c.drawRRect(base, line);
 
-    c.drawLine(const Offset(14, 7), const Offset(22, 7), line);
-    c.drawCircle(const Offset(18, 27), 1.5, line);
+    for (int i = 0; i < 6; i++) {
+      final x = 8.0 + i * 5.2;
+      final bar = RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, 11 + (i.isEven ? 0 : 2), 4.2, 17),
+        const Radius.circular(1.5),
+      );
+      c.drawRRect(bar, fill);
+      c.drawRRect(bar, line);
+    }
+
+    c.drawLine(const Offset(10, 38), const Offset(35, 38), line);
   }
 
-  void _send(Canvas c, Paint line, Paint fill) {
-    final path = Path()
-      ..moveTo(4, 18)
-      ..lineTo(33, 5)
-      ..lineTo(25, 31)
-      ..lineTo(18, 21)
+  // Bonang kecil.
+  void _bonang(Canvas c, Paint line, Paint fill) {
+    for (int i = 0; i < 3; i++) {
+      final x = 9.0 + i * 11;
+      c.drawOval(Rect.fromLTWH(x, 13, 9, 7), fill);
+      c.drawOval(Rect.fromLTWH(x, 13, 9, 7), line);
+      c.drawCircle(Offset(x + 4.5, 16.5), 1.4, line);
+    }
+
+    c.drawLine(const Offset(7, 22), const Offset(39, 22), line);
+    c.drawLine(const Offset(9, 22), const Offset(9, 31), line);
+    c.drawLine(const Offset(37, 22), const Offset(37, 31), line);
+    c.drawLine(const Offset(9, 31), const Offset(37, 31), line);
+  }
+
+  // Siter kecil.
+  void _siter(Canvas c, Paint line, Paint fill) {
+    final body = Path()
+      ..moveTo(6, 27)
+      ..lineTo(39, 27)
+      ..lineTo(34, 34)
+      ..lineTo(11, 34)
       ..close();
 
-    c.drawPath(path, fill);
-    c.drawPath(path, line);
+    c.drawPath(body, fill);
+    c.drawPath(body, line);
 
-    c.drawLine(const Offset(18, 21), const Offset(33, 5), line);
-    c.drawLine(const Offset(18, 21), const Offset(18, 28), line);
-  }
+    c.drawLine(const Offset(10, 10), const Offset(36, 10), line);
+    c.drawLine(const Offset(10, 14), const Offset(36, 14), line);
+    c.drawLine(const Offset(10, 18), const Offset(36, 18), line);
+    c.drawLine(const Offset(10, 22), const Offset(36, 22), line);
 
-  void _wifi(Canvas c, Paint line, Paint fill) {
-    final path1 = Path()
-      ..moveTo(3, 11)
-      ..quadraticBezierTo(18, -1, 33, 11);
-
-    final path2 = Path()
-      ..moveTo(8, 17)
-      ..quadraticBezierTo(18, 8, 28, 17);
-
-    final path3 = Path()
-      ..moveTo(13, 23)
-      ..quadraticBezierTo(18, 18, 23, 23);
-
-    c.drawPath(path1, line);
-    c.drawPath(path2, line);
-    c.drawPath(path3, line);
-    c.drawCircle(const Offset(18, 28), 2, fill);
-    c.drawCircle(const Offset(18, 28), 2, line);
-  }
-
-  void _message(Canvas c, Paint line, Paint fill) {
-    final r = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(3, 7, 30, 21),
-      const Radius.circular(5),
-    );
-
-    c.drawRRect(r, fill);
-    c.drawRRect(r, line);
-
-    c.drawLine(const Offset(10, 14), const Offset(26, 14), line);
-    c.drawLine(const Offset(10, 19), const Offset(22, 19), line);
-  }
-
-  void _link(Canvas c, Paint line, Paint fill) {
-    final left = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(3, 11, 16, 9),
-      const Radius.circular(5),
-    );
-
-    final right = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(17, 17, 16, 9),
-      const Radius.circular(5),
-    );
-
-    c.drawRRect(left, fill);
-    c.drawRRect(right, fill);
-    c.drawRRect(left, line);
-    c.drawRRect(right, line);
-
-    c.drawLine(const Offset(14, 20), const Offset(22, 16), line);
+    for (int i = 0; i < 7; i++) {
+      final x = 11.0 + i * 4.0;
+      c.drawLine(Offset(x, 10), Offset(x + 3, 27), line);
+    }
   }
 
   @override
@@ -2770,10 +2765,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     width: 11,
                     height: 11,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF35D07F),
+                      color: const Color(0xFF5F936A),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFF0F1B2E),
+                        color: const Color(0xFF26352B),
                         width: 2,
                       ),
                     ),
@@ -2796,7 +2791,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ),
                   const Text(
                     "Online",
-                    style: TextStyle(fontSize: 10, color: Color(0xFF35D07F)),
+                    style: TextStyle(fontSize: 10, color: Color(0xFF5F936A)),
                   ),
                 ],
               ),
@@ -2883,7 +2878,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: CustomPaint(painter: M8GamelanWallpaperPainter()),
           ),
           Container(
-            color: const Color(0xFFB8D2DE).withValues(alpha: 0.18),
+            color: Colors.transparent,
             child: Column(
               children: [
                 Expanded(
@@ -2916,8 +2911,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 : "✓";
 
                             final statusColor = status == "read"
-                                ? const Color(0xFF0E5F91)
-                                : const Color(0xFF7A8794);
+                                ? const Color(0xFF3F6F4A)
+                                : const Color(0xFF68756C);
                             final rawTime = msg["timestamp"]?.toString() ?? "";
 
                             String time = "";
@@ -3011,7 +3006,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: mine
-                                            ? const Color(0xFFDCE9F4)
+                                            ? const Color(0xFFE5EEE7)
                                             : m8CreamLight,
                                         borderRadius: BorderRadius.only(
                                           topLeft: const Radius.circular(5),
@@ -3260,7 +3255,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                         color: mine
                                                             ? Colors.white
                                                             : const Color(
-                                                                0xFF172033,
+                                                                0xFF26352B,
                                                               ),
                                                       ),
                                                     ),
@@ -3279,7 +3274,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   letterSpacing: 1.2,
                                                   color: mine
                                                       ? m8Navy2
-                                                      : const Color(0xFF0F1B2E),
+                                                      : const Color(0xFF26352B),
                                                 ),
                                               ),
                                             )
@@ -3293,7 +3288,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   height: 1.3,
                                                   color: mine
                                                       ? m8Navy2
-                                                      : const Color(0xFF0F1B2E),
+                                                      : const Color(0xFF26352B),
                                                 ),
                                               ),
                                             ),
@@ -3307,7 +3302,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   fontSize: 9,
                                                   color: mine
                                                       ? m8GoldLight
-                                                      : const Color(0xFF536273),
+                                                      : const Color(0xFF68756C),
                                                 ),
                                               ),
                                               if (mine) ...[
@@ -3491,7 +3486,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                 style: TextStyle(
                                                   fontSize: 19,
                                                   fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF172033),
+                                                  color: Color(0xFF26352B),
                                                 ),
                                               ),
                                             ),
@@ -3566,7 +3561,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 maxLines: 5,
                                 textInputAction: TextInputAction.newline,
                                 style: const TextStyle(
-                                  color: Color(0xFF172033),
+                                  color: Color(0xFF26352B),
                                   fontSize: 15,
                                 ),
                                 decoration: InputDecoration(
@@ -3967,7 +3962,7 @@ class _M8StoryCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Color(0xFF536273),
+                      color: Color(0xFF68756C),
                       fontSize: 12,
                     ),
                   ),
@@ -4856,7 +4851,7 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: BoxDecoration(
             color: m8CreamLight,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2D9C5)),
+            border: Border.all(color: const Color(0xFFD9D8C9)),
           ),
           child: ListTile(
             onTap: widget.onLogout,
