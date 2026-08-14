@@ -3469,7 +3469,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                 ),
                                               ),
                                             ),
-                                          const SizedBox(height: 3),
+                                          const SizedBox(height: 1),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
