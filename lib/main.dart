@@ -2962,9 +2962,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "M8 User",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: const Text(
+                      "M8 User",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    ),
                   ),
                   Text(
                     "M8 PIN: $other",
