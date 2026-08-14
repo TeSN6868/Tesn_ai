@@ -1970,42 +1970,65 @@ class _ChatsPageState extends State<ChatsPage> {
 
                               final other = p1 == widget.myPin ? p2 : p1;
 
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  radius: 27,
-                                  child: Text(
-                                    other.isNotEmpty
-                                        ? other.substring(
-                                            0,
-                                            other.length > 2 ? 2 : other.length,
-                                          )
-                                        : '?',
+                              return Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: m8White,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: m8Blue.withValues(alpha: 0.12),
                                   ),
                                 ),
-                                title: Text(
-                                  other,
-                                  style: const TextStyle(
-                                    color: m8White,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: const Text(
-                                  'Percakapan M8',
-                                  style: TextStyle(color: m8White),
-                                ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ChatRoomPage(
-                                        token: widget.token,
-                                        myPin: widget.myPin,
-                                        chat: chat,
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    radius: 27,
+                                    backgroundColor: m8Blue,
+                                    child: Text(
+                                      other.isNotEmpty
+                                          ? other.substring(
+                                              0,
+                                              other.length > 2
+                                                  ? 2
+                                                  : other.length,
+                                            )
+                                          : '?',
+                                      style: const TextStyle(
+                                        color: m8White,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  );
-                                },
+                                  ),
+                                  title: Text(
+                                    other,
+                                    style: const TextStyle(
+                                      color: m8Text,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: const Text(
+                                    'Percakapan M8',
+                                    style: TextStyle(color: m8TextMuted),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.chevron_right,
+                                    color: m8Blue,
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ChatRoomPage(
+                                          token: widget.token,
+                                          myPin: widget.myPin,
+                                          chat: chat,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               );
                             },
                           ),
