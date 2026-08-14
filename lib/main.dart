@@ -1914,7 +1914,7 @@ class _ChatsPageState extends State<ChatsPage> {
         ),
 
         Positioned(
-          top: 112,
+          top: 124,
           left: 0,
           right: 0,
           bottom: 0,
