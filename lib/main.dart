@@ -2959,25 +2959,25 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: const Text(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
                       "M8 User",
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                     ),
-                  ),
-                  Text(
-                    "M8 PIN: $other",
-                    style: const TextStyle(fontSize: 11, color: m8White),
-                  ),
-                  const Text(
-                    "Online",
-                    style: TextStyle(fontSize: 10, color: m8WhiteSoft),
-                  ),
-                ],
+                    Text(
+                      "M8 PIN: $other",
+                      style: const TextStyle(fontSize: 11, color: m8White),
+                    ),
+                    const Text(
+                      "Online",
+                      style: TextStyle(fontSize: 10, color: m8WhiteSoft),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
