@@ -2959,8 +2959,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 6),
+              child: Transform.translate(
+                offset: const Offset(0, 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
