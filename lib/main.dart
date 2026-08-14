@@ -3182,7 +3182,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: mine
-                                            ? const Color(0xFF3D7EEB)
+                                            ? const Color(0xFFDCEAFF)
                                             : m8White,
                                         borderRadius: BorderRadius.only(
                                           topLeft: const Radius.circular(5),
