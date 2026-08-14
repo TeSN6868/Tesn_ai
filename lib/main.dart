@@ -1249,7 +1249,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Nada HEY gagal diputar: $e')));
+      ).showSnackBar(SnackBar(content: Text('Nada Hi! gagal diputar: $e')));
     }
   }
 
@@ -1408,7 +1408,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: const Icon(Icons.music_note_rounded, color: m8Navy),
             title: const Text(
-              'Nada dering',
+              'Nada dering M8',
               style: TextStyle(color: m8Text, fontWeight: FontWeight.w700),
             ),
             subtitle: Text(
@@ -1477,7 +1477,6 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
-          _sectionTitle('Nada HI !'),
 
           Card(
             margin: const EdgeInsets.only(bottom: 8),
@@ -1513,7 +1512,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     child: FilledButton.icon(
                       onPressed: soundEnabled ? _testHeySound : null,
                       icon: const Icon(Icons.volume_up_rounded),
-                      label: const Text('Tes Nada HEY'),
+                      label: const Text('Tes Nada Hi!'),
                     ),
                   ),
                 ),
@@ -4423,7 +4422,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('❌ Nada HEY gagal diputar: $e')));
+        ).showSnackBar(SnackBar(content: Text('❌ Nada Hi! gagal diputar: $e')));
       }
     }
   }
@@ -4614,7 +4613,7 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: _testHeySound,
             icon: const Icon(Icons.volume_up_rounded),
             label: const Text(
-              'Tes Nada HEY',
+              'Tes Nada Hi!',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             style: OutlinedButton.styleFrom(
