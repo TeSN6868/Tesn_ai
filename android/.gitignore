@@ -12,3 +12,8 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# M8 release signing
+**/*.p12
+**/*.pem
+**/keystore/

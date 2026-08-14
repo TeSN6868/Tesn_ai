@@ -34,6 +34,23 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Prepare M8 release keystore
+        env:
+          M8_KEYSTORE_BASE64: ${{ secrets.M8_KEYSTORE_BASE64 }}
+          M8_KEYSTORE_PASSWORD: ${{ secrets.M8_KEYSTORE_PASSWORD }}
+        run: |
+          mkdir -p android/app/keystore
+          echo "$M8_KEYSTORE_BASE64" | base64 --decode > android/app/keystore/m8-release.p12
+          chmod 600 android/app/keystore/m8-release.p12
+          cat > android/key.properties <<EOF
+          storePassword=$M8_KEYSTORE_PASSWORD
+          keyPassword=$M8_KEYSTORE_PASSWORD
+          keyAlias=m8
+          storeFile=app/keystore/m8-release.p12
+          storeType=PKCS12
+          EOF
+          chmod 600 android/key.properties
+
       - name: Build APK
         run: flutter build apk --release
 
