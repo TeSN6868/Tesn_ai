@@ -1990,13 +1990,13 @@ class _ChatsPageState extends State<ChatsPage> {
                                 title: Text(
                                   other,
                                   style: const TextStyle(
-                                    color: m8Text,
+                                    color: m8White,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 subtitle: const Text(
                                   'Percakapan M8',
-                                  style: TextStyle(color: m8Text),
+                                  style: TextStyle(color: m8White),
                                 ),
                                 trailing: const Icon(Icons.chevron_right),
                                 onTap: () {
