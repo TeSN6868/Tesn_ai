@@ -3182,7 +3182,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: mine
-                                            ? const Color(0xFFDCEAFF)
+                                            ? const Color(0xFFF7E7B6)
                                             : m8White,
                                         borderRadius: BorderRadius.only(
                                           topLeft: const Radius.circular(5),
@@ -3449,7 +3449,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   fontWeight: FontWeight.w900,
                                                   letterSpacing: 1.2,
                                                   color: mine
-                                                      ? m8White
+                                                      ? const Color(0xFF071A2E)
                                                       : m8Text,
                                                 ),
                                               ),
@@ -3463,7 +3463,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                   fontSize: 15,
                                                   height: 1.3,
                                                   color: mine
-                                                      ? m8White
+                                                      ? const Color(0xFF071A2E)
                                                       : m8Text,
                                                 ),
                                               ),
@@ -3477,7 +3477,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                                 style: TextStyle(
                                                   fontSize: 9,
                                                   color: mine
-                                                      ? m8WhiteSoft
+                                                      ? const Color(0xFF071A2E)
                                                       : m8TextMuted,
                                                 ),
                                               ),
