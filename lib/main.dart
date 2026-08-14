@@ -4828,10 +4828,18 @@ class _ProfilePageState extends State<ProfilePage> {
             controller: controller,
             autofocus: true,
             maxLength: 50,
+            style: const TextStyle(
+              color: m8BlueDark,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+            cursorColor: m8Blue,
             textCapitalization: TextCapitalization.words,
             decoration: const InputDecoration(
               labelText: 'Nama M8',
               hintText: 'Masukkan nama kamu',
+              labelStyle: TextStyle(color: m8TextMuted),
+              hintStyle: TextStyle(color: m8TextMuted),
             ),
           ),
           actions: [
