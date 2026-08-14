@@ -1886,13 +1886,13 @@ class M8GamelanWallpaperPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, bg);
 
     final line = Paint()
-      ..color = const Color(0xFF5F936A).withValues(alpha: 0.12)
+      ..color = const Color(0xFF5F936A).withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.15
+      ..strokeWidth = 1.25
       ..strokeCap = StrokeCap.round;
 
     final fill = Paint()
-      ..color = const Color(0xFF8FB89A).withValues(alpha: 0.045)
+      ..color = const Color(0xFF8FB89A).withValues(alpha: 0.065)
       ..style = PaintingStyle.fill;
 
     // Motif kecil-kecil dan cukup rapat seperti wallpaper messenger.
