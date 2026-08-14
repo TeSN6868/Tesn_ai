@@ -4814,6 +4814,123 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Future<void> _editName() async {
+    final controller = TextEditingController(
+      text: widget.user['name']?.toString() ?? '',
+    );
+
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Edit Nama'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 50,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              labelText: 'Nama M8',
+              hintText: 'Masukkan nama kamu',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final value = controller.text.trim();
+
+                if (value.length < 2) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Nama minimal 2 karakter.'),
+                    ),
+                  );
+                  return;
+                }
+
+                Navigator.pop(dialogContext, value);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (newName == null || newName.trim().isEmpty) return;
+
+    final pin = widget.user['m8_pin']?.toString() ?? '';
+
+    if (pin.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('M8 PIN tidak tersedia.'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/profile/name'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'm8_pin': pin,
+          'name': newName.trim(),
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        final updatedUser = data['user'];
+
+        if (updatedUser is Map) {
+          widget.user['name'] = updatedUser['name'];
+        } else {
+          widget.user['name'] = newName.trim();
+        }
+
+        if (!mounted) return;
+
+        setState(() {});
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nama berhasil diperbarui.'),
+          ),
+        );
+      } else {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              data['error']?.toString() ?? 'Gagal memperbarui nama.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memperbarui nama: $e'),
+        ),
+      );
+    }
+  }
+
   void _comingSoon(String title) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -5062,7 +5179,7 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: Icons.person_outline_rounded,
             title: 'Nama',
             subtitle: name,
-            onTap: () => _comingSoon('Edit nama'),
+            onTap: _editName,
           ),
 
           _menuItem(

@@ -1196,6 +1196,88 @@ export default {
       });
     }
 
+
+    // ============================================================
+    // UPDATE PROFILE NAME
+    // ============================================================
+    if (url.pathname === "/api/profile/name" && request.method === "POST") {
+      const body = await request.json();
+
+      const m8Pin = String(body.m8_pin || "").trim();
+      const name = String(body.name || "").trim();
+
+      if (!m8Pin || !name) {
+        return json({
+          success: false,
+          error: "M8 PIN dan nama wajib diisi.",
+        }, 400);
+      }
+
+      if (name.length < 2) {
+        return json({
+          success: false,
+          error: "Nama minimal 2 karakter.",
+        }, 400);
+      }
+
+      if (name.length > 50) {
+        return json({
+          success: false,
+          error: "Nama maksimal 50 karakter.",
+        }, 400);
+      }
+
+      if (!env.DB) {
+        return json({
+          success: false,
+          error: "Binding D1 DB belum tersedia.",
+        }, 500);
+      }
+
+      const user = await env.DB.prepare(`
+        SELECT id, name, email, phone, m8_pin
+        FROM users
+        WHERE m8_pin = ?
+        LIMIT 1
+      `)
+        .bind(m8Pin)
+        .first();
+
+      if (!user) {
+        return json({
+          success: false,
+          error: "Akun M8 tidak ditemukan.",
+        }, 404);
+      }
+
+      const result = await env.DB.prepare(`
+        UPDATE users
+        SET name = ?
+        WHERE id = ?
+      `)
+        .bind(name, user.id)
+        .run();
+
+      if (!result.success) {
+        throw new Error("Gagal memperbarui nama akun M8.");
+      }
+
+      const updated = await env.DB.prepare(`
+        SELECT id, name, email, phone, m8_pin
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+      `)
+        .bind(user.id)
+        .first();
+
+      return json({
+        success: true,
+        message: "Nama M8 berhasil diperbarui.",
+        user: updated,
+      });
+    }
+
     // LOGIN
 if (url.pathname === "/api/login" && request.method === "POST") {
       const body = await request.json();
