@@ -1882,44 +1882,50 @@ class _ChatsPageState extends State<ChatsPage> {
 class M8GamelanWallpaperPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final bg = Paint()..color = const Color(0xFFEAF6FC);
+    // Dasar biru muda lembut.
+    final bg = Paint()..color = const Color(0xFFB8D2DE);
     canvas.drawRect(Offset.zero & size, bg);
 
+    // Pola sangat tipis agar tidak mengganggu teks chat.
     final line = Paint()
-      ..color = const Color(0xFF72B9DD).withValues(alpha: 0.13)
+      ..color = const Color(0xFF4A9CC5).withValues(alpha: 0.10)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
 
     final fill = Paint()
-      ..color = const Color(0xFF8BC5E3).withValues(alpha: 0.06)
+      ..color = const Color(0xFF6AAFD0).withValues(alpha: 0.045)
       ..style = PaintingStyle.fill;
 
-    const w = 90.0;
+    const w = 92.0;
     const h = 82.0;
 
     for (int row = -1; row < (size.height / h).ceil() + 1; row++) {
       for (int col = -1; col < (size.width / w).ceil() + 1; col++) {
-        final x = col * w + (row.isEven ? 8 : 45);
+        final x = col * w + (row.isEven ? 8 : 48);
         final y = row * h + 8;
 
         canvas.save();
         canvas.translate(x, y);
 
-        switch ((row + col).abs() % 5) {
+        switch ((row + col).abs() % 6) {
           case 0:
-            _gong(canvas, line, fill);
+            _chatBubble(canvas, line, fill);
             break;
           case 1:
-            _bonang(canvas, line, fill);
+            _phone(canvas, line, fill);
             break;
           case 2:
-            _kendang(canvas, line, fill);
+            _send(canvas, line, fill);
             break;
           case 3:
-            _saron(canvas, line, fill);
+            _wifi(canvas, line, fill);
+            break;
+          case 4:
+            _message(canvas, line, fill);
             break;
           default:
-            _kenong(canvas, line, fill);
+            _link(canvas, line, fill);
         }
 
         canvas.restore();
@@ -1927,63 +1933,107 @@ class M8GamelanWallpaperPainter extends CustomPainter {
     }
   }
 
-  void _gong(Canvas c, Paint line, Paint fill) {
-    c.drawCircle(const Offset(15, 18), 11, fill);
-    c.drawCircle(const Offset(15, 18), 10, line);
-    c.drawCircle(const Offset(15, 18), 2.5, line);
-    c.drawLine(const Offset(3, 6), const Offset(3, 32), line);
-    c.drawLine(const Offset(27, 6), const Offset(27, 32), line);
-    c.drawLine(const Offset(2, 32), const Offset(28, 32), line);
-  }
-
-  void _bonang(Canvas c, Paint line, Paint fill) {
-    final r = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(0, 12, 38, 15),
-      const Radius.circular(3),
-    );
-    c.drawRRect(r, fill);
-    c.drawRRect(r, line);
-
-    for (int i = 0; i < 4; i++) {
-      c.drawCircle(Offset(5 + i * 9.0, 19.5), 2.3, line);
-    }
-  }
-
-  void _kendang(Canvas c, Paint line, Paint fill) {
+  void _chatBubble(Canvas c, Paint line, Paint fill) {
     final path = Path()
-      ..moveTo(4, 11)
-      ..lineTo(29, 8)
-      ..lineTo(29, 27)
-      ..lineTo(4, 24)
+      ..moveTo(4, 8)
+      ..quadraticBezierTo(4, 4, 8, 4)
+      ..lineTo(30, 4)
+      ..quadraticBezierTo(34, 4, 34, 8)
+      ..lineTo(34, 20)
+      ..quadraticBezierTo(34, 24, 30, 24)
+      ..lineTo(14, 24)
+      ..lineTo(8, 29)
+      ..lineTo(9, 24)
+      ..lineTo(8, 24)
+      ..quadraticBezierTo(4, 24, 4, 20)
       ..close();
 
     c.drawPath(path, fill);
     c.drawPath(path, line);
-    c.drawOval(const Rect.fromLTWH(1, 10, 7, 15), line);
-    c.drawOval(const Rect.fromLTWH(26, 8, 7, 20), line);
+
+    c.drawCircle(const Offset(12, 14), 1.2, line);
+    c.drawCircle(const Offset(19, 14), 1.2, line);
+    c.drawCircle(const Offset(26, 14), 1.2, line);
   }
 
-  void _saron(Canvas c, Paint line, Paint fill) {
+  void _phone(Canvas c, Paint line, Paint fill) {
     final r = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(0, 15, 40, 10),
-      const Radius.circular(2),
+      const Rect.fromLTWH(9, 3, 18, 29),
+      const Radius.circular(4),
     );
 
     c.drawRRect(r, fill);
     c.drawRRect(r, line);
 
-    for (int i = 0; i < 6; i++) {
-      final x = 4.0 + i * 6.3;
-      c.drawLine(Offset(x, 12), Offset(x + 1.5, 15), line);
-      c.drawLine(Offset(x, 25), Offset(x + 1.5, 28), line);
-    }
+    c.drawLine(const Offset(14, 7), const Offset(22, 7), line);
+    c.drawCircle(const Offset(18, 27), 1.5, line);
   }
 
-  void _kenong(Canvas c, Paint line, Paint fill) {
-    c.drawCircle(const Offset(16, 19), 10, fill);
-    c.drawCircle(const Offset(16, 19), 10, line);
-    c.drawCircle(const Offset(16, 19), 2.5, line);
-    c.drawLine(const Offset(5, 31), const Offset(27, 31), line);
+  void _send(Canvas c, Paint line, Paint fill) {
+    final path = Path()
+      ..moveTo(4, 18)
+      ..lineTo(33, 5)
+      ..lineTo(25, 31)
+      ..lineTo(18, 21)
+      ..close();
+
+    c.drawPath(path, fill);
+    c.drawPath(path, line);
+
+    c.drawLine(const Offset(18, 21), const Offset(33, 5), line);
+    c.drawLine(const Offset(18, 21), const Offset(18, 28), line);
+  }
+
+  void _wifi(Canvas c, Paint line, Paint fill) {
+    final path1 = Path()
+      ..moveTo(3, 11)
+      ..quadraticBezierTo(18, -1, 33, 11);
+
+    final path2 = Path()
+      ..moveTo(8, 17)
+      ..quadraticBezierTo(18, 8, 28, 17);
+
+    final path3 = Path()
+      ..moveTo(13, 23)
+      ..quadraticBezierTo(18, 18, 23, 23);
+
+    c.drawPath(path1, line);
+    c.drawPath(path2, line);
+    c.drawPath(path3, line);
+    c.drawCircle(const Offset(18, 28), 2, fill);
+    c.drawCircle(const Offset(18, 28), 2, line);
+  }
+
+  void _message(Canvas c, Paint line, Paint fill) {
+    final r = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(3, 7, 30, 21),
+      const Radius.circular(5),
+    );
+
+    c.drawRRect(r, fill);
+    c.drawRRect(r, line);
+
+    c.drawLine(const Offset(10, 14), const Offset(26, 14), line);
+    c.drawLine(const Offset(10, 19), const Offset(22, 19), line);
+  }
+
+  void _link(Canvas c, Paint line, Paint fill) {
+    final left = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(3, 11, 16, 9),
+      const Radius.circular(5),
+    );
+
+    final right = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(17, 17, 16, 9),
+      const Radius.circular(5),
+    );
+
+    c.drawRRect(left, fill);
+    c.drawRRect(right, fill);
+    c.drawRRect(left, line);
+    c.drawRRect(right, line);
+
+    c.drawLine(const Offset(14, 20), const Offset(22, 16), line);
   }
 
   @override
@@ -2833,7 +2883,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: CustomPaint(painter: M8GamelanWallpaperPainter()),
           ),
           Container(
-            color: m8Cream,
+            color: const Color(0xFFB8D2DE).withValues(alpha: 0.72),
             child: Column(
               children: [
                 Expanded(
