@@ -5099,6 +5099,47 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 8),
 
+
+            _menuItem(
+              icon: Icons.contacts_outlined,
+              title: 'Kontak & Akun',
+              subtitle: 'Kelola informasi kontak akun M8',
+              onTap: () => _comingSoon('Kontak & Akun'),
+            ),
+
+            _menuItem(
+              icon: Icons.lock_outline_rounded,
+              title: 'Privasi',
+              subtitle: 'Kelola privasi dan visibilitas profil',
+              onTap: () => _comingSoon('Privasi'),
+            ),
+
+            const SizedBox(height: 8),
+
+            _sectionTitle('Preferensi'),
+
+            _menuItem(
+              icon: Icons.notifications_none_rounded,
+              title: 'Notifikasi',
+              subtitle: 'Atur pemberitahuan pesan dan aktivitas M8',
+              onTap: () => _comingSoon('Notifikasi'),
+            ),
+
+            _menuItem(
+              icon: Icons.palette_outlined,
+              title: 'Tampilan',
+              subtitle: 'Atur tampilan dan nuansa M8 Messenger',
+              onTap: () => _comingSoon('Tampilan'),
+            ),
+
+            _menuItem(
+              icon: Icons.language_rounded,
+              title: 'Bahasa',
+              subtitle: 'Pilih bahasa yang digunakan di M8',
+              onTap: () => _comingSoon('Bahasa'),
+            ),
+
+            const SizedBox(height: 8),
           _sectionTitle('Aplikasi'),
 
           _menuItem(
