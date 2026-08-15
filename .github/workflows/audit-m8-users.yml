@@ -1,0 +1,39 @@
+name: Audit M8 Users
+
+on:
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Audit active and inactive users
+        run: |
+          echo "===== USERS ====="
+          wrangler d1 execute m8-database --remote --command "SELECT id, name, email, phone, m8_pin, role FROM users ORDER BY id;"
+
+          echo ""
+          echo "===== DATA PER USER ====="
+          wrangler d1 execute m8-database --remote --command "SELECT u.id, u.name, u.m8_pin, u.role, (SELECT COUNT(*) FROM sessions s WHERE s.user_id = u.id) AS sessions, (SELECT COUNT(*) FROM chats c WHERE c.participant_1_pin = u.m8_pin OR c.participant_2_pin = u.m8_pin) AS chats, (SELECT COUNT(*) FROM messages m WHERE m.sender_pin = u.m8_pin) AS messages, (SELECT COUNT(*) FROM call_sessions cs WHERE cs.caller_pin = u.m8_pin OR cs.callee_pin = u.m8_pin) AS calls, (SELECT COUNT(*) FROM call_signals csg WHERE csg.sender_pin = u.m8_pin) AS call_signals, (SELECT COUNT(*) FROM typing_states ts WHERE ts.user_pin = u.m8_pin) AS typing_states FROM users u ORDER BY u.id;"
+
+          echo ""
+          echo "===== USERS TO KEEP ====="
+          wrangler d1 execute m8-database --remote --command "SELECT id, name, m8_pin, role FROM users WHERE id IN (6,7,10) ORDER BY id;"
+
+          echo ""
+          echo "===== USERS NOT TO KEEP ====="
+          wrangler d1 execute m8-database --remote --command "SELECT id, name, m8_pin, role FROM users WHERE id NOT IN (6,7,10) ORDER BY id;"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
