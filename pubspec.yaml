@@ -65,6 +65,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/m8_icon-final.png
     - assets/sounds/m8_hey.wav
     - assets/sounds/m8_ringtone.wav
     - assets/sounds/m8_ringtone_02.wav

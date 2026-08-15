@@ -2005,6 +2005,20 @@ class _ChatsPageState extends State<ChatsPage> {
 
                               final other = p1 == widget.myPin ? p2 : p1;
 
+                              final otherUser =
+                                  chat['other_user'] is Map
+                                      ? Map<String, dynamic>.from(chat['other_user'])
+                                      : <String, dynamic>{};
+
+                              final otherName =
+                                  otherUser['name']?.toString().trim().isNotEmpty == true
+                                      ? otherUser['name'].toString().trim()
+                                      : other;
+
+                              final photoUrl =
+                                  otherUser['profile_photo_url']?.toString() ?? '';
+
+
                               return Container(
                                 margin: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -2021,23 +2035,28 @@ class _ChatsPageState extends State<ChatsPage> {
                                   leading: CircleAvatar(
                                     radius: 21,
                                     backgroundColor: m8Blue,
-                                    child: Text(
-                                      other.isNotEmpty
-                                          ? other.substring(
-                                              0,
-                                              other.length > 2
-                                                  ? 2
-                                                  : other.length,
-                                            )
-                                          : '?',
-                                      style: const TextStyle(
-                                        color: m8White,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                    backgroundImage: photoUrl.isNotEmpty
+                                        ? NetworkImage(photoUrl)
+                                        : null,
+                                    child: photoUrl.isEmpty
+                                        ? Text(
+                                            otherName.isNotEmpty
+                                                ? otherName.substring(
+                                                    0,
+                                                    otherName.length > 2
+                                                        ? 2
+                                                        : otherName.length,
+                                                  ).toUpperCase()
+                                                : '?',
+                                            style: const TextStyle(
+                                              color: m8White,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          )
+                                        : null,
                                   ),
                                   title: Text(
-                                    other,
+                                    otherName,
                                     style: const TextStyle(
                                       color: m8Text,
                                       fontWeight: FontWeight.bold,

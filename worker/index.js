@@ -261,20 +261,45 @@ export default {
 
         const result = await env.DB.prepare(`
           SELECT
-            id,
-            participant_1_pin,
-            participant_2_pin,
-            created_at
-          FROM chats
-          WHERE participant_1_pin = ? OR participant_2_pin = ?
-          ORDER BY id DESC
+            c.id,
+            c.participant_1_pin,
+            c.participant_2_pin,
+            c.created_at,
+            CASE
+              WHEN c.participant_1_pin = ? THEN c.participant_2_pin
+              ELSE c.participant_1_pin
+            END AS other_pin,
+            u.id AS other_user_id,
+            u.name AS other_user_name,
+            u.profile_photo_url AS other_profile_photo_url
+          FROM chats c
+          LEFT JOIN users u
+            ON u.m8_pin = CASE
+              WHEN c.participant_1_pin = ? THEN c.participant_2_pin
+              ELSE c.participant_1_pin
+            END
+          WHERE c.participant_1_pin = ? OR c.participant_2_pin = ?
+          ORDER BY c.id DESC
         `)
-          .bind(myPin, myPin)
+          .bind(myPin, myPin, myPin, myPin)
           .all();
+
+        const chats = (result.results || []).map((chat) => ({
+          id: chat.id,
+          participant_1_pin: chat.participant_1_pin,
+          participant_2_pin: chat.participant_2_pin,
+          created_at: chat.created_at,
+          other_user: {
+            id: chat.other_user_id,
+            name: chat.other_user_name,
+            m8_pin: chat.other_pin,
+            profile_photo_url: chat.other_profile_photo_url,
+          },
+        }));
 
         return json({
           success: true,
-          chats: result.results || []
+          chats,
         });
       }
 
