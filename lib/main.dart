@@ -18,13 +18,35 @@ final AudioPlayer _m8CallSoundPlayer = AudioPlayer();
 
 /// ================= M8 CALL SOUNDS =================
 
+Timer? _m8RingingTimer;
+
 Future<void> _m8StartCallRinging() async {
   try {
+    _m8RingingTimer?.cancel();
     await _m8CallSoundPlayer.stop();
-    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.loop);
+    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.release);
     await _m8CallSoundPlayer.setVolume(1.0);
-    await _m8CallSoundPlayer.play(AssetSource('sounds/m8_call_ringing.wav'));
-    debugPrint('[M8 CALL SOUND] RINGING LOOP');
+
+    // Nada sambung telepon sederhana:
+    // TUT ... jeda ... TUT ... jeda ...
+    await _m8CallSoundPlayer.play(
+      AssetSource('sounds/m8_call_ringing.wav'),
+    );
+
+    _m8RingingTimer = Timer.periodic(
+      const Duration(milliseconds: 1800),
+      (_) async {
+        try {
+          await _m8CallSoundPlayer.play(
+            AssetSource('sounds/m8_call_ringing.wav'),
+          );
+        } catch (e) {
+          debugPrint('[M8 CALL SOUND] RING ERROR: $e');
+        }
+      },
+    );
+
+    debugPrint('[M8 CALL SOUND] RINGING START');
   } catch (e) {
     debugPrint('[M8 CALL SOUND] RINGING ERROR: $e');
   }
@@ -32,8 +54,13 @@ Future<void> _m8StartCallRinging() async {
 
 Future<void> _m8StopCallSound() async {
   try {
+    _m8RingingTimer?.cancel();
+    _m8RingingTimer = null;
+
     await _m8CallSoundPlayer.stop();
     await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.release);
+
+    debugPrint('[M8 CALL SOUND] RINGING STOP');
   } catch (e) {
     debugPrint('[M8 CALL SOUND] STOP ERROR: $e');
   }
@@ -4245,7 +4272,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   bool connecting = true;
   bool muted = false;
   bool cameraOff = false;
-  bool speakerOn = true;
+  bool speakerOn = false;
 
   String callStatus = 'Menghubungkan...';
 
@@ -4601,7 +4628,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
               ),
             ),
 
-            if (widget.call.localRenderer.srcObject != null)
+            if (widget.videoCall && widget.call.localRenderer.srcObject != null)
               Positioned(
                 top: 82,
                 right: 18,
@@ -4658,17 +4685,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                         onTap: toggleSpeaker,
                         active: speakerOn,
                       ),
-                      _controlButton(
-                        icon: cameraOff ? Icons.videocam_off : Icons.videocam,
-                        label: 'Kamera',
-                        onTap: toggleCamera,
-                        active: !cameraOff,
-                      ),
-                      _controlButton(
-                        icon: Icons.flip_camera_ios,
-                        label: 'Balik',
-                        onTap: switchCamera,
-                      ),
+
                     ],
                   ),
                   const SizedBox(height: 24),
