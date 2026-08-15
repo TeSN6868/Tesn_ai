@@ -4457,18 +4457,25 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   }
 
   Future<void> hangUp() async {
+    // Jangan biarkan tombol Akhiri ditekan berkali-kali.
+    if (!mounted) return;
+
     timer?.cancel();
 
-    // Tutup halaman Video Call saja.
-    // Jangan menunggu proses cleanup WebRTC sebelum kembali ke aplikasi.
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
-
-    // Cleanup koneksi WebRTC setelah halaman ditutup.
+    // Cleanup WebRTC HARUS dilakukan sebelum halaman ditutup.
+    // Ini menghentikan microphone, audio track, peer connection,
+    // polling signaling, dan membersihkan audio routing Android.
     try {
       await widget.call.hangUp();
-    } catch (_) {}
+    } catch (e) {
+      print('[M8 CALL UI] HANGUP ERROR: $e');
+    }
+
+    // Setelah WebRTC benar-benar dihentikan, baru kembali
+    // dari halaman panggilan ke halaman aplikasi sebelumnya.
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override

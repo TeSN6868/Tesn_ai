@@ -26,6 +26,9 @@ class M8CallService {
   bool audioEnabled = true;
   bool videoEnabled = true;
 
+  // Mencegah polling/signaling tetap berjalan saat panggilan sedang diakhiri.
+  bool _isEnding = false;
+
   // Status panggilan untuk UI M8.
   // connecting -> ringing -> connected -> ended/failed/rejected
   String callStatus = 'connecting';
@@ -78,6 +81,7 @@ class M8CallService {
     bool videoCall = false,
   }) async {
     myPin = callerPin;
+    _isEnding = false;
 
     try {
       final response = await http.post(
@@ -156,6 +160,7 @@ class M8CallService {
   }) async {
     callId = incomingCallId;
     myPin = calleePin;
+    _isEnding = false;
 
     final response = await http.post(
       Uri.parse('$apiBase/api/calls/accept'),
@@ -268,7 +273,16 @@ class M8CallService {
 
     try {
       localStream = await navigator.mediaDevices.getUserMedia(<String, dynamic>{
-        'audio': true,
+        'audio': <String, dynamic>{
+  'echoCancellation': true,
+  'noiseSuppression': true,
+  'autoGainControl': true,
+  'googEchoCancellation': true,
+  'googNoiseSuppression': true,
+  'googAutoGainControl': true,
+  'googHighpassFilter': true,
+  'channelCount': 1,
+},
         'video': videoCall
             ? {
                 'facingMode': 'user',
@@ -458,6 +472,7 @@ class M8CallService {
   }
 
   Future<void> _pollSignals() async {
+    if (_isEnding) return;
     if (callId == null || myPin == null) return;
 
     try {
@@ -493,7 +508,10 @@ class M8CallService {
 
       if (signals is! List) return;
 
-      for (final item in signals) {
+      if (_isEnding) return;
+
+    for (final item in signals) {
+      if (_isEnding) return;
         final signal = Map<String, dynamic>.from(item);
 
         final id = int.tryParse(signal['id']?.toString() ?? '') ?? 0;
@@ -519,37 +537,97 @@ class M8CallService {
   }
 
   Future<void> hangUp() async {
+    // Jangan jalankan cleanup dua kali.
+    if (_isEnding) return;
+
+    _isEnding = true;
     _setCallStatus('ended');
+
+    // Hentikan timer polling terlebih dahulu.
     _signalTimer?.cancel();
+    _signalTimer = null;
 
-    if (callId != null && myPin != null) {
-      await http.post(
-        Uri.parse('$apiBase/api/calls/end'),
-        headers: <String, String>{'Content-Type': 'application/json'},
-        body: jsonEncode({'call_id': callId, 'm8_pin': myPin}),
-      );
+    final currentCallId = callId;
+    final currentPin = myPin;
+
+    // Putuskan audio/video lokal secepat mungkin.
+    try {
+      for (final track in localStream?.getTracks() ?? <MediaStreamTrack>[]) {
+        track.enabled = false;
+        track.stop();
+      }
+    } catch (e) {
+      print('[M8 CALL] STOP TRACK ERROR: $e');
     }
 
-    for (final track in localStream?.getTracks() ?? []) {
-      track.stop();
+    // Lepaskan peer connection.
+    try {
+      final currentPeer = peer;
+      peer = null;
+
+      if (currentPeer != null) {
+        await currentPeer.close();
+      }
+    } catch (e) {
+      print('[M8 CALL] PEER CLOSE ERROR: $e');
     }
 
-    await localStream?.dispose();
-    await peer?.close();
+    // Dispose local stream setelah peer ditutup.
+    try {
+      final currentStream = localStream;
+      localStream = null;
 
-    localRenderer.srcObject = null;
-    remoteRenderer.srcObject = null;
+      if (currentStream != null) {
+        await currentStream.dispose();
+      }
+    } catch (e) {
+      print('[M8 CALL] STREAM DISPOSE ERROR: $e');
+    }
 
-    await localRenderer.dispose();
-    await remoteRenderer.dispose();
+    // HANYA lepaskan source renderer.
+    // Jangan dispose renderer di sini karena VoiceCallPage masih hidup.
+    try {
+      localRenderer.srcObject = null;
+      remoteRenderer.srcObject = null;
+    } catch (e) {
+      print('[M8 CALL] RENDERER CLEAR ERROR: $e');
+    }
 
-    localStream = null;
-    peer = null;
+    // Beri tahu server bahwa sesi sudah berakhir.
+    if (currentCallId != null && currentPin != null) {
+      try {
+        final response = await http.post(
+          Uri.parse('$apiBase/api/calls/end'),
+          headers: <String, String>{
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'call_id': currentCallId,
+            'm8_pin': currentPin,
+          }),
+        );
+
+        print(
+          '[M8 CALL] END CALL HTTP ${response.statusCode}: '
+          '${response.body}',
+        );
+      } catch (e) {
+        print('[M8 CALL] END CALL ERROR: $e');
+      }
+    }
+
+    // Bersihkan state setelah semua resource dilepas.
     callId = null;
     myPin = null;
-    _signalTimer = null;
     _lastSignalId = 0;
     _pendingIceCandidates.clear();
     _remoteDescriptionSet = false;
+
+    // Reset audio routing Android setelah sesi selesai.
+    try {
+      await Helper.clearAndroidCommunicationDevice();
+    } catch (e) {
+      print('[M8 CALL] AUDIO ROUTE CLEAR ERROR: $e');
+    }
   }
 }
