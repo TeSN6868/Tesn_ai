@@ -216,9 +216,14 @@ class M8CallService {
       if (value.contains('connected') || value.contains('completed')) {
         _setCallStatus('connected');
       } else if (value.contains('failed')) {
+        print("[M8 WEBRTC] ICE FAILED");
         _setCallStatus('failed');
+      } else if (value.contains('checking')) {
+        print("[M8 WEBRTC] ICE CHECKING");
       } else if (value.contains('disconnected')) {
-        _setCallStatus('disconnected');
+        // WebRTC mobile bisa sementara disconnected.
+        // Jangan langsung mengakhiri panggilan.
+        print("[M8 WEBRTC] ICE TEMPORARILY DISCONNECTED");
       }
     };
 
@@ -230,11 +235,13 @@ class M8CallService {
       if (value.contains('connected')) {
         _setCallStatus('connected');
       } else if (value.contains('failed')) {
+        print("[M8 WEBRTC] PEER CONNECTION FAILED");
         _setCallStatus('failed');
-      } else if (value.contains('disconnected')) {
-        _setCallStatus('disconnected');
       } else if (value.contains('closed')) {
         _setCallStatus('ended');
+      } else if (value.contains('disconnected')) {
+        // Jangan mengakhiri panggilan hanya karena transient disconnect.
+        print("[M8 WEBRTC] PEER TEMPORARILY DISCONNECTED");
       }
     };
 
@@ -315,7 +322,14 @@ class M8CallService {
       );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        print('[M8 WEBRTC] SIGNAL ERROR: ${response.body}');
+        print(
+          '[M8 WEBRTC] SIGNAL ERROR '
+          'type=$type status=${response.statusCode} '
+          'body=${response.body}',
+        );
+        throw Exception(
+          'Signaling $type gagal: HTTP ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('[M8 WEBRTC] SIGNAL POST ERROR: $e');
@@ -326,9 +340,19 @@ class M8CallService {
     final type = signal['type'];
     final payload = Map<String, dynamic>.from(signal['payload'] ?? {});
 
+    print(
+      '[M8 WEBRTC] HANDLE SIGNAL '
+      'type=$type id=${signal['id']} sender=${signal['sender_pin']}',
+    );
+
     if (type == 'offer') {
       final sdp = payload['sdp'];
       final offerType = payload['type'];
+
+      print(
+        '[M8 WEBRTC] OFFER RECEIVED '
+        'type=$offerType sdp=${sdp != null ? 'OK' : 'NULL'}',
+      );
 
       if (sdp == null) return;
 
@@ -355,13 +379,25 @@ class M8CallService {
 
       await peer!.setLocalDescription(answer);
 
+      print(
+        '[M8 WEBRTC] ANSWER CREATED '
+        'type=${answer.type} sdp=${answer.sdp != null ? 'OK' : 'NULL'}',
+      );
+
       await _sendSignal('answer', <String, dynamic>{
         'type': answer.type,
         'sdp': answer.sdp,
       });
+
+      print('[M8 WEBRTC] ANSWER SENT');
     } else if (type == 'answer') {
       final sdp = payload['sdp'];
       final answerType = payload['type'];
+
+      print(
+        '[M8 WEBRTC] ANSWER RECEIVED '
+        'type=$answerType sdp=${sdp != null ? 'OK' : 'NULL'}',
+      );
 
       if (sdp == null) return;
 
@@ -382,6 +418,11 @@ class M8CallService {
       _pendingIceCandidates.clear();
     } else if (type == 'ice') {
       final candidate = payload['candidate'];
+
+      print(
+        '[M8 WEBRTC] ICE RECEIVED '
+        'candidate=${candidate != null ? 'OK' : 'NULL'}',
+      );
 
       if (candidate == null) return;
 
