@@ -4914,6 +4914,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
       final userId = widget.user['id'];
 
+      print('M8 PHOTO DEBUG user = ${widget.user}');
+      print('M8 PHOTO DEBUG userId = $userId');
+      print('M8 PHOTO DEBUG userIdType = ${userId.runtimeType}');
+
       if (userId == null) {
         throw Exception('ID akun M8 tidak tersedia.');
       }
