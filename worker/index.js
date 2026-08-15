@@ -177,10 +177,25 @@ export default {
           }, 400);
         }
 
-        if (m8Pin.length < 4) {
+        // ============================================================
+        // M8 PIN RULES
+        // Owner PIN khusus: M8000001
+        // User PIN: tepat 8 karakter, huruf kecil + angka
+        // ============================================================
+
+        const OWNER_PIN = "M8000001";
+
+        if (m8Pin === OWNER_PIN) {
           return json({
             success: false,
-            error: "PIN M8 minimal 4 karakter.",
+            error: "PIN Owner M8 adalah PIN khusus dan tidak dapat digunakan untuk registrasi pengguna.",
+          }, 403);
+        }
+
+        if (!/^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{8}$/.test(m8Pin)) {
+          return json({
+            success: false,
+            error: "PIN M8 harus tepat 8 karakter dan terdiri dari huruf kecil serta angka.",
           }, 400);
         }
 
@@ -1333,7 +1348,7 @@ if (url.pathname === "/api/login" && request.method === "POST") {
         user = await env.DB.prepare(`
           SELECT id, name, email, phone, m8_pin, password_hash
           FROM users
-          WHERE email = ? OR phone = ?
+          WHERE (email = ? OR phone = ?) AND active = 1
           LIMIT 1
         `)
           .bind(identifier, identifier)
@@ -1342,7 +1357,7 @@ if (url.pathname === "/api/login" && request.method === "POST") {
         user = await env.DB.prepare(`
           SELECT id, name, email, phone, m8_pin, password_hash
           FROM users
-          WHERE m8_pin = ?
+          WHERE m8_pin = ? AND active = 1
           LIMIT 1
         `)
           .bind(m8Pin)
