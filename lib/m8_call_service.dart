@@ -288,18 +288,34 @@ class M8CallService {
   }
 
   Future<void> _sendSignal(String type, Map<String, dynamic> payload) async {
-    if (callId == null || myPin == null) return;
+    final currentCallId = callId;
+    final currentPin = myPin;
 
-    await http.post(
-      Uri.parse('$apiBase/api/calls/signal'),
-      headers: <String, String>{'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'call_id': callId,
-        'sender_pin': myPin,
-        'type': type,
-        'payload': payload,
-      }),
-    );
+    if (currentCallId == null || currentPin == null) return;
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/calls/signal'),
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'call_id': currentCallId,
+          'sender_pin': currentPin,
+          'type': type,
+          'payload': payload,
+        }),
+      );
+
+      print(
+        '[M8 WEBRTC] SEND SIGNAL '
+        'type=$type status=${response.statusCode}',
+      );
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        print('[M8 WEBRTC] SIGNAL ERROR: ${response.body}');
+      }
+    } catch (e) {
+      print('[M8 WEBRTC] SIGNAL POST ERROR: $e');
+    }
   }
 
   Future<void> _handleSignal(Map<String, dynamic> signal) async {
@@ -418,6 +434,13 @@ class M8CallService {
 
       if (status == 'ended' || status == 'rejected') {
         _signalTimer?.cancel();
+
+        if (status == 'rejected') {
+          _setCallStatus('rejected');
+        } else {
+          _setCallStatus('ended');
+        }
+
         return;
       }
 
@@ -434,7 +457,16 @@ class M8CallService {
 
         _lastSignalId = id;
 
-        await _handleSignal(signal);
+        try {
+          print(
+            '[M8 WEBRTC] RECEIVE SIGNAL '
+            'id=$id type=${signal['type']}',
+          );
+
+          await _handleSignal(signal);
+        } catch (e) {
+          print('[M8 WEBRTC] HANDLE SIGNAL ERROR: $e');
+        }
       }
     } catch (_) {
       // Polling tetap berjalan selama panggilan aktif.
