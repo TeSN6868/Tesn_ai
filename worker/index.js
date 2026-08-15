@@ -823,6 +823,7 @@ export default {
         id TEXT PRIMARY KEY,
         caller_pin TEXT NOT NULL,
         callee_pin TEXT NOT NULL,
+        call_type TEXT NOT NULL DEFAULT 'voice',
         status TEXT NOT NULL DEFAULT 'ringing',
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
@@ -840,12 +841,29 @@ export default {
       )
     `).run();
 
+    // MIGRATE CALL TYPE FOR EXISTING DATABASE
+    try {
+      await env.DB.prepare(
+        "ALTER TABLE call_sessions ADD COLUMN call_type TEXT NOT NULL DEFAULT 'voice'"
+      ).run();
+    } catch (_) {
+      // Kolom call_type sudah ada.
+    }
+
     // CREATE CALL
     if (url.pathname === "/api/calls" && request.method === "POST") {
       const body = await request.json();
 
       const callerPin = String(body.caller_pin || "").trim();
       const calleePin = String(body.callee_pin || "").trim();
+    const callType = String(body.call_type || "voice").trim().toLowerCase();
+
+    if (callType !== "voice" && callType !== "video") {
+      return json({
+        success: false,
+        error: "call_type harus voice atau video.",
+      }, 400);
+    }
 
       if (!callerPin || !calleePin) {
         return json({
@@ -899,12 +917,13 @@ export default {
 
       await env.DB.prepare(`
         INSERT INTO call_sessions
-        (id, caller_pin, callee_pin, status, created_at, updated_at)
-        VALUES (?, ?, ?, 'ringing', ?, ?)
+        (id, caller_pin, callee_pin, call_type, status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, 'ringing', ?, ?)
       `).bind(
         callId,
         callerPin,
         calleePin,
+        callType,
         now,
         now
       ).run();
@@ -912,6 +931,7 @@ export default {
       return json({
         success: true,
         call_id: callId,
+        call_type: callType,
         status: "ringing",
       }, 201);
     }
@@ -932,6 +952,7 @@ export default {
           id,
           caller_pin,
           callee_pin,
+          call_type,
           status,
           created_at,
           updated_at

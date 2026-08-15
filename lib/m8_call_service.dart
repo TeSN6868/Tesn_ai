@@ -83,7 +83,11 @@ class M8CallService {
       final response = await http.post(
         Uri.parse('$apiBase/api/calls'),
         headers: <String, String>{'Content-Type': 'application/json'},
-        body: jsonEncode({'caller_pin': callerPin, 'callee_pin': calleePin}),
+        body: jsonEncode({
+            'caller_pin': callerPin,
+            'callee_pin': calleePin,
+            'call_type': videoCall ? 'video' : 'voice',
+          }),
       );
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;

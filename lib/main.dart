@@ -1048,6 +1048,8 @@ class _HomePageState extends State<HomePage> {
     _lastIncomingCallId = incomingId;
 
     final callerPin = call['caller_pin']?.toString() ?? '';
+    final callType = call['call_type']?.toString() ?? 'voice';
+    final isVideoCall = callType == 'video';
 
     if (callerPin.isEmpty) return;
 
@@ -1099,6 +1101,7 @@ class _HomePageState extends State<HomePage> {
           otherPin: callerPin,
           call: callService,
           incomingCallId: incomingId,
+          videoCall: isVideoCall,
         ),
       ),
     );
