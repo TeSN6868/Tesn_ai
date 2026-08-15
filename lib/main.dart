@@ -5094,9 +5094,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   child: CircleAvatar(
-  radius: 52,
-  backgroundColor: m8White,
-  backgroundImage: const AssetImage('assets/m8_icon-final.png'),
+                    radius: 38,
+                    backgroundColor: m8White,
+                    backgroundImage: const AssetImage('assets/m8_icon-final.png'),
                   ),
                 ),
                 const SizedBox(height: 16),
