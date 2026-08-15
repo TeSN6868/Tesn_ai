@@ -334,6 +334,10 @@ class _LoginPageState extends State<LoginPage> {
           )
           .timeout(const Duration(seconds: 20));
 
+      print('M8 LOGIN DEBUG STATUS: ${response.statusCode}');
+      print('M8 LOGIN DEBUG BODY: ${response.body}');
+      print('M8 LOGIN DEBUG URL: $apiBase/api/login');
+
       final data = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (!mounted) return;
@@ -5089,14 +5093,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       width: 2,
                     ),
                   ),
-                  child: const CircleAvatar(
-                    radius: 52,
-                    backgroundColor: m8White,
-                    child: Icon(
-                      Icons.person_rounded,
-                      size: 58,
-                      color: m8Blue,
-                    ),
+                  child: CircleAvatar(
+  radius: 52,
+  backgroundColor: m8White,
+  backgroundImage: const AssetImage('assets/m8_icon-final.png'),
                   ),
                 ),
                 const SizedBox(height: 16),
