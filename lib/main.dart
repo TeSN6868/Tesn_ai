@@ -5254,6 +5254,18 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: Colors.white,
                   ),
                 ),
+                GestureDetector(
+                  onTap: _changeProfilePhoto,
+                  child: const Text(
+                    'Ganti Foto',
+                    style: TextStyle(
+                      color: m8BlueLight,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisSize: MainAxisSize.min,
