@@ -6,6 +6,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -21,12 +22,12 @@ jobs:
         run: |
           wrangler d1 execute m8-database --remote --command "SELECT id, name, email, phone, m8_pin, created_at FROM users ORDER BY id;" > m8-d1-users.txt
           cat m8-d1-users.txt
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Upload D1 result
         uses: actions/upload-artifact@v4
         with:
           name: m8-d1-users
           path: m8-d1-users.txt
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
