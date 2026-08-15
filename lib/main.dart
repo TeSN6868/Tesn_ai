@@ -4845,6 +4845,123 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Future<void> _changeProfilePhoto() async {
+    try {
+      final picker = ImagePicker();
+
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+
+      if (image == null) return;
+
+      final bytes = await image.readAsBytes();
+
+      if (bytes.isEmpty) {
+        throw Exception('Foto kosong.');
+      }
+
+      if (bytes.length > 5 * 1024 * 1024) {
+        throw Exception('Foto terlalu besar. Maksimal 5 MB.');
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mengupload foto profil...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      final extension = image.name.contains('.')
+          ? image.name.split('.').last.toLowerCase()
+          : 'jpg';
+
+      final contentType = switch (extension) {
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'gif' => 'image/gif',
+        _ => 'image/jpeg',
+      };
+
+      final uploadResponse = await http.post(
+        Uri.parse('$apiBase/api/upload'),
+        headers: {
+          'Content-Type': contentType,
+        },
+        body: bytes,
+      ).timeout(const Duration(seconds: 30));
+
+      final uploadData = jsonDecode(uploadResponse.body);
+
+      if (uploadResponse.statusCode != 201 ||
+          uploadData['success'] != true) {
+        throw Exception(
+          uploadData['error']?.toString() ??
+              'Gagal mengupload foto.',
+        );
+      }
+
+      final photoUrl = uploadData['url']?.toString();
+
+      if (photoUrl == null || photoUrl.isEmpty) {
+        throw Exception('URL foto tidak diterima server.');
+      }
+
+      final pin = widget.user['m8_pin']?.toString() ?? '';
+
+      if (pin.isEmpty) {
+        throw Exception('M8 PIN tidak tersedia.');
+      }
+
+      final saveResponse = await http.post(
+        Uri.parse('$apiBase/api/profile/photo'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'm8_pin': pin,
+          'photo_url': photoUrl,
+        }),
+      ).timeout(const Duration(seconds: 20));
+
+      final saveData = jsonDecode(saveResponse.body);
+
+      if (saveResponse.statusCode != 200 ||
+          saveData['success'] != true) {
+        throw Exception(
+          saveData['error']?.toString() ??
+              'Gagal menyimpan foto profil.',
+        );
+      }
+
+      widget.user['profile_photo_url'] = photoUrl;
+
+      if (!mounted) return;
+
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Foto profil berhasil diperbarui.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengganti foto profil: $e'),
+        ),
+      );
+    }
+  }
+
   Future<void> _editName() async {
     final controller = TextEditingController(
       text: widget.user['name']?.toString() ?? '',
@@ -5093,10 +5210,15 @@ class _ProfilePageState extends State<ProfilePage> {
                       width: 2,
                     ),
                   ),
-                  child: CircleAvatar(
-                    radius: 38,
-                    backgroundColor: m8White,
-                    backgroundImage: const AssetImage('assets/m8_icon-final.png'),
+                  child: GestureDetector(
+                    onTap: _changeProfilePhoto,
+                    child: CircleAvatar(
+                      radius: 38,
+                      backgroundColor: m8White,
+                      backgroundImage: (widget.user['profile_photo_url']?.toString().isNotEmpty ?? false)
+                          ? NetworkImage(widget.user['profile_photo_url'].toString())
+                          : const AssetImage('assets/m8_icon-final.png'),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),

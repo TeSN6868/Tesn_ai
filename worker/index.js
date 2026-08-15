@@ -1314,6 +1314,73 @@ export default {
       });
     }
 
+    // ============================================================
+    // UPDATE PROFILE PHOTO
+    // ============================================================
+    if (url.pathname === "/api/profile/photo" && request.method === "POST") {
+      const body = await request.json();
+      const m8Pin = String(body.m8_pin || "").trim();
+      const photoUrl = String(body.photo_url || "").trim();
+
+      if (!m8Pin || !photoUrl) {
+        return json({
+          success: false,
+          error: "M8 PIN dan URL foto wajib diisi.",
+        }, 400);
+      }
+
+      if (photoUrl.length > 2000) {
+        return json({
+          success: false,
+          error: "URL foto terlalu panjang.",
+        }, 400);
+      }
+
+      if (!env.DB) {
+        return json({
+          success: false,
+          error: "Binding D1 DB belum tersedia.",
+        }, 500);
+      }
+
+      const user = await env.DB.prepare(`
+        SELECT id, name, email, phone, m8_pin, profile_photo_url
+        FROM users
+        WHERE m8_pin = ?
+        LIMIT 1
+      `).bind(m8Pin).first();
+
+      if (!user) {
+        return json({
+          success: false,
+          error: "Akun M8 tidak ditemukan.",
+        }, 404);
+      }
+
+      const result = await env.DB.prepare(`
+        UPDATE users
+        SET profile_photo_url = ?
+        WHERE id = ?
+      `).bind(photoUrl, user.id).run();
+
+      if (!result.success) {
+        throw new Error("Gagal memperbarui foto profil akun M8.");
+      }
+
+      const updated = await env.DB.prepare(`
+        SELECT id, name, email, phone, m8_pin, profile_photo_url
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+      `).bind(user.id).first();
+
+      return json({
+        success: true,
+        message: "Foto profil M8 berhasil diperbarui.",
+        user: updated,
+      });
+    }
+
     // LOGIN
 if (url.pathname === "/api/login" && request.method === "POST") {
       const body = await request.json();
@@ -1346,7 +1413,7 @@ if (url.pathname === "/api/login" && request.method === "POST") {
 
       if (identifier) {
         user = await env.DB.prepare(`
-          SELECT id, name, email, phone, m8_pin, password_hash
+          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url, profile_photo_url
           FROM users
           WHERE (email = ? OR phone = ?) AND active = 1
           LIMIT 1
@@ -1355,7 +1422,7 @@ if (url.pathname === "/api/login" && request.method === "POST") {
           .first();
       } else {
         user = await env.DB.prepare(`
-          SELECT id, name, email, phone, m8_pin, password_hash
+          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url, profile_photo_url
           FROM users
           WHERE m8_pin = ? AND active = 1
           LIMIT 1
@@ -1417,6 +1484,7 @@ if (url.pathname === "/api/login" && request.method === "POST") {
           email: user.email,
           phone: user.phone,
           m8_pin: user.m8_pin,
+          profile_photo_url: user.profile_photo_url,
         },
       });
     }
