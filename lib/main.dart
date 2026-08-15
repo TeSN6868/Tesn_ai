@@ -4912,10 +4912,10 @@ class _ProfilePageState extends State<ProfilePage> {
         throw Exception('URL foto tidak diterima server.');
       }
 
-      final pin = widget.user['m8_pin']?.toString() ?? '';
+      final userId = widget.user['id'];
 
-      if (pin.isEmpty) {
-        throw Exception('M8 PIN tidak tersedia.');
+      if (userId == null) {
+        throw Exception('ID akun M8 tidak tersedia.');
       }
 
       final saveResponse = await http.post(
@@ -4924,7 +4924,7 @@ class _ProfilePageState extends State<ProfilePage> {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'm8_pin': pin,
+          'user_id': userId,
           'photo_url': photoUrl,
         }),
       ).timeout(const Duration(seconds: 20));

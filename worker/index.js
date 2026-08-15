@@ -1319,13 +1319,13 @@ export default {
     // ============================================================
     if (url.pathname === "/api/profile/photo" && request.method === "POST") {
       const body = await request.json();
-      const m8Pin = String(body.m8_pin || "").trim();
+      const userId = Number(body.user_id);
       const photoUrl = String(body.photo_url || "").trim();
 
-      if (!m8Pin || !photoUrl) {
+      if (!Number.isInteger(userId) || userId <= 0 || !photoUrl) {
         return json({
           success: false,
-          error: "M8 PIN dan URL foto wajib diisi.",
+          error: "User ID dan URL foto wajib diisi.",
         }, 400);
       }
 
@@ -1346,9 +1346,9 @@ export default {
       const user = await env.DB.prepare(`
         SELECT id, name, email, phone, m8_pin, profile_photo_url
         FROM users
-        WHERE m8_pin = ?
+        WHERE id = ?
         LIMIT 1
-      `).bind(m8Pin).first();
+      `).bind(userId).first();
 
       if (!user) {
         return json({
