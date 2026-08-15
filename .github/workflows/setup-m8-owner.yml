@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  setup-owner:
+  owner:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,17 +16,17 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler
 
-      - name: Setup Owner Account
+      - name: Setup Owner M8
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          M8_OWNER_PASSWORD: ${{ secrets.M8_OWNER_PASSWORD }}
+          OWNER_PASSWORD: ${{ secrets.M8_OWNER_PASSWORD }}
         run: |
           node <<'NODE'
           const crypto = require('crypto');
           const { execFileSync } = require('child_process');
 
-          const password = process.env.M8_OWNER_PASSWORD;
+          const password = process.env.OWNER_PASSWORD;
 
           if (!password) {
             throw new Error('M8_OWNER_PASSWORD belum diset.');
@@ -48,31 +48,30 @@ jobs:
           }
 
           const hash = hashPassword(password);
-          const safeHash = hash.replace(/'/g, "''");
 
           const sql = `
-          ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user';
+            INSERT INTO users
+              (m8_pin, name, email, phone, password_hash, created_at, role, active)
+            SELECT
+              'M8000001',
+              'M8 Owner',
+              NULL,
+              NULL,
+              '${hash.replace(/'/g, "''")}',
+              unixepoch(),
+              'owner',
+              1
+            WHERE NOT EXISTS (
+              SELECT 1 FROM users WHERE m8_pin = 'M8000001'
+            );
 
-          UPDATE users
-          SET
-            name = 'M8 Owner',
-            password_hash = '${safeHash}',
-            role = 'owner'
-          WHERE m8_pin = 'M8000001';
-
-          INSERT INTO users
-            (m8_pin, name, email, phone, password_hash, created_at, role)
-          SELECT
-            'M8000001',
-            'M8 Owner',
-            NULL,
-            NULL,
-            '${safeHash}',
-            unixepoch(),
-            'owner'
-          WHERE NOT EXISTS (
-            SELECT 1 FROM users WHERE m8_pin = 'M8000001'
-          );
+            UPDATE users
+            SET
+              name = 'M8 Owner',
+              password_hash = '${hash.replace(/'/g, "''")}',
+              role = 'owner',
+              active = 1
+            WHERE m8_pin = 'M8000001';
           `;
 
           execFileSync(
@@ -92,5 +91,5 @@ jobs:
             }
           );
 
-          console.log('M8 Owner berhasil dipatenkan.');
+          console.log('M8 Owner berhasil dibuat/diperbarui.');
           NODE
