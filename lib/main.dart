@@ -2622,7 +2622,9 @@ class _ChatsPageState extends State<ChatsPage> {
           onMyStoryTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => StoryPage(user: widget.user)),
+              MaterialPageRoute(
+                builder: (_) => StoryPage(user: {'m8_pin': widget.myPin}),
+              ),
             );
           },
         ),
