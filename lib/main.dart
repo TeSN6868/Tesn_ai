@@ -5171,9 +5171,7 @@ class _M8StoryRail extends StatelessWidget {
                   onTap: onMyStoryTap,
                 ),
                 const SizedBox(width: 8),
-                const _M8StoryMiniCard(title: 'M8', subtitle: 'Baru saja'),
-                const SizedBox(width: 8),
-                const _M8StoryMiniCard(title: 'Teman M8', subtitle: '12 menit'),
+                const _M8StoryMiniCard(title: 'Story', subtitle: 'Lihat'),
               ],
             ),
           ),
@@ -5245,8 +5243,240 @@ class _M8StoryMiniCard extends StatelessWidget {
   }
 }
 
-class StoryPage extends StatelessWidget {
+class StoryPage extends StatefulWidget {
   const StoryPage({super.key});
+
+  @override
+  State<StoryPage> createState() => _StoryPageState();
+}
+
+class _StoryPageState extends State<StoryPage> {
+  bool loading = true;
+  bool uploading = false;
+  List<Map<String, dynamic>> stories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStories();
+  }
+
+  Future<void> _loadStories() async {
+    try {
+      final pin =
+          currentUser?['m8_pin']?.toString() ??
+          currentUser?['pin']?.toString() ??
+          '';
+
+      if (pin.isEmpty) {
+        throw Exception('M8 PIN tidak ditemukan.');
+      }
+
+      final response = await http
+          .get(
+            Uri.parse(
+              '$apiBase/api/stories?m8_pin=${Uri.encodeComponent(pin)}',
+            ),
+          )
+          .timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['error']?.toString() ?? 'Gagal mengambil Story.');
+      }
+
+      final raw = data['stories'];
+
+      if (raw is List) {
+        stories = raw
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      }
+
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        loading = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Story belum dapat dimuat: $e')));
+    }
+  }
+
+  Future<void> _addStory() async {
+    if (uploading) return;
+
+    try {
+      final picker = ImagePicker();
+
+      final choice = await showModalBottomSheet<String>(
+        context: context,
+        builder: (context) {
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library_rounded),
+                  title: const Text('Foto'),
+                  onTap: () => Navigator.pop(context, 'image'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.videocam_rounded),
+                  title: const Text('Video'),
+                  onTap: () => Navigator.pop(context, 'video'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (choice == null) return;
+
+      XFile? media;
+
+      if (choice == 'video') {
+        media = await picker.pickVideo(source: ImageSource.gallery);
+      } else {
+        media = await picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 90,
+          maxWidth: 1600,
+          maxHeight: 1600,
+        );
+      }
+
+      if (media == null) return;
+
+      final bytes = await media.readAsBytes();
+
+      if (bytes.isEmpty) {
+        throw Exception('File Story kosong.');
+      }
+
+      if (bytes.length > 25 * 1024 * 1024) {
+        throw Exception('Ukuran Story terlalu besar. Maksimal 25 MB.');
+      }
+
+      setState(() {
+        uploading = true;
+      });
+
+      final extension = media.name.contains('.')
+          ? media.name.split('.').last.toLowerCase()
+          : choice == 'video'
+          ? 'mp4'
+          : 'jpg';
+
+      final contentType = choice == 'video'
+          ? switch (extension) {
+              'webm' => 'video/webm',
+              'mov' => 'video/quicktime',
+              _ => 'video/mp4',
+            }
+          : switch (extension) {
+              'png' => 'image/png',
+              'webp' => 'image/webp',
+              _ => 'image/jpeg',
+            };
+
+      final uploadResponse = await http
+          .post(
+            Uri.parse('$apiBase/api/upload'),
+            headers: {'Content-Type': contentType},
+            body: bytes,
+          )
+          .timeout(const Duration(seconds: 60));
+
+      final uploadData = jsonDecode(uploadResponse.body);
+
+      if (uploadResponse.statusCode != 201 || uploadData['success'] != true) {
+        throw Exception(
+          uploadData['error']?.toString() ?? 'Upload Story gagal.',
+        );
+      }
+
+      final mediaUrl = uploadData['url']?.toString();
+
+      if (mediaUrl == null || mediaUrl.isEmpty) {
+        throw Exception('Server tidak memberikan URL Story.');
+      }
+
+      final pin =
+          currentUser?['m8_pin']?.toString() ??
+          currentUser?['pin']?.toString() ??
+          '';
+
+      if (pin.isEmpty) {
+        throw Exception('M8 PIN tidak ditemukan.');
+      }
+
+      final createResponse = await http
+          .post(
+            Uri.parse('$apiBase/api/stories'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'm8_pin': pin,
+              'media_url': mediaUrl,
+              'media_type': choice,
+              'caption': '',
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+
+      final createData = jsonDecode(createResponse.body);
+
+      if (createResponse.statusCode != 201 || createData['success'] != true) {
+        throw Exception(
+          createData['error']?.toString() ?? 'Gagal membuat Story.',
+        );
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Story berhasil dibagikan selama 24 jam.'),
+        ),
+      );
+
+      await _loadStories();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal membuat Story: $e')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          uploading = false;
+        });
+      }
+    }
+  }
+
+  void _openStory(int index) {
+    if (index < 0 || index >= stories.length) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _M8StoryViewer(stories: stories, initialIndex: index),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -5257,68 +5487,96 @@ class StoryPage extends StatelessWidget {
         foregroundColor: m8White,
         elevation: 0,
         title: const Text(
-          "M8 Story",
+          'M8 Story',
           style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.3),
         ),
         actions: [
           IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.add_rounded),
-            color: m8BlueLight,
+            onPressed: uploading ? null : _addStory,
+            icon: uploading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.add_rounded),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        children: [
-          const Text(
-            "CERITA SAYA",
-            style: TextStyle(
-              color: m8BlueLight,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadStories,
+              child: stories.isEmpty
+                  ? ListView(
+                      padding: const EdgeInsets.all(20),
+                      children: [
+                        const SizedBox(height: 80),
+                        const Icon(
+                          Icons.auto_awesome_rounded,
+                          color: m8BlueLight,
+                          size: 64,
+                        ),
+                        const SizedBox(height: 18),
+                        const Text(
+                          'Belum ada Story',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: m8White,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Bagikan foto atau video pertama kamu.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: m8BlueLight),
+                        ),
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
+                          onPressed: uploading ? null : _addStory,
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Buat Story'),
+                        ),
+                      ],
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                      itemCount: stories.length,
+                      itemBuilder: (context, index) {
+                        final story = stories[index];
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _M8LiveStoryCard(
+                            story: story,
+                            onTap: () => _openStory(index),
+                          ),
+                        );
+                      },
+                    ),
             ),
-          ),
-          const SizedBox(height: 8),
-          _M8MyStoryCard(onTap: () {}),
-          const SizedBox(height: 24),
-          const Text(
-            "CERITA TERBARU",
-            style: TextStyle(
-              color: m8BlueLight,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          _M8StoryCard(
-            name: "M8",
-            time: "Baru saja",
-            text: "Selamat datang di M8 Story",
-            onTap: () {},
-          ),
-          const SizedBox(height: 10),
-          _M8StoryCard(
-            name: "Teman M8",
-            time: "12 menit",
-            text: "Cerita baru untuk kamu",
-            onTap: () {},
-          ),
-        ],
-      ),
     );
   }
 }
 
-class _M8MyStoryCard extends StatelessWidget {
+class _M8LiveStoryCard extends StatelessWidget {
+  final Map<String, dynamic> story;
   final VoidCallback onTap;
 
-  const _M8MyStoryCard({required this.onTap});
+  const _M8LiveStoryCard({required this.story, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final name = story['user_name']?.toString().trim().isNotEmpty == true
+        ? story['user_name'].toString()
+        : 'Pengguna M8';
+
+    final type = story['media_type']?.toString() ?? 'image';
+
+    final caption = story['caption']?.toString().trim() ?? '';
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
@@ -5327,96 +5585,21 @@ class _M8MyStoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: m8White,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: m8Blue, width: 0.8),
+          border: Border.all(color: m8Blue.withValues(alpha: 0.55)),
         ),
         child: Row(
           children: [
             Container(
-              width: 54,
-              height: 54,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
                 color: m8BlueDark,
                 shape: BoxShape.circle,
                 border: Border.all(color: m8Blue, width: 2),
               ),
-              child: const Icon(
-                Icons.add_rounded,
+              child: Icon(
+                type == 'video' ? Icons.videocam_rounded : Icons.photo_rounded,
                 color: m8BlueLight,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Cerita Saya",
-                    style: TextStyle(
-                      color: m8BlueDark,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    "Bagikan sesuatu ke teman M8",
-                    style: TextStyle(color: m8TextMuted, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded, color: m8Blue),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _M8StoryCard extends StatelessWidget {
-  final String name;
-  final String time;
-  final String text;
-  final VoidCallback onTap;
-
-  const _M8StoryCard({
-    required this.name,
-    required this.time,
-    required this.text,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: m8White,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: m8Blue.withValues(alpha: 0.55), width: 0.7),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: m8BlueDark,
-                shape: BoxShape.circle,
-                border: Border.all(color: m8Blue, width: 1.5),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                name.substring(0, 1).toUpperCase(),
-                style: const TextStyle(
-                  color: m8White,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -5432,30 +5615,21 @@ class _M8StoryCard extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
-                    text,
-                    maxLines: 1,
+                    caption.isEmpty
+                        ? type == 'video'
+                              ? 'Video Story'
+                              : 'Foto Story'
+                        : caption,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: m8TextMuted, fontSize: 12),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    time,
-                    style: const TextStyle(
-                      color: m8Blue,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                    ),
                   ),
                 ],
               ),
             ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color: m8Blue,
-            ),
+            const Icon(Icons.chevron_right_rounded, color: m8Blue),
           ],
         ),
       ),
@@ -5463,586 +5637,174 @@ class _M8StoryCard extends StatelessWidget {
   }
 }
 
-class _AttachmentItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+class _M8StoryViewer extends StatefulWidget {
+  final List<Map<String, dynamic>> stories;
+  final int initialIndex;
 
-  const _AttachmentItem({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _M8StoryViewer({required this.stories, required this.initialIndex});
 
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: m8White,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(icon, color: m8Blue, size: 25),
-          ),
-          const SizedBox(height: 7),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 11,
-              color: m8TextMuted,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  State<_M8StoryViewer> createState() => _M8StoryViewerState();
 }
 
-class VoiceCallPage extends StatefulWidget {
-  final String myPin;
-  final String otherPin;
-  final M8CallService call;
-  final bool videoCall;
-  final String? incomingCallId;
-
-  const VoiceCallPage({
-    super.key,
-    required this.myPin,
-    required this.otherPin,
-    required this.call,
-    this.videoCall = false,
-    this.incomingCallId,
-  });
-
-  @override
-  State<VoiceCallPage> createState() => _VoiceCallPageState();
-}
-
-class _VoiceCallPageState extends State<VoiceCallPage> {
-  Timer? timer;
-  int seconds = 0;
-
-  bool connecting = true;
-  bool muted = false;
-  bool cameraOff = false;
-  bool speakerOn = false;
-
-  String callStatus = 'Menghubungkan...';
+class _M8StoryViewerState extends State<_M8StoryViewer> {
+  late int index;
 
   @override
   void initState() {
     super.initState();
-
-    widget.call.onCallStatusChanged = _handleCallStatus;
-
-    _startCall();
+    index = widget.initialIndex;
   }
 
-  void _handleCallStatus(String status) {
-    if (!mounted) return;
-
-    setState(() {
-      switch (status) {
-        case 'ringing':
-          callStatus = 'Berdering...';
-          connecting = true;
-          break;
-
-        case 'connecting':
-          callStatus = 'Menghubungkan...';
-          connecting = true;
-          break;
-
-        case 'connected':
-          callStatus = widget.videoCall
-              ? 'Video call terhubung'
-              : 'Panggilan suara terhubung';
-          connecting = false;
-
-          timer ??= Timer.periodic(const Duration(seconds: 1), (_) {
-            if (mounted) {
-              setState(() => seconds++);
-            }
-          });
-          break;
-
-        case 'disconnected':
-          timer?.cancel();
-          timer = null;
-          callStatus = 'Koneksi terputus';
-          connecting = false;
-          break;
-
-        case 'failed':
-          timer?.cancel();
-          timer = null;
-          callStatus = 'Panggilan gagal';
-          connecting = false;
-          break;
-
-        case 'rejected':
-          timer?.cancel();
-          timer = null;
-          callStatus = 'Panggilan ditolak';
-          connecting = false;
-          break;
-
-        case 'ended':
-          timer?.cancel();
-          timer = null;
-          callStatus = 'Panggilan berakhir';
-          connecting = false;
-          break;
-
-        default:
-          callStatus = status;
-          connecting = true;
-      }
-    });
-  }
-
-  Future<void> _startCall() async {
-    try {
-      await widget.call.initializeRenderers();
-
-      if (widget.incomingCallId != null) {
-        await widget.call.acceptCall(
-          incomingCallId: widget.incomingCallId!,
-          calleePin: widget.myPin,
-          videoCall: widget.videoCall,
-        );
-      } else {
-        await widget.call.startCall(
-          callerPin: widget.myPin,
-          calleePin: widget.otherPin,
-          videoCall: widget.videoCall,
-        );
-      }
-
-      if (!mounted) return;
-
-      // Voice Call = audio saja.
-      // Video Call = kamera tetap aktif.
-      if (!widget.videoCall) {
-        final stream = widget.call.localStream;
-        for (final track in stream?.getVideoTracks() ?? []) {
-          track.enabled = false;
-        }
-      }
-
-      setState(() {
-        cameraOff = !widget.videoCall;
-      });
-
-      // Status panggilan dan timer dikendalikan oleh
-      // M8CallService melalui onCallStatusChanged.
-      if (widget.call.callStatus == 'connected') {
-        _handleCallStatus('connected');
-      }
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        connecting = false;
-        callStatus = 'Panggilan gagal';
-      });
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Panggilan gagal: $e')));
-    }
-  }
-
-  String get durationText {
-    final minutes = seconds ~/ 60;
-    final secs = seconds % 60;
-
-    return '${minutes.toString().padLeft(2, '0')}:'
-        '${secs.toString().padLeft(2, '0')}';
-  }
-
-  void toggleMute() {
-    final stream = widget.call.localStream;
-    if (stream == null) return;
-
-    for (final track in stream.getAudioTracks()) {
-      track.enabled = !track.enabled;
+  void _next() {
+    if (index >= widget.stories.length - 1) {
+      Navigator.pop(context);
+      return;
     }
 
     setState(() {
-      muted = !muted;
+      index++;
     });
   }
 
-  void toggleCamera() {
-    final stream = widget.call.localStream;
-    if (stream == null) return;
-
-    for (final track in stream.getVideoTracks()) {
-      track.enabled = !track.enabled;
-    }
+  void _previous() {
+    if (index <= 0) return;
 
     setState(() {
-      cameraOff = !cameraOff;
+      index--;
     });
-  }
-
-  Future<void> switchCamera() async {
-    final stream = widget.call.localStream;
-    if (stream == null) return;
-
-    final tracks = stream.getVideoTracks();
-    if (tracks.isEmpty) return;
-
-    await Helper.switchCamera(tracks.first);
-  }
-
-  Future<void> toggleSpeaker() async {
-    final newState = !speakerOn;
-
-    setState(() {
-      speakerOn = newState;
-    });
-
-    try {
-      await Helper.setSpeakerphoneOn(newState);
-    } catch (_) {}
-  }
-
-  Future<void> hangUp() async {
-    // Jangan biarkan tombol Akhiri ditekan berkali-kali.
-    if (!mounted) return;
-
-    timer?.cancel();
-
-    // Cleanup WebRTC HARUS dilakukan sebelum halaman ditutup.
-    // Ini menghentikan microphone, audio track, peer connection,
-    // polling signaling, dan membersihkan audio routing Android.
-    try {
-      await widget.call.hangUp();
-    } catch (e) {
-      print('[M8 CALL UI] HANGUP ERROR: $e');
-    }
-
-    // Setelah WebRTC benar-benar dihentikan, baru kembali
-    // dari halaman panggilan ke halaman aplikasi sebelumnya.
-    if (mounted && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
-  }
-
-  Widget _controlButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    bool active = true,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: active
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : Colors.white.withValues(alpha: 0.25),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-            ),
-            child: Icon(icon, color: Colors.white, size: 24),
-          ),
-          const SizedBox(height: 7),
-          Text(label, style: const TextStyle(color: m8TextMuted, fontSize: 11)),
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final story = widget.stories[index];
+
+    final name = story['user_name']?.toString() ?? 'Pengguna M8';
+
+    final url = story['media_url']?.toString() ?? '';
+
+    final type = story['media_type']?.toString() ?? 'image';
+
+    final caption = story['caption']?.toString() ?? '';
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Positioned.fill(
-              child: widget.call.remoteRenderer.srcObject != null
-                  ? RTCVideoView(
-                      widget.call.remoteRenderer,
-                      objectFit:
-                          RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                    )
-                  : Container(
-                      color: m8Blue,
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const CircleAvatar(
-                              radius: 52,
-                              backgroundColor: m8Blue,
-                              child: Icon(
-                                Icons.person,
-                                size: 55,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'M8 User',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'M8 PIN: ${widget.otherPin}',
-                              style: TextStyle(
-                                color: m8TextMuted,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            Text(
-                              callStatus,
-                              style: const TextStyle(
-                                color: m8TextMuted,
-                                fontSize: 14,
-                              ),
-                            ),
-                            if (connecting) ...[
-                              const SizedBox(height: 16),
-                              const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: m8Blue,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
+            if (type == 'image')
+              InteractiveViewer(
+                child: Image.network(
+                  url,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Center(
+                    child: Icon(
+                      Icons.broken_image_rounded,
+                      color: Colors.white,
+                      size: 70,
                     ),
-            ),
-
-            Positioned(
-              top: 18,
-              left: 18,
-              right: 18,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: hangUp,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.keyboard_arrow_down,
+                  ),
+                ),
+              )
+            else
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.videocam_rounded,
+                      color: Colors.white,
+                      size: 80,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Video Story',
+                      style: TextStyle(
                         color: Colors.white,
-                        size: 28,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                  Column(
-                    children: [
-                      Text(
-                        callStatus,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    const SizedBox(height: 8),
+                    Text(
+                      url,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
                       ),
-                      const SizedBox(height: 4),
-                      if (!connecting)
-                        Text(
-                          durationText,
-                          style: const TextStyle(
-                            color: m8TextMuted,
-                            fontSize: 13,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(width: 44),
-                ],
-              ),
-            ),
-
-            if (widget.videoCall && widget.call.localRenderer.srcObject != null)
-              Positioned(
-                top: 82,
-                right: 18,
-                child: Container(
-                  width: 105,
-                  height: 145,
-                  decoration: BoxDecoration(
-                    color: m8Blue,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: m8White.withValues(alpha: 0.78),
-                      width: 1.5,
                     ),
-                    boxShadow: const [
-                      BoxShadow(blurRadius: 14, spreadRadius: 1),
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: cameraOff
-                      ? const Center(
-                          child: Icon(
-                            Icons.videocam_off,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        )
-                      : RTCVideoView(
-                          widget.call.localRenderer,
-                          mirror: true,
-                          objectFit:
-                              RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        ),
+                  ],
                 ),
               ),
 
             Positioned(
-              left: 0,
-              right: 0,
-              bottom: 28,
-              child: Column(
+              top: 12,
+              left: 14,
+              right: 14,
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _controlButton(
-                        icon: muted ? Icons.mic_off : Icons.mic,
-                        label: muted ? 'Nyalakan' : 'Bisukan',
-                        onTap: toggleMute,
-                        active: !muted,
-                      ),
-                      _controlButton(
-                        icon: speakerOn ? Icons.volume_up : Icons.volume_off,
-                        label: 'Speaker',
-                        onTap: toggleSpeaker,
-                        active: speakerOn,
-                      ),
-                    ],
+                  const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: m8Blue,
+                    child: Icon(Icons.person_rounded, color: Colors.white),
                   ),
-                  const SizedBox(height: 24),
-                  GestureDetector(
-                    onTap: hangUp,
-                    child: Container(
-                      width: 68,
-                      height: 68,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.call_end,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: const TextStyle(
                         color: Colors.white,
-                        size: 32,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Akhiri',
-                    style: TextStyle(color: m8TextMuted, fontSize: 12),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded, color: Colors.white),
                   ),
                 ],
               ),
             ),
+
+            Positioned(
+              left: 0,
+              top: 80,
+              bottom: 80,
+              width: 90,
+              child: GestureDetector(onTap: _previous),
+            ),
+
+            Positioned(
+              right: 0,
+              top: 80,
+              bottom: 80,
+              width: 90,
+              child: GestureDetector(onTap: _next),
+            ),
+
+            if (caption.trim().isNotEmpty)
+              Positioned(
+                left: 18,
+                right: 18,
+                bottom: 28,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    caption,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ),
+              ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CallButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _CallButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: const BoxDecoration(
-              color: m8BlueLight,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: 27),
-          ),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(color: m8TextMuted, fontSize: 12)),
-        ],
-      ),
-    );
-  }
-}
-
-class CallsPage extends StatelessWidget {
-  const CallsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.call, size: 70, color: m8Blue),
-          const SizedBox(height: 18),
-          const Text(
-            'Panggilan M8',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Fitur panggilan akan kita aktifkan berikutnya.',
-            style: TextStyle(color: m8TextMuted),
-          ),
-        ],
       ),
     );
   }
