@@ -1,3 +1,20 @@
+async function ensureStoryTables(db) {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS stories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      story_id TEXT NOT NULL UNIQUE,
+      user_pin TEXT NOT NULL,
+      media_url TEXT NOT NULL,
+      media_type TEXT NOT NULL DEFAULT 'image',
+      caption TEXT,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      view_count INTEGER NOT NULL DEFAULT 0
+    )
+  `).run();
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -132,6 +149,145 @@ export default {
 
         return new Response(object.body, {
           headers,
+        });
+      }
+
+      // ============================================================
+      // M8 STORY - CREATE
+      // ============================================================
+      if (url.pathname === "/api/stories" && request.method === "POST") {
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        await ensureStoryTables(env.DB);
+
+        const body = await request.json();
+
+        const userPin = String(body.m8_pin || body.user_pin || "").trim();
+        const mediaUrl = String(body.media_url || "").trim();
+        const mediaType = String(body.media_type || "image").trim().toLowerCase();
+        const caption = String(body.caption || "").trim();
+
+        if (!userPin || !mediaUrl) {
+          return json({
+            success: false,
+            error: "m8_pin dan media_url wajib diisi.",
+          }, 400);
+        }
+
+        if (!["image", "video"].includes(mediaType)) {
+          return json({
+            success: false,
+            error: "media_type harus image atau video.",
+          }, 400);
+        }
+
+        const user = await env.DB.prepare(`
+          SELECT m8_pin, name
+          FROM users
+          WHERE m8_pin = ?
+          LIMIT 1
+        `).bind(userPin).first();
+
+        if (!user) {
+          return json({
+            success: false,
+            error: "Pengguna M8 tidak ditemukan.",
+          }, 404);
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        const expiresAt = now + (24 * 60 * 60);
+        const storyId = crypto.randomUUID();
+
+        const result = await env.DB.prepare(`
+          INSERT INTO stories
+            (story_id, user_pin, media_url, media_type, caption,
+             created_at, expires_at, is_active, view_count)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0)
+        `).bind(
+          storyId,
+          userPin,
+          mediaUrl,
+          mediaType,
+          caption,
+          now,
+          expiresAt
+        ).run();
+
+        if (!result.success) {
+          throw new Error("Gagal menyimpan Story M8.");
+        }
+
+        return json({
+          success: true,
+          message: "Story M8 berhasil dibuat.",
+          story: {
+            story_id: storyId,
+            user_pin: userPin,
+            user_name: user.name,
+            media_url: mediaUrl,
+            media_type: mediaType,
+            caption,
+            created_at: now,
+            expires_at: expiresAt,
+            is_active: true,
+            view_count: 0,
+          },
+        }, 201);
+      }
+
+      // ============================================================
+      // M8 STORY - GET ACTIVE STORIES
+      // ============================================================
+      if (url.pathname === "/api/stories" && request.method === "GET") {
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        await ensureStoryTables(env.DB);
+
+        const myPin = url.searchParams.get("m8_pin")?.trim();
+
+        if (!myPin) {
+          return json({
+            success: false,
+            error: "m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+
+        const result = await env.DB.prepare(`
+          SELECT
+            s.story_id,
+            s.user_pin,
+            u.name AS user_name,
+            s.media_url,
+            s.media_type,
+            s.caption,
+            s.created_at,
+            s.expires_at,
+            s.is_active,
+            s.view_count
+          FROM stories s
+          INNER JOIN users u ON u.m8_pin = s.user_pin
+          WHERE s.is_active = 1
+            AND s.expires_at > ?
+            AND s.user_pin != ?
+          ORDER BY s.created_at DESC
+        `).bind(now, myPin).all();
+
+        return json({
+          success: true,
+          stories: result.results || [],
         });
       }
 
