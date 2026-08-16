@@ -2683,6 +2683,258 @@ class M8GroupChatPage extends StatefulWidget {
   State<M8GroupChatPage> createState() => _M8GroupChatPageState();
 }
 
+class _M8GroupInfoPage extends StatelessWidget {
+  final Map<String, dynamic> group;
+  final List<Map<String, dynamic>> members;
+  final Future<void> Function() onAddMember;
+  final VoidCallback onEditName;
+
+  const _M8GroupInfoPage({
+    required this.group,
+    required this.members,
+    required this.onAddMember,
+    required this.onEditName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = group['name']?.toString().trim().isNotEmpty == true
+        ? group['name'].toString().trim()
+        : 'Grup M8';
+
+    final description = group['description']?.toString().trim() ?? '';
+
+    final photoUrl = group['photo_url']?.toString().trim() ?? '';
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8BlueDark,
+        foregroundColor: m8White,
+        elevation: 0,
+        title: const Text(
+          'Info Grup',
+          style: TextStyle(color: m8White, fontWeight: FontWeight.w800),
+          actions: [
+            IconButton(
+              tooltip: 'Edit nama grup',
+              onPressed: onEditName,
+              icon: const Icon(Icons.edit_rounded, color: m8White),
+            ),
+          ],
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 30),
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 26),
+            decoration: const BoxDecoration(
+              color: m8BlueDark,
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+            ),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 52,
+                  backgroundColor: m8Blue,
+                  backgroundImage: photoUrl.isNotEmpty
+                      ? NetworkImage(photoUrl)
+                      : null,
+                  child: photoUrl.isEmpty
+                      ? const Icon(
+                          Icons.groups_rounded,
+                          color: m8White,
+                          size: 52,
+                        )
+                      : null,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: m8White,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '${members.length} anggota',
+                  style: TextStyle(
+                    color: m8White.withValues(alpha: 0.75),
+                    fontSize: 13,
+                  ),
+                ),
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Text(
+                    description,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: m8White.withValues(alpha: 0.88),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: m8Blue,
+                child: Icon(Icons.person_add_alt_1_rounded, color: m8White),
+              ),
+              title: const Text(
+                'Tambah anggota',
+                style: TextStyle(color: m8Text, fontWeight: FontWeight.w800),
+              ),
+              subtitle: const Text(
+                'Tambahkan pengguna menggunakan PIN M8',
+                style: TextStyle(color: m8TextMuted, fontSize: 11),
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
+              onTap: onAddMember,
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+            child: Text(
+              'ANGGOTA GRUP (${members.length})',
+              style: const TextStyle(
+                color: m8TextMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: members.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(
+                      child: Text(
+                        'Belum ada anggota.',
+                        style: TextStyle(color: m8TextMuted),
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: members.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: m8Blue.withValues(alpha: 0.08),
+                    ),
+                    itemBuilder: (context, index) {
+                      final member = members[index];
+
+                      final pin = member['member_pin']?.toString() ?? '';
+
+                      final memberName =
+                          member['name']?.toString().trim().isNotEmpty == true
+                          ? member['name'].toString().trim()
+                          : pin;
+
+                      final role = member['role']?.toString() ?? 'member';
+
+                      final memberPhoto =
+                          member['profile_photo_url']?.toString().trim() ?? '';
+
+                      final isOwner = role == 'owner';
+
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 4,
+                        ),
+                        leading: CircleAvatar(
+                          radius: 24,
+                          backgroundColor: m8Blue,
+                          backgroundImage: memberPhoto.isNotEmpty
+                              ? NetworkImage(memberPhoto)
+                              : null,
+                          child: memberPhoto.isEmpty
+                              ? Text(
+                                  memberName.isNotEmpty
+                                      ? memberName
+                                            .substring(
+                                              0,
+                                              memberName.length > 2
+                                                  ? 2
+                                                  : memberName.length,
+                                            )
+                                            .toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    color: m8White,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        title: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                memberName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: m8Text,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            if (isOwner) ...[
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.verified_rounded,
+                                size: 17,
+                                color: m8Blue,
+                              ),
+                            ],
+                          ],
+                        ),
+                        subtitle: Text(
+                          isOwner ? 'Pemilik grup • $pin' : 'Anggota • $pin',
+                          style: const TextStyle(
+                            color: m8TextMuted,
+                            fontSize: 11,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _M8GroupChatPageState extends State<M8GroupChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -2995,124 +3247,135 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
     }
   }
 
+  Future<void> _editGroupName() async {
+    final controller = TextEditingController(
+      text: widget.group['name']?.toString() ?? '',
+    );
+
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: m8White,
+          title: const Text(
+            'Edit Nama Grup',
+            style: TextStyle(color: m8Text, fontWeight: FontWeight.w800),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 80,
+            style: const TextStyle(color: m8Text),
+            decoration: const InputDecoration(
+              labelText: 'Nama grup',
+              hintText: 'Masukkan nama grup',
+              labelStyle: TextStyle(color: m8TextMuted),
+              hintStyle: TextStyle(color: m8TextMuted),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('BATAL'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final value = controller.text.trim();
+                if (value.isNotEmpty) {
+                  Navigator.pop(dialogContext, value);
+                }
+              },
+              child: const Text('SIMPAN'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (newName == null || newName.trim().isEmpty || !mounted) {
+      return;
+    }
+
+    try {
+      final response = await http.put(
+        Uri.parse('$apiBase/api/groups'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'group_id': groupId,
+          'requester_pin': widget.myPin,
+          'name': newName.trim(),
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (!mounted) return;
+
+      if (response.statusCode >= 200 &&
+          response.statusCode < 300 &&
+          data['success'] == true) {
+        setState(() {
+          widget.group['name'] = newName.trim();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: m8BlueDark,
+            content: Text(
+              'Nama grup berhasil diperbarui.',
+              style: TextStyle(color: m8White, fontWeight: FontWeight.w700),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red.shade700,
+            content: Text(
+              data['error']?.toString() ?? 'Gagal mengubah nama grup.',
+              style: const TextStyle(
+                color: m8White,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'Tidak dapat terhubung ke M8.',
+            style: TextStyle(color: m8White, fontWeight: FontWeight.w700),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _showMembers() async {
     await loadGroupMembers();
 
     if (!mounted) return;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: m8White,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _M8GroupInfoPage(
+          group: widget.group,
+          members: members,
+          onAddMember: _addGroupMember,
+          onEditName: _editGroupName,
+        ),
       ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 42,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: m8TextMuted,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(18),
-                child: Row(
-                  children: [
-                    const Icon(Icons.groups_rounded, color: m8Blue),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Anggota grup (${members.length})',
-                      style: const TextStyle(
-                        color: m8Text,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: members.isEmpty
-                    ? const Center(child: Text('Belum ada data anggota.'))
-                    : ListView.builder(
-                        itemCount: members.length,
-                        itemBuilder: (context, index) {
-                          final member = members[index];
-
-                          final pin = member['member_pin']?.toString() ?? '';
-
-                          final name =
-                              member['name']?.toString().trim().isNotEmpty ==
-                                  true
-                              ? member['name'].toString().trim()
-                              : pin;
-
-                          final role = member['role']?.toString() ?? 'member';
-
-                          final photoUrl =
-                              member['profile_photo_url']?.toString().trim() ??
-                              '';
-
-                          return ListTile(
-                            leading: CircleAvatar(
-                              radius: 25,
-                              backgroundColor: m8Blue,
-                              backgroundImage: photoUrl.isNotEmpty
-                                  ? NetworkImage(photoUrl)
-                                  : null,
-                              child: photoUrl.isEmpty
-                                  ? Text(
-                                      name.isNotEmpty
-                                          ? name
-                                                .substring(
-                                                  0,
-                                                  name.length > 2
-                                                      ? 2
-                                                      : name.length,
-                                                )
-                                                .toUpperCase()
-                                          : '?',
-                                      style: const TextStyle(
-                                        color: m8White,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            title: Text(
-                              name,
-                              style: const TextStyle(
-                                color: m8Text,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            subtitle: Text(
-                              'M8 PIN: $pin • ${role == 'owner' ? 'Pemilik grup' : 'Anggota'}',
-                              style: const TextStyle(
-                                color: m8TextMuted,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            trailing: role == 'owner'
-                                ? const Icon(
-                                    Icons.verified_rounded,
-                                    color: m8Blue,
-                                  )
-                                : null,
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 

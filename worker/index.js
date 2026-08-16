@@ -493,6 +493,73 @@ export default {
       }
 
       // ============================================================
+      // UPDATE GROUP NAME
+      // ============================================================
+
+      if (url.pathname === "/api/groups" && request.method === "PUT") {
+        await ensureGroupTables();
+
+        const body = await request.json();
+
+        const groupId = Number(body.group_id || 0);
+        const requesterPin = String(body.requester_pin || "").trim();
+        const name = String(body.name || "").trim();
+
+        if (!groupId || !requesterPin || !name) {
+          return json({
+            success: false,
+            error: "group_id, requester_pin, dan nama grup wajib diisi.",
+          }, 400);
+        }
+
+        if (name.length > 80) {
+          return json({
+            success: false,
+            error: "Nama grup maksimal 80 karakter.",
+          }, 400);
+        }
+
+        const groupResult = await env.DB.prepare(`
+          SELECT id, owner_pin
+          FROM groups
+          WHERE id = ?
+          LIMIT 1
+        `)
+          .bind(groupId)
+          .first();
+
+        if (!groupResult) {
+          return json({
+            success: false,
+            error: "Grup tidak ditemukan.",
+          }, 404);
+        }
+
+        if (String(groupResult.owner_pin) !== requesterPin) {
+          return json({
+            success: false,
+            error: "Hanya pemilik grup yang dapat mengubah nama grup.",
+          }, 403);
+        }
+
+        await env.DB.prepare(`
+          UPDATE groups
+          SET name = ?
+          WHERE id = ?
+        `)
+          .bind(name, groupId)
+          .run();
+
+        return json({
+          success: true,
+          message: "Nama grup berhasil diperbarui.",
+          group_id: groupId,
+          name,
+        });
+      }
+
+
+      // ============================================================
       // CREATE GROUP
       // ============================================================
 
