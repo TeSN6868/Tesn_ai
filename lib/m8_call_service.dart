@@ -26,6 +26,9 @@ class M8CallService {
   bool audioEnabled = true;
   bool videoEnabled = true;
 
+  // Menyimpan jenis sesi panggilan yang sedang aktif.
+  bool _isVideoCall = false;
+
   // Mencegah polling/signaling tetap berjalan saat panggilan sedang diakhiri.
   bool _isEnding = false;
 
@@ -38,6 +41,21 @@ class M8CallService {
     callStatus = status;
     onCallStatusChanged?.call(status);
     print('[M8 CALL STATUS] $status');
+
+    // B'Jo voice call menggunakan receiver/earpiece secara default.
+    // Speaker hanya diaktifkan oleh tombol Speaker pada UI.
+    if (status == 'connected' && !_isVideoCall) {
+      _setDefaultCallAudioRoute();
+    }
+  }
+
+  Future<void> _setDefaultCallAudioRoute() async {
+    try {
+      await Helper.setSpeakerphoneOn(false);
+      print('[BJO AUDIO] DEFAULT ROUTE = EARPIECE');
+    } catch (e) {
+      print('[BJO AUDIO] DEFAULT ROUTE ERROR: $e');
+    }
   }
 
   Future<void> initializeRenderers() async {
@@ -82,16 +100,18 @@ class M8CallService {
   }) async {
     myPin = callerPin;
     _isEnding = false;
+    _isVideoCall = videoCall;
+    videoEnabled = videoCall;
 
     try {
       final response = await http.post(
         Uri.parse('$apiBase/api/calls'),
         headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode({
-            'caller_pin': callerPin,
-            'callee_pin': calleePin,
-            'call_type': videoCall ? 'video' : 'voice',
-          }),
+          'caller_pin': callerPin,
+          'callee_pin': calleePin,
+          'call_type': videoCall ? 'video' : 'voice',
+        }),
       );
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -161,6 +181,8 @@ class M8CallService {
     callId = incomingCallId;
     myPin = calleePin;
     _isEnding = false;
+    _isVideoCall = videoCall;
+    videoEnabled = videoCall;
 
     final response = await http.post(
       Uri.parse('$apiBase/api/calls/accept'),
@@ -274,15 +296,15 @@ class M8CallService {
     try {
       localStream = await navigator.mediaDevices.getUserMedia(<String, dynamic>{
         'audio': <String, dynamic>{
-  'echoCancellation': true,
-  'noiseSuppression': true,
-  'autoGainControl': true,
-  'googEchoCancellation': true,
-  'googNoiseSuppression': true,
-  'googAutoGainControl': true,
-  'googHighpassFilter': true,
-  'channelCount': 1,
-},
+          'echoCancellation': true,
+          'noiseSuppression': true,
+          'autoGainControl': true,
+          'googEchoCancellation': true,
+          'googNoiseSuppression': true,
+          'googAutoGainControl': true,
+          'googHighpassFilter': true,
+          'channelCount': 1,
+        },
         'video': videoCall
             ? {
                 'facingMode': 'user',
@@ -341,9 +363,7 @@ class M8CallService {
           'type=$type status=${response.statusCode} '
           'body=${response.body}',
         );
-        throw Exception(
-          'Signaling $type gagal: HTTP ${response.statusCode}',
-        );
+        throw Exception('Signaling $type gagal: HTTP ${response.statusCode}');
       }
     } catch (e) {
       print('[M8 WEBRTC] SIGNAL POST ERROR: $e');
@@ -510,8 +530,8 @@ class M8CallService {
 
       if (_isEnding) return;
 
-    for (final item in signals) {
-      if (_isEnding) return;
+      for (final item in signals) {
+        if (_isEnding) return;
         final signal = Map<String, dynamic>.from(item);
 
         final id = int.tryParse(signal['id']?.toString() ?? '') ?? 0;
@@ -598,13 +618,8 @@ class M8CallService {
       try {
         final response = await http.post(
           Uri.parse('$apiBase/api/calls/end'),
-          headers: <String, String>{
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'call_id': currentCallId,
-            'm8_pin': currentPin,
-          }),
+          headers: <String, String>{'Content-Type': 'application/json'},
+          body: jsonEncode({'call_id': currentCallId, 'm8_pin': currentPin}),
         );
 
         print(
@@ -622,6 +637,8 @@ class M8CallService {
     _lastSignalId = 0;
     _pendingIceCandidates.clear();
     _remoteDescriptionSet = false;
+    _isVideoCall = false;
+    videoEnabled = true;
 
     // Reset audio routing Android setelah sesi selesai.
     try {

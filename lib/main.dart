@@ -3153,10 +3153,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
           content: TextField(
             controller: controller,
             cursorColor: m8White,
-            style: const TextStyle(
-              color: m8White,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(color: m8White, fontWeight: FontWeight.w700),
             textCapitalization: TextCapitalization.none,
             decoration: InputDecoration(
               labelText: 'PIN M8',
@@ -3165,9 +3162,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                 color: m8White,
                 fontWeight: FontWeight.w700,
               ),
-              hintStyle: TextStyle(
-                color: m8White.withValues(alpha: 0.65),
-              ),
+              hintStyle: TextStyle(color: m8White.withValues(alpha: 0.65)),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
@@ -3566,9 +3561,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
               decoration: BoxDecoration(
                 color: m8White,
                 border: Border(
-                  top: BorderSide(
-                    color: m8Blue.withValues(alpha: 0.10),
-                  ),
+                  top: BorderSide(color: m8Blue.withValues(alpha: 0.10)),
                 ),
               ),
               child: Row(
@@ -3626,8 +3619,9 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                               label: 'Kamera',
                                               onTap: () {
                                                 Navigator.pop(sheetContext);
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
                                                   const SnackBar(
                                                     content: Text(
                                                       'Kamera grup akan diaktifkan berikutnya.',
@@ -3637,13 +3631,13 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                               },
                                             ),
                                             _AttachmentItem(
-                                              icon:
-                                                  Icons.photo_library_rounded,
+                                              icon: Icons.photo_library_rounded,
                                               label: 'Gambar',
                                               onTap: () {
                                                 Navigator.pop(sheetContext);
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
                                                   const SnackBar(
                                                     content: Text(
                                                       'Gambar grup akan diaktifkan berikutnya.',
@@ -3658,8 +3652,9 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                               label: 'File',
                                               onTap: () {
                                                 Navigator.pop(sheetContext);
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
                                                   const SnackBar(
                                                     content: Text(
                                                       'File grup akan diaktifkan berikutnya.',
@@ -3669,13 +3664,13 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                               },
                                             ),
                                             _AttachmentItem(
-                                              icon:
-                                                  Icons.location_on_rounded,
+                                              icon: Icons.location_on_rounded,
                                               label: 'Lokasi',
                                               onTap: () {
                                                 Navigator.pop(sheetContext);
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
                                                   const SnackBar(
                                                     content: Text(
                                                       'Lokasi grup akan diaktifkan berikutnya.',
@@ -3689,8 +3684,9 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                               label: 'Musik',
                                               onTap: () {
                                                 Navigator.pop(sheetContext);
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
                                                   const SnackBar(
                                                     content: Text(
                                                       'Musik grup akan diaktifkan berikutnya.',
@@ -3715,10 +3711,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                   ),
                   Expanded(
                     child: TextField(
-                      style: const TextStyle(
-                        color: m8Text,
-                        fontSize: 15,
-                      ),
+                      style: const TextStyle(color: m8Text, fontSize: 15),
                       controller: _messageController,
                       minLines: 1,
                       maxLines: 5,
@@ -7006,6 +6999,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   bool muted = false;
   bool cameraOff = false;
   bool speakerOn = false;
+  bool endingCall = false;
 
   String callStatus = 'Menghubungkan...';
 
@@ -7178,20 +7172,46 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   }
 
   Future<void> toggleSpeaker() async {
-    final newState = !speakerOn;
+    if (!mounted || endingCall) return;
 
-    setState(() {
-      speakerOn = newState;
-    });
+    final newState = !speakerOn;
 
     try {
       await Helper.setSpeakerphoneOn(newState);
-    } catch (_) {}
+
+      if (!mounted) return;
+
+      setState(() {
+        speakerOn = newState;
+      });
+
+      debugPrint('[BJO AUDIO] SPEAKER ${newState ? 'ON' : 'OFF'}');
+    } catch (e) {
+      debugPrint('[BJO AUDIO] SPEAKER ERROR: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            newState
+                ? 'Speaker tidak dapat diaktifkan'
+                : 'Receiver tidak dapat dipilih',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> hangUp() async {
-    // Jangan biarkan tombol Akhiri ditekan berkali-kali.
-    if (!mounted) return;
+    // Pastikan cleanup hanya dijalankan satu kali.
+    if (!mounted || endingCall) return;
+
+    setState(() {
+      endingCall = true;
+      callStatus = 'Mengakhiri panggilan...';
+      connecting = false;
+    });
 
     timer?.cancel();
 
@@ -7429,7 +7449,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                   ),
                   const SizedBox(height: 24),
                   GestureDetector(
-                    onTap: hangUp,
+                    onTap: endingCall ? null : hangUp,
                     child: Container(
                       width: 68,
                       height: 68,
