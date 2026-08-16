@@ -250,7 +250,6 @@ class M8DenimBackground extends StatelessWidget {
 
   const M8DenimBackground({super.key, required this.child});
 
-
   @override
   Widget build(BuildContext context) {
     return CustomPaint(painter: M8DenimTexturePainter(), child: child);
@@ -454,6 +453,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         children: <Widget>[
                           TextField(
+                            style: const TextStyle(color: m8White),
                             controller: pinController,
                             textInputAction: TextInputAction.next,
                             style: const TextStyle(
@@ -495,6 +495,7 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 14),
 
                           TextField(
+                            style: const TextStyle(color: m8White),
                             controller: passwordController,
                             obscureText: obscurePassword,
                             onSubmitted: (_) => login(),
@@ -888,6 +889,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 32),
 
                   TextField(
+                    style: const TextStyle(color: m8White),
                     controller: nameController,
                     textInputAction: TextInputAction.next,
                     decoration: fieldDecoration('Nama', Icons.person_outline),
@@ -896,6 +898,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 14),
 
                   TextField(
+                    style: const TextStyle(color: m8White),
                     controller: identifierController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
@@ -908,6 +911,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 14),
 
                   TextField(
+                    style: const TextStyle(color: m8White),
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.next,
@@ -920,6 +924,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 14),
 
                   TextField(
+                    style: const TextStyle(color: m8White),
                     controller: passwordController,
                     obscureText: obscurePassword,
                     textInputAction: TextInputAction.next,
@@ -944,6 +949,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 14),
 
                   TextField(
+                    style: const TextStyle(color: m8White),
                     controller: confirmPasswordController,
                     obscureText: obscureConfirmPassword,
                     textInputAction: TextInputAction.next,
@@ -1904,6 +1910,7 @@ class _ChatsPageState extends State<ChatsPage> {
         return AlertDialog(
           title: const Text('Chat baru'),
           content: TextField(
+            style: const TextStyle(color: m8White),
             controller: controller,
             autofocus: true,
             decoration: const InputDecoration(
@@ -1986,6 +1993,7 @@ class _ChatsPageState extends State<ChatsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
+                  style: const TextStyle(color: m8White),
                   controller: nameController,
                   autofocus: true,
                   maxLength: 80,
@@ -1996,6 +2004,7 @@ class _ChatsPageState extends State<ChatsPage> {
                 ),
                 const SizedBox(height: 8),
                 TextField(
+                  style: const TextStyle(color: m8White),
                   controller: descriptionController,
                   maxLines: 2,
                   decoration: const InputDecoration(
@@ -2005,6 +2014,7 @@ class _ChatsPageState extends State<ChatsPage> {
                 ),
                 const SizedBox(height: 8),
                 TextField(
+                  style: const TextStyle(color: m8White),
                   controller: membersController,
                   maxLines: 3,
                   decoration: const InputDecoration(
@@ -2187,7 +2197,7 @@ class _ChatsPageState extends State<ChatsPage> {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: selected ? m8Blue : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.zero,
                 ),
                 child: Text(
                   tabs[index],
@@ -2869,6 +2879,114 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
     return '$hour:$minute';
   }
 
+  Future<void> _addGroupMember() async {
+    final controller = TextEditingController();
+
+    final pin = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            'Tambah Anggota',
+            style: TextStyle(color: m8Text, fontWeight: FontWeight.w800),
+          ),
+          content: TextField(
+            controller: controller,
+            style: const TextStyle(color: m8White),
+            textCapitalization: TextCapitalization.none,
+            decoration: InputDecoration(
+              labelText: 'PIN M8',
+              hintText: 'Masukkan PIN M8',
+              labelStyle: const TextStyle(color: m8TextMuted),
+              hintStyle: const TextStyle(color: m8TextMuted),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: m8Blue),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('BATAL'),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                final value = controller.text.trim();
+                if (value.isNotEmpty) {
+                  Navigator.pop(dialogContext, value);
+                }
+              },
+              icon: const Icon(Icons.person_add_alt_1_rounded),
+              label: const Text('LANJUT'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (pin == null || pin.isEmpty || !mounted) return;
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/groups/members'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'group_id': groupId,
+          'requester_pin': widget.myPin,
+          'member_pin': pin,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (!mounted) return;
+
+      final success =
+          response.statusCode >= 200 &&
+          response.statusCode < 300 &&
+          data['success'] == true;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: success ? m8BlueDark : Colors.red.shade700,
+          content: Text(
+            success
+                ? (data['message']?.toString() ??
+                      'Anggota berhasil ditambahkan.')
+                : (data['error']?.toString() ??
+                      'PIN M8 anggota tidak ditemukan.'),
+            style: const TextStyle(color: m8White, fontWeight: FontWeight.w700),
+          ),
+        ),
+      );
+
+      if (success) {
+        await loadGroupMembers();
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'Tidak dapat terhubung ke M8.',
+            style: TextStyle(color: m8White, fontWeight: FontWeight.w700),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _showMembers() async {
     await loadGroupMembers();
 
@@ -3160,6 +3278,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                 children: [
                   Expanded(
                     child: TextField(
+                      style: const TextStyle(color: m8White),
                       controller: _messageController,
                       minLines: 1,
                       maxLines: 5,
@@ -3561,6 +3680,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         return AlertDialog(
           title: const Text("Edit pesan"),
           content: TextField(
+            style: const TextStyle(color: m8White),
             controller: editController,
             autofocus: true,
             maxLines: 5,
@@ -4919,6 +5039,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             ),
                             Expanded(
                               child: TextField(
+                                style: const TextStyle(color: m8White),
                                 controller: controller,
                                 onChanged: (_) => handleTyping(),
                                 minLines: 1,
@@ -5034,7 +5155,7 @@ class _M8StoryRail extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 82,
+            height: 76,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
@@ -5074,56 +5195,42 @@ class _M8StoryMiniCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.zero,
       child: Container(
-        width: 128,
-        padding: const EdgeInsets.fromLTRB(10, 9, 10, 8),
+        width: 68,
+        height: 68,
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: isMine ? m8BlueDark : m8White,
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.zero,
           border: Border.all(color: m8Blue.withValues(alpha: 0.7), width: 0.8),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: isMine ? m8Blue : m8BlueDark,
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: Icon(
-                    isMine ? Icons.add_rounded : Icons.auto_awesome_rounded,
-                    size: 17,
-                    color: isMine ? m8White : m8BlueLight,
-                  ),
-                ),
-                const Spacer(),
-                if (isMine)
-                  const Icon(Icons.edit_rounded, size: 14, color: m8BlueLight),
-              ],
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: isMine ? m8Blue : m8BlueDark,
+                borderRadius: BorderRadius.zero,
+              ),
+              child: Icon(
+                isMine ? Icons.add_rounded : Icons.auto_awesome_rounded,
+                size: 18,
+                color: isMine ? m8White : m8BlueLight,
+              ),
             ),
+            const SizedBox(height: 3),
             Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: isMine ? m8White : m8BlueDark,
-                fontSize: 13,
+                fontSize: 9,
                 fontWeight: FontWeight.w800,
-              ),
-            ),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isMine ? m8BlueLight : m8TextMuted,
-                fontSize: 10,
               ),
             ),
           ],
@@ -6101,6 +6208,7 @@ class _ProfilePageState extends State<ProfilePage> {
         return AlertDialog(
           title: const Text('Edit Nama'),
           content: TextField(
+            style: const TextStyle(color: m8White),
             controller: controller,
             autofocus: true,
             maxLength: 50,

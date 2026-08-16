@@ -1,3 +1,18 @@
+DateTime _parseDateTime(dynamic value, {DateTime? fallback}) {
+  if (value is int) {
+    return DateTime.fromMillisecondsSinceEpoch(value * 1000);
+  }
+
+  final text = value?.toString() ?? '';
+  final number = int.tryParse(text);
+
+  if (number != null) {
+    return DateTime.fromMillisecondsSinceEpoch(number * 1000);
+  }
+
+  return DateTime.tryParse(text) ?? fallback ?? DateTime.now();
+}
+
 class M8Story {
   final String storyId;
   final String userId;
