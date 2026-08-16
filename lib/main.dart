@@ -453,7 +453,6 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         children: <Widget>[
                           TextField(
-                            style: const TextStyle(color: m8White),
                             controller: pinController,
                             textInputAction: TextInputAction.next,
                             style: const TextStyle(
@@ -495,7 +494,6 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 14),
 
                           TextField(
-                            style: const TextStyle(color: m8White),
                             controller: passwordController,
                             obscureText: obscurePassword,
                             onSubmitted: (_) => login(),
@@ -1910,7 +1908,6 @@ class _ChatsPageState extends State<ChatsPage> {
         return AlertDialog(
           title: const Text('Chat baru'),
           content: TextField(
-            style: const TextStyle(color: m8White),
             controller: controller,
             autofocus: true,
             decoration: const InputDecoration(
@@ -3680,7 +3677,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         return AlertDialog(
           title: const Text("Edit pesan"),
           content: TextField(
-            style: const TextStyle(color: m8White),
             controller: editController,
             autofocus: true,
             maxLines: 5,
@@ -5039,7 +5035,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             ),
                             Expanded(
                               child: TextField(
-                                style: const TextStyle(color: m8White),
                                 controller: controller,
                                 onChanged: (_) => handleTyping(),
                                 minLines: 1,
@@ -6208,7 +6203,6 @@ class _ProfilePageState extends State<ProfilePage> {
         return AlertDialog(
           title: const Text('Edit Nama'),
           content: TextField(
-            style: const TextStyle(color: m8White),
             controller: controller,
             autofocus: true,
             maxLength: 50,
