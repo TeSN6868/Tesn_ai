@@ -2978,6 +2978,29 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     final p2 = widget.chat["participant_2_pin"]?.toString() ?? "";
     final other = p1 == widget.myPin ? p2 : p1;
 
+    final rawOtherUser = widget.chat["other_user"];
+    final otherUser = rawOtherUser is Map
+        ? Map<String, dynamic>.from(rawOtherUser)
+        : <String, dynamic>{};
+
+    final otherName =
+        otherUser["name"]?.toString().trim().isNotEmpty == true
+            ? otherUser["name"].toString().trim()
+            : "M8 User";
+
+    final otherPhotoUrl =
+        otherUser["profile_photo_url"]?.toString().trim() ?? "";
+
+    final otherPin =
+        otherUser["m8_pin"]?.toString().trim().isNotEmpty == true
+            ? otherUser["m8_pin"].toString().trim()
+            : other;
+
+    debugPrint("M8 CHAT HEADER otherUser = $otherUser");
+    debugPrint("M8 CHAT HEADER name = $otherName");
+    debugPrint("M8 CHAT HEADER pin = $otherPin");
+    debugPrint("M8 CHAT HEADER photo = $otherPhotoUrl");
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -2990,10 +3013,15 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           children: [
             Stack(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 21,
                   backgroundColor: m8BlueDark,
-                  child: Icon(Icons.person, color: Colors.white),
+                  backgroundImage: otherPhotoUrl.isNotEmpty
+                      ? NetworkImage(otherPhotoUrl)
+                      : null,
+                  child: otherPhotoUrl.isEmpty
+                      ? const Icon(Icons.person, color: Colors.white)
+                      : null,
                 ),
                 Positioned(
                   right: 0,
@@ -3017,13 +3045,21 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "M8 User",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    Text(
+                      otherName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      "M8 PIN: $other",
-                      style: const TextStyle(fontSize: 11, color: m8White),
+                      "M8 PIN: $otherPin",
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: m8White,
+                      ),
                     ),
                     const Text(
                       "Online",
