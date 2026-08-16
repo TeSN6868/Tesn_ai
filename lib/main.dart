@@ -29,22 +29,19 @@ Future<void> _m8StartCallRinging() async {
 
     // Nada sambung telepon sederhana:
     // TUT ... jeda ... TUT ... jeda ...
-    await _m8CallSoundPlayer.play(
-      AssetSource('sounds/m8_call_ringing.wav'),
-    );
+    await _m8CallSoundPlayer.play(AssetSource('sounds/m8_call_ringing.wav'));
 
-    _m8RingingTimer = Timer.periodic(
-      const Duration(milliseconds: 1800),
-      (_) async {
-        try {
-          await _m8CallSoundPlayer.play(
-            AssetSource('sounds/m8_call_ringing.wav'),
-          );
-        } catch (e) {
-          debugPrint('[M8 CALL SOUND] RING ERROR: $e');
-        }
-      },
-    );
+    _m8RingingTimer = Timer.periodic(const Duration(milliseconds: 1800), (
+      _,
+    ) async {
+      try {
+        await _m8CallSoundPlayer.play(
+          AssetSource('sounds/m8_call_ringing.wav'),
+        );
+      } catch (e) {
+        debugPrint('[M8 CALL SOUND] RING ERROR: $e');
+      }
+    });
 
     debugPrint('[M8 CALL SOUND] RINGING START');
   } catch (e) {
@@ -252,6 +249,152 @@ class M8DenimBackground extends StatelessWidget {
   final Widget child;
 
   const M8DenimBackground({super.key, required this.child});
+
+  Future<void> showNewChatMenu() async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Mulai percakapan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: m8Text,
+                    ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: m8Blue,
+                  child: Icon(Icons.person_add_alt_1, color: m8White),
+                ),
+                title: const Text('Chat baru'),
+                subtitle: const Text('Mulai percakapan pribadi'),
+                onTap: () => Navigator.pop(context, 'chat'),
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: m8Blue,
+                  child: Icon(Icons.group_add, color: m8White),
+                ),
+                title: const Text('Grup baru'),
+                subtitle: const Text('Buat percakapan bersama beberapa orang'),
+                onTap: () => Navigator.pop(context, 'group'),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted) return;
+
+    if (action == 'chat') {
+      await createChat();
+    } else if (action == 'group') {
+      setState(() {
+        selectedTab = 2;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pembuatan grup M8 segera kita sambungkan.'),
+        ),
+      );
+    }
+  }
+
+  Widget buildMessengerTabs() {
+    const tabs = ['Semua', 'Pribadi', 'Grup'];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        children: List.generate(tabs.length, (index) {
+          final selected = selectedTab == index;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedTab = index;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: selected ? m8Blue : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  tabs[index],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: selected ? m8White : m8TextMuted,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget buildGroupPlaceholder() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.groups_rounded, size: 72, color: m8Blue),
+            const SizedBox(height: 18),
+            const Text(
+              'Belum ada grup',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: m8Text,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Buat grup M8 untuk mengobrol bersama teman, keluarga, atau tim.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: m8TextMuted, fontSize: 13),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: showNewChatMenu,
+              icon: const Icon(Icons.group_add),
+              label: const Text('Buat grup'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1816,12 +1959,27 @@ class ChatsPage extends StatefulWidget {
 
 class _ChatsPageState extends State<ChatsPage> {
   bool loading = true;
+  bool groupsLoading = false;
+
   List<Map<String, dynamic>> chats = [];
+  List<Map<String, dynamic>> groups = [];
+
+  int selectedTab = 0;
 
   @override
   void initState() {
     super.initState();
-    loadChats();
+    loadMessenger();
+  }
+
+  Future<void> loadMessenger() async {
+    await Future.wait([loadChats(), loadGroups()]);
+
+    if (mounted) {
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
   Future<void> loadChats() async {
@@ -1835,7 +1993,6 @@ class _ChatsPageState extends State<ChatsPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
         final list = data['chats'];
 
         if (list is List) {
@@ -1843,15 +2000,43 @@ class _ChatsPageState extends State<ChatsPage> {
         }
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal memuat chat: $e')));
+      debugPrint('M8 loadChats error: $e');
+    }
+  }
+
+  Future<void> loadGroups() async {
+    if (mounted) {
+      setState(() {
+        groupsLoading = true;
+      });
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/groups?m8_pin=${Uri.encodeComponent(widget.myPin)}',
+        ),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      debugPrint('M8 GROUP GET ${response.statusCode}: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final list = data['groups'];
+
+        if (list is List) {
+          groups = list.map((e) => Map<String, dynamic>.from(e)).toList();
+        }
       }
+    } catch (e) {
+      debugPrint('M8 loadGroups error: $e');
     }
 
     if (mounted) {
-      setState(() => loading = false);
+      setState(() {
+        groupsLoading = false;
+      });
     }
   }
 
@@ -1916,13 +2101,646 @@ class _ChatsPageState extends State<ChatsPage> {
       );
 
       await loadChats();
-    } catch (_) {
+
+      if (mounted) {
+        setState(() {
+          selectedTab = 1;
+        });
+      }
+    } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Tidak dapat terhubung ke M8')),
       );
     }
+  }
+
+  Future<void> createGroup() async {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final membersController = TextEditingController();
+
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Grup baru'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  maxLength: 80,
+                  decoration: const InputDecoration(
+                    labelText: 'Nama grup',
+                    hintText: 'Contoh: Keluarga M8',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Deskripsi',
+                    hintText: 'Deskripsi grup (opsional)',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: membersController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'PIN anggota',
+                    hintText: 'PIN dipisahkan koma',
+                    helperText: 'Kamu otomatis menjadi anggota grup.',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('BATAL'),
+            ),
+            FilledButton.icon(
+              icon: const Icon(Icons.group_add),
+              label: const Text('BUAT'),
+              onPressed: () {
+                Navigator.pop(context, {
+                  'name': nameController.text.trim(),
+                  'description': descriptionController.text.trim(),
+                  'members': membersController.text.trim(),
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    nameController.dispose();
+    descriptionController.dispose();
+    membersController.dispose();
+
+    if (result == null || result['name']!.isEmpty) return;
+
+    final members = result['members']!
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList();
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/groups'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'owner_pin': widget.myPin,
+          'name': result['name'],
+          'description': result['description'],
+          'members': members,
+        }),
+      );
+
+      debugPrint('M8 CREATE GROUP ${response.statusCode}: ${response.body}');
+
+      final data = jsonDecode(response.body);
+
+      if (!mounted) return;
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Grup M8 berhasil dibuat.')),
+        );
+
+        await loadGroups();
+
+        if (mounted) {
+          setState(() {
+            selectedTab = 2;
+          });
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error']?.toString() ?? 'Gagal membuat grup.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tidak dapat terhubung ke M8')),
+      );
+    }
+  }
+
+  Future<void> showNewChatMenu() async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Mulai percakapan',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: m8Text,
+                    ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: m8Blue,
+                  child: Icon(Icons.person_add_alt_1, color: m8White),
+                ),
+                title: const Text('Chat baru'),
+                subtitle: const Text('Mulai percakapan pribadi'),
+                onTap: () => Navigator.pop(context, 'chat'),
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: m8Blue,
+                  child: Icon(Icons.group_add, color: m8White),
+                ),
+                title: const Text('Grup baru'),
+                subtitle: const Text('Buat percakapan bersama beberapa orang'),
+                onTap: () => Navigator.pop(context, 'group'),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted) return;
+
+    if (action == 'chat') {
+      await createChat();
+    } else if (action == 'group') {
+      await createGroup();
+    }
+  }
+
+  Widget buildMessengerTabs() {
+    const tabs = ['Semua', 'Pribadi', 'Grup'];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        children: List.generate(tabs.length, (index) {
+          final selected = selectedTab == index;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedTab = index;
+                });
+
+                if (index == 2) {
+                  loadGroups();
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: selected ? m8Blue : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  tabs[index],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: selected ? m8White : m8TextMuted,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget buildEmptyMessenger() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.forum_outlined, size: 70, color: m8Blue),
+            const SizedBox(height: 20),
+            const Text(
+              'Belum ada percakapan',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: m8Text,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Mulai percakapan pertama kamu di M8.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: m8TextMuted),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildPrivateChats() {
+    if (chats.isEmpty) {
+      return buildEmptyMessenger();
+    }
+
+    return RefreshIndicator(
+      onRefresh: loadChats,
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 8),
+        itemCount: chats.length,
+        itemBuilder: (context, index) {
+          final chat = chats[index];
+
+          final p1 = chat['participant_1_pin']?.toString() ?? '';
+
+          final p2 = chat['participant_2_pin']?.toString() ?? '';
+
+          final other = p1 == widget.myPin ? p2 : p1;
+
+          final otherUser = chat['other_user'] is Map
+              ? Map<String, dynamic>.from(chat['other_user'])
+              : <String, dynamic>{};
+
+          final otherName =
+              otherUser['name']?.toString().trim().isNotEmpty == true
+              ? otherUser['name'].toString().trim()
+              : other;
+
+          final photoUrl = otherUser['profile_photo_url']?.toString() ?? '';
+
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
+            ),
+            child: ListTile(
+              leading: CircleAvatar(
+                radius: 21,
+                backgroundColor: m8Blue,
+                backgroundImage: photoUrl.isNotEmpty
+                    ? NetworkImage(photoUrl)
+                    : null,
+                child: photoUrl.isEmpty
+                    ? Text(
+                        otherName.isNotEmpty
+                            ? otherName
+                                  .substring(
+                                    0,
+                                    otherName.length > 2 ? 2 : otherName.length,
+                                  )
+                                  .toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          color: m8White,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : null,
+              ),
+              title: Text(
+                otherName,
+                style: const TextStyle(
+                  color: m8Text,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: const Text(
+                'Percakapan M8',
+                style: TextStyle(color: m8TextMuted, fontSize: 11),
+              ),
+              trailing: const Icon(Icons.chevron_right, color: m8Blue),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChatRoomPage(
+                      token: widget.token,
+                      myPin: widget.myPin,
+                      chat: chat,
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget buildGroupList() {
+    if (groupsLoading && groups.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (groups.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(30),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.groups_rounded, size: 72, color: m8Blue),
+              const SizedBox(height: 18),
+              const Text(
+                'Belum ada grup',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: m8Text,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Buat grup M8 untuk mengobrol bersama teman, keluarga, atau tim.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: m8TextMuted, fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: createGroup,
+                icon: const Icon(Icons.group_add),
+                label: const Text('Buat grup'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: loadGroups,
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 8),
+        itemCount: groups.length,
+        itemBuilder: (context, index) {
+          final group = groups[index];
+
+          final name = group['name']?.toString() ?? 'Grup M8';
+
+          final description = group['description']?.toString().trim() ?? '';
+
+          final memberCount = group['member_count']?.toString() ?? '0';
+
+          final photoUrl = group['photo_url']?.toString().trim() ?? '';
+
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
+            ),
+            child: ListTile(
+              leading: CircleAvatar(
+                radius: 23,
+                backgroundColor: m8Blue,
+                backgroundImage: photoUrl.isNotEmpty
+                    ? NetworkImage(photoUrl)
+                    : null,
+                child: photoUrl.isEmpty
+                    ? const Icon(Icons.groups_rounded, color: m8White)
+                    : null,
+              ),
+              title: Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: m8Text,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: Text(
+                description.isNotEmpty
+                    ? '$memberCount anggota • $description'
+                    : '$memberCount anggota',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: m8TextMuted, fontSize: 11),
+              ),
+              trailing: const Icon(Icons.chevron_right, color: m8Blue),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => M8GroupChatPage(
+                      token: widget.token,
+                      myPin: widget.myPin,
+                      group: group,
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget buildAllMessenger() {
+    if (chats.isEmpty && groups.isEmpty) {
+      return buildEmptyMessenger();
+    }
+
+    return RefreshIndicator(
+      onRefresh: loadMessenger,
+      child: ListView(
+        padding: const EdgeInsets.only(top: 8),
+        children: [
+          if (chats.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.fromLTRB(18, 8, 18, 4),
+              child: Text(
+                'Pribadi',
+                style: TextStyle(
+                  color: m8TextMuted,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            ...List.generate(chats.length, (index) {
+              final chat = chats[index];
+
+              final p1 = chat['participant_1_pin']?.toString() ?? '';
+
+              final p2 = chat['participant_2_pin']?.toString() ?? '';
+
+              final other = p1 == widget.myPin ? p2 : p1;
+
+              final otherUser = chat['other_user'] is Map
+                  ? Map<String, dynamic>.from(chat['other_user'])
+                  : <String, dynamic>{};
+
+              final name =
+                  otherUser['name']?.toString().trim().isNotEmpty == true
+                  ? otherUser['name'].toString().trim()
+                  : other;
+
+              final photo = otherUser['profile_photo_url']?.toString() ?? '';
+
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                decoration: BoxDecoration(
+                  color: m8White,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: m8Blue,
+                    backgroundImage: photo.isNotEmpty
+                        ? NetworkImage(photo)
+                        : null,
+                    child: photo.isEmpty
+                        ? Text(
+                            name
+                                .substring(0, name.length > 2 ? 2 : name.length)
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              color: m8White,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
+                  ),
+                  title: Text(
+                    name,
+                    style: const TextStyle(
+                      color: m8Text,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Percakapan M8',
+                    style: TextStyle(color: m8TextMuted, fontSize: 11),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: m8Blue),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChatRoomPage(
+                          token: widget.token,
+                          myPin: widget.myPin,
+                          chat: chat,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            }),
+          ],
+          if (groups.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.fromLTRB(18, 16, 18, 4),
+              child: Text(
+                'Grup',
+                style: TextStyle(
+                  color: m8TextMuted,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            ...List.generate(groups.length, (index) {
+              final group = groups[index];
+
+              final name = group['name']?.toString() ?? 'Grup M8';
+
+              final count = group['member_count']?.toString() ?? '0';
+
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                decoration: BoxDecoration(
+                  color: m8White,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: m8Blue,
+                    child: Icon(Icons.groups_rounded, color: m8White),
+                  ),
+                  title: Text(
+                    name,
+                    style: const TextStyle(
+                      color: m8Text,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '$count anggota',
+                    style: const TextStyle(color: m8TextMuted, fontSize: 11),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: m8Blue),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => M8GroupChatPage(
+                          token: widget.token,
+                          myPin: widget.myPin,
+                          group: group,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            }),
+          ],
+          const SizedBox(height: 90),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1943,159 +2761,30 @@ class _ChatsPageState extends State<ChatsPage> {
           ),
         ),
 
+        Positioned(top: 88, left: 0, right: 0, child: buildMessengerTabs()),
+
         Positioned(
           top: 124,
           left: 0,
           right: 0,
           bottom: 0,
-          child: IgnorePointer(
-            ignoring: false,
-            child: Column(
-              children: [
-                Expanded(
-                  child: Stack(
-                    children: [
-                      if (loading)
-                        const Center(child: CircularProgressIndicator())
-                      else if (chats.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(30),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.forum_outlined,
-                                  size: 70,
-                                  color: m8Blue,
-                                ),
-                                const SizedBox(height: 20),
-                                const Text(
-                                  'Belum ada percakapan',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: m8Text,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Mulai percakapan pertama kamu di M8.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: m8TextMuted),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        RefreshIndicator(
-                          onRefresh: loadChats,
-                          child: ListView.builder(
-                            padding: const EdgeInsets.only(top: 8),
-                            itemCount: chats.length,
-                            itemBuilder: (context, index) {
-                              final chat = chats[index];
-
-                              final p1 =
-                                  chat['participant_1_pin']?.toString() ?? '';
-
-                              final p2 =
-                                  chat['participant_2_pin']?.toString() ?? '';
-
-                              final other = p1 == widget.myPin ? p2 : p1;
-
-                              final otherUser =
-                                  chat['other_user'] is Map
-                                      ? Map<String, dynamic>.from(chat['other_user'])
-                                      : <String, dynamic>{};
-
-                              final otherName =
-                                  otherUser['name']?.toString().trim().isNotEmpty == true
-                                      ? otherUser['name'].toString().trim()
-                                      : other;
-
-                              final photoUrl =
-                                  otherUser['profile_photo_url']?.toString() ?? '';
-
-
-                              return Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: m8White,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: m8Blue.withValues(alpha: 0.12),
-                                  ),
-                                ),
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    radius: 21,
-                                    backgroundColor: m8Blue,
-                                    backgroundImage: photoUrl.isNotEmpty
-                                        ? NetworkImage(photoUrl)
-                                        : null,
-                                    child: photoUrl.isEmpty
-                                        ? Text(
-                                            otherName.isNotEmpty
-                                                ? otherName.substring(
-                                                    0,
-                                                    otherName.length > 2
-                                                        ? 2
-                                                        : otherName.length,
-                                                  ).toUpperCase()
-                                                : '?',
-                                            style: const TextStyle(
-                                              color: m8White,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          )
-                                        : null,
-                                  ),
-                                  title: Text(
-                                    otherName,
-                                    style: const TextStyle(
-                                      color: m8Text,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  subtitle: const Text(
-                                    'Percakapan M8',
-                                    style: TextStyle(
-                                      color: m8TextMuted,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                  trailing: const Icon(
-                                    Icons.chevron_right,
-                                    color: m8Blue,
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ChatRoomPage(
-                                          token: widget.token,
-                                          myPin: widget.myPin,
-                                          chat: chat,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    if (loading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (selectedTab == 0)
+                      buildAllMessenger()
+                    else if (selectedTab == 1)
+                      buildPrivateChats()
+                    else
+                      buildGroupList(),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
 
@@ -2103,8 +2792,8 @@ class _ChatsPageState extends State<ChatsPage> {
           right: 20,
           bottom: 20,
           child: FloatingActionButton(
-            onPressed: createChat,
-            child: const Icon(Icons.chat_rounded),
+            onPressed: showNewChatMenu,
+            child: const Icon(Icons.add_comment_rounded),
           ),
         ),
       ],
@@ -2115,6 +2804,573 @@ class _ChatsPageState extends State<ChatsPage> {
 // ============================================================
 // CHAT ROOM
 // ============================================================
+
+// ============================================================
+// M8 GROUP CHAT
+// ============================================================
+
+class M8GroupChatPage extends StatefulWidget {
+  final String token;
+  final String myPin;
+  final Map<String, dynamic> group;
+
+  const M8GroupChatPage({
+    super.key,
+    required this.token,
+    required this.myPin,
+    required this.group,
+  });
+
+  @override
+  State<M8GroupChatPage> createState() => _M8GroupChatPageState();
+}
+
+class _M8GroupChatPageState extends State<M8GroupChatPage> {
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  bool loading = true;
+  bool sending = false;
+
+  List<Map<String, dynamic>> messages = [];
+  List<Map<String, dynamic>> members = [];
+
+  int get groupId => int.tryParse(widget.group['id']?.toString() ?? '') ?? 0;
+
+  String get groupName =>
+      widget.group['name']?.toString().trim().isNotEmpty == true
+      ? widget.group['name'].toString().trim()
+      : 'Grup M8';
+
+  @override
+  void initState() {
+    super.initState();
+    loadGroup();
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> loadGroup() async {
+    await Future.wait([loadGroupMessages(), loadGroupMembers()]);
+
+    if (mounted) {
+      setState(() {
+        loading = false;
+      });
+    }
+
+    _scrollToBottom();
+  }
+
+  Future<void> loadGroupMessages() async {
+    if (groupId <= 0) return;
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/group-messages'
+          '?group_id=$groupId'
+          '&m8_pin=${Uri.encodeComponent(widget.myPin)}',
+        ),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint(
+          'M8 group messages ${response.statusCode}: ${response.body}',
+        );
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+      final list = data['messages'];
+
+      if (list is List && mounted) {
+        setState(() {
+          messages = list.map((e) => Map<String, dynamic>.from(e)).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('M8 loadGroupMessages error: $e');
+    }
+  }
+
+  Future<void> loadGroupMembers() async {
+    if (groupId <= 0) return;
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/groups/members'
+          '?group_id=$groupId'
+          '&m8_pin=${Uri.encodeComponent(widget.myPin)}',
+        ),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint('M8 group members ${response.statusCode}: ${response.body}');
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+      final list = data['members'];
+
+      if (list is List && mounted) {
+        setState(() {
+          members = list.map((e) => Map<String, dynamic>.from(e)).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('M8 loadGroupMembers error: $e');
+    }
+  }
+
+  Future<void> sendGroupMessage() async {
+    final text = _messageController.text.trim();
+
+    if (text.isEmpty || sending || groupId <= 0) {
+      return;
+    }
+
+    setState(() {
+      sending = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/group-messages'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'group_id': groupId,
+          'sender_pin': widget.myPin,
+          'message': text,
+        }),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        _messageController.clear();
+
+        await loadGroupMessages();
+        _scrollToBottom();
+      } else {
+        debugPrint(
+          'M8 send group message ${response.statusCode}: '
+          '${response.body}',
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Pesan gagal dikirim: ${response.body}')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('M8 sendGroupMessage error: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat terhubung ke M8')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          sending = false;
+        });
+      }
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  String _memberName(String pin) {
+    for (final member in members) {
+      if (member['member_pin']?.toString() == pin) {
+        final name = member['name']?.toString().trim();
+
+        if (name != null && name.isNotEmpty) {
+          return name;
+        }
+      }
+    }
+
+    return pin;
+  }
+
+  String _formatTime(dynamic value) {
+    final timestamp = int.tryParse(value?.toString() ?? '');
+
+    if (timestamp == null) return '';
+
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+
+    return '$hour:$minute';
+  }
+
+  Future<void> _showMembers() async {
+    await loadGroupMembers();
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: m8White,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: m8TextMuted,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(18),
+                child: Row(
+                  children: [
+                    const Icon(Icons.groups_rounded, color: m8Blue),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Anggota grup (${members.length})',
+                      style: const TextStyle(
+                        color: m8Text,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: members.isEmpty
+                    ? const Center(child: Text('Belum ada data anggota.'))
+                    : ListView.builder(
+                        itemCount: members.length,
+                        itemBuilder: (context, index) {
+                          final member = members[index];
+
+                          final pin = member['member_pin']?.toString() ?? '';
+
+                          final name =
+                              member['name']?.toString().trim().isNotEmpty ==
+                                  true
+                              ? member['name'].toString().trim()
+                              : pin;
+
+                          final role = member['role']?.toString() ?? 'member';
+
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: m8Blue,
+                              child: Text(
+                                name.isNotEmpty
+                                    ? name
+                                          .substring(
+                                            0,
+                                            name.length > 2 ? 2 : name.length,
+                                          )
+                                          .toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                  color: m8White,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              name,
+                              style: const TextStyle(
+                                color: m8Text,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            subtitle: Text(
+                              pin,
+                              style: const TextStyle(color: m8TextMuted),
+                            ),
+                            trailing: role == 'owner'
+                                ? const Icon(
+                                    Icons.verified_rounded,
+                                    color: m8Blue,
+                                  )
+                                : null,
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMessage(Map<String, dynamic> message) {
+    final sender = message['sender_pin']?.toString() ?? '';
+
+    final mine = sender == widget.myPin;
+
+    final text = message['message']?.toString() ?? '';
+
+    final senderName = mine ? 'Kamu' : _memberName(sender);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      child: Align(
+        alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 320),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(13, 9, 13, 7),
+            decoration: BoxDecoration(
+              color: mine ? m8Blue : m8White,
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(16),
+                topRight: const Radius.circular(16),
+                bottomLeft: Radius.circular(mine ? 16 : 4),
+                bottomRight: Radius.circular(mine ? 4 : 16),
+              ),
+              border: mine
+                  ? null
+                  : Border.all(color: m8Blue.withValues(alpha: 0.10)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!mine)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: Text(
+                      senderName,
+                      style: const TextStyle(
+                        color: m8Blue,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                Text(
+                  text,
+                  style: TextStyle(
+                    color: mine ? m8White : m8Text,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Text(
+                    _formatTime(message['timestamp']),
+                    style: TextStyle(
+                      color: mine
+                          ? m8White.withValues(alpha: 0.72)
+                          : m8TextMuted,
+                      fontSize: 9,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8White,
+        foregroundColor: m8Text,
+        elevation: 0,
+        titleSpacing: 0,
+        title: InkWell(
+          onTap: _showMembers,
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 19,
+                backgroundColor: m8Blue,
+                backgroundImage:
+                    widget.group['photo_url']?.toString().isNotEmpty == true
+                    ? NetworkImage(widget.group['photo_url'].toString())
+                    : null,
+                child: widget.group['photo_url']?.toString().isNotEmpty == true
+                    ? null
+                    : const Icon(Icons.groups_rounded, color: m8White),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      groupName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: m8Text,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '${members.length} anggota',
+                      style: const TextStyle(color: m8TextMuted, fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Anggota',
+            onPressed: _showMembers,
+            icon: const Icon(Icons.groups_outlined, color: m8Blue),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: loadGroup,
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : messages.isEmpty
+                  ? ListView(
+                      children: const [
+                        SizedBox(height: 180),
+                        Icon(Icons.forum_outlined, size: 64, color: m8Blue),
+                        SizedBox(height: 16),
+                        Center(
+                          child: Text(
+                            'Belum ada pesan',
+                            style: TextStyle(
+                              color: m8Text,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Center(
+                          child: Text(
+                            'Mulai percakapan di grup ini.',
+                            style: TextStyle(color: m8TextMuted),
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        return _buildMessage(messages[index]);
+                      },
+                    ),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              decoration: BoxDecoration(
+                color: m8White,
+                border: Border(
+                  top: BorderSide(color: m8Blue.withValues(alpha: 0.10)),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      minLines: 1,
+                      maxLines: 5,
+                      textInputAction: TextInputAction.newline,
+                      decoration: InputDecoration(
+                        hintText: 'Tulis pesan ke grup...',
+                        filled: true,
+                        fillColor: m8WhiteSoft,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(22),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 11,
+                        ),
+                      ),
+                      onSubmitted: (_) {
+                        if (!sending) {
+                          sendGroupMessage();
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 7),
+                  FloatingActionButton(
+                    mini: true,
+                    elevation: 0,
+                    backgroundColor: m8Blue,
+                    foregroundColor: m8White,
+                    onPressed: sending ? null : sendGroupMessage,
+                    child: sending
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: m8White,
+                            ),
+                          )
+                        : const Icon(Icons.send_rounded),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class M8GamelanWallpaperPainter extends CustomPainter {
   @override
@@ -2983,18 +4239,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         ? Map<String, dynamic>.from(rawOtherUser)
         : <String, dynamic>{};
 
-    final otherName =
-        otherUser["name"]?.toString().trim().isNotEmpty == true
-            ? otherUser["name"].toString().trim()
-            : "M8 User";
+    final otherName = otherUser["name"]?.toString().trim().isNotEmpty == true
+        ? otherUser["name"].toString().trim()
+        : "M8 User";
 
     final otherPhotoUrl =
         otherUser["profile_photo_url"]?.toString().trim() ?? "";
 
-    final otherPin =
-        otherUser["m8_pin"]?.toString().trim().isNotEmpty == true
-            ? otherUser["m8_pin"].toString().trim()
-            : other;
+    final otherPin = otherUser["m8_pin"]?.toString().trim().isNotEmpty == true
+        ? otherUser["m8_pin"].toString().trim()
+        : other;
 
     debugPrint("M8 CHAT HEADER otherUser = $otherUser");
     debugPrint("M8 CHAT HEADER name = $otherName");
@@ -3056,10 +4310,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     ),
                     Text(
                       "M8 PIN: $otherPin",
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: m8White,
-                      ),
+                      style: const TextStyle(fontSize: 11, color: m8White),
                     ),
                     const Text(
                       "Online",
@@ -4751,7 +6002,6 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
                         onTap: toggleSpeaker,
                         active: speakerOn,
                       ),
-
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -4850,17 +6100,11 @@ class CallsPage extends StatelessWidget {
 // PROFILE
 // ============================================================
 
-
-
 class ProfilePage extends StatefulWidget {
   final Map<String, dynamic> user;
   final VoidCallback onLogout;
 
-  const ProfilePage({
-    super.key,
-    required this.user,
-    required this.onLogout,
-  });
+  const ProfilePage({super.key, required this.user, required this.onLogout});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -4873,24 +6117,18 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       await _heyPlayer.stop();
       await _heyPlayer.setVolume(1.0);
-      await _heyPlayer.play(
-        AssetSource('sounds/m8_hey.wav'),
-      );
+      await _heyPlayer.play(AssetSource('sounds/m8_hey.wav'));
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Nada Hi! gagal diputar: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Nada Hi! gagal diputar: $e')));
     }
   }
 
   void _copyPin(String pin) {
-    Clipboard.setData(
-      ClipboardData(text: pin),
-    );
+    Clipboard.setData(ClipboardData(text: pin));
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -4943,21 +6181,19 @@ class _ProfilePageState extends State<ProfilePage> {
         _ => 'image/jpeg',
       };
 
-      final uploadResponse = await http.post(
-        Uri.parse('$apiBase/api/upload'),
-        headers: {
-          'Content-Type': contentType,
-        },
-        body: bytes,
-      ).timeout(const Duration(seconds: 30));
+      final uploadResponse = await http
+          .post(
+            Uri.parse('$apiBase/api/upload'),
+            headers: {'Content-Type': contentType},
+            body: bytes,
+          )
+          .timeout(const Duration(seconds: 30));
 
       final uploadData = jsonDecode(uploadResponse.body);
 
-      if (uploadResponse.statusCode != 201 ||
-          uploadData['success'] != true) {
+      if (uploadResponse.statusCode != 201 || uploadData['success'] != true) {
         throw Exception(
-          uploadData['error']?.toString() ??
-              'Gagal mengupload foto.',
+          uploadData['error']?.toString() ?? 'Gagal mengupload foto.',
         );
       }
 
@@ -4977,24 +6213,19 @@ class _ProfilePageState extends State<ProfilePage> {
         throw Exception('ID akun M8 tidak tersedia.');
       }
 
-      final saveResponse = await http.post(
-        Uri.parse('$apiBase/api/profile/photo'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'user_id': userId,
-          'photo_url': photoUrl,
-        }),
-      ).timeout(const Duration(seconds: 20));
+      final saveResponse = await http
+          .post(
+            Uri.parse('$apiBase/api/profile/photo'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'user_id': userId, 'photo_url': photoUrl}),
+          )
+          .timeout(const Duration(seconds: 20));
 
       final saveData = jsonDecode(saveResponse.body);
 
-      if (saveResponse.statusCode != 200 ||
-          saveData['success'] != true) {
+      if (saveResponse.statusCode != 200 || saveData['success'] != true) {
         throw Exception(
-          saveData['error']?.toString() ??
-              'Gagal menyimpan foto profil.',
+          saveData['error']?.toString() ?? 'Gagal menyimpan foto profil.',
         );
       }
 
@@ -5014,9 +6245,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal mengganti foto profil: $e'),
-        ),
+        SnackBar(content: Text('Gagal mengganti foto profil: $e')),
       );
     }
   }
@@ -5060,9 +6289,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 if (value.length < 2) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Nama minimal 2 karakter.'),
-                    ),
+                    const SnackBar(content: Text('Nama minimal 2 karakter.')),
                   );
                   return;
                 }
@@ -5084,24 +6311,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (pin.isEmpty) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('M8 PIN tidak tersedia.'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('M8 PIN tidak tersedia.')));
       return;
     }
 
     try {
       final response = await http.post(
         Uri.parse('$apiBase/api/profile/name'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'm8_pin': pin,
-          'name': newName.trim(),
-        }),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'m8_pin': pin, 'name': newName.trim()}),
       );
 
       final data = jsonDecode(response.body);
@@ -5120,9 +6340,7 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {});
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Nama berhasil diperbarui.'),
-          ),
+          const SnackBar(content: Text('Nama berhasil diperbarui.')),
         );
       } else {
         if (!mounted) return;
@@ -5138,11 +6356,9 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal memperbarui nama: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memperbarui nama: $e')));
     }
   }
 
@@ -5188,10 +6404,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 5,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         leading: Container(
           width: 44,
           height: 44,
@@ -5201,10 +6414,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 : m8Blue.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(13),
           ),
-          child: Icon(
-            icon,
-            color: danger ? Colors.red : m8Blue,
-          ),
+          child: Icon(icon, color: danger ? Colors.red : m8Blue),
         ),
         title: Text(
           title,
@@ -5215,10 +6425,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            color: m8TextMuted,
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: m8TextMuted, fontSize: 12),
         ),
         trailing: Icon(
           Icons.chevron_right_rounded,
@@ -5264,18 +6471,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: m8Blue,
-                      width: 2,
-                    ),
+                    border: Border.all(color: m8Blue, width: 2),
                   ),
                   child: GestureDetector(
                     onTap: _changeProfilePhoto,
                     child: CircleAvatar(
                       radius: 38,
                       backgroundColor: m8White,
-                      backgroundImage: (widget.user['profile_photo_url']?.toString().isNotEmpty ?? false)
-                          ? NetworkImage(widget.user['profile_photo_url'].toString())
+                      backgroundImage:
+                          (widget.user['profile_photo_url']
+                                  ?.toString()
+                                  .isNotEmpty ??
+                              false)
+                          ? NetworkImage(
+                              widget.user['profile_photo_url'].toString(),
+                            )
                           : const AssetImage('assets/m8_icon-final.png'),
                     ),
                   ),
@@ -5327,10 +6537,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 14),
                 const Text(
                   'Terhubung melalui M8 Messenger',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),
@@ -5343,9 +6550,7 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: BoxDecoration(
               color: m8White,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: m8Blue.withValues(alpha: 0.12),
-              ),
+              border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
             ),
             child: Row(
               children: [
@@ -5356,10 +6561,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: m8BlueDark,
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  child: const Icon(
-                    Icons.pin_rounded,
-                    color: m8BlueLight,
-                  ),
+                  child: const Icon(Icons.pin_rounded, color: m8BlueLight),
                 ),
                 const SizedBox(width: 13),
                 Expanded(
@@ -5390,10 +6592,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 IconButton(
                   tooltip: 'Salin M8 PIN',
                   onPressed: pin.isEmpty ? null : () => _copyPin(pin),
-                  icon: const Icon(
-                    Icons.copy_rounded,
-                    color: m8Blue,
-                  ),
+                  icon: const Icon(Icons.copy_rounded, color: m8Blue),
                 ),
               ],
             ),
@@ -5451,47 +6650,46 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 8),
 
+          _menuItem(
+            icon: Icons.contacts_outlined,
+            title: 'Kontak & Akun',
+            subtitle: 'Kelola informasi kontak akun M8',
+            onTap: () => _comingSoon('Kontak & Akun'),
+          ),
 
-            _menuItem(
-              icon: Icons.contacts_outlined,
-              title: 'Kontak & Akun',
-              subtitle: 'Kelola informasi kontak akun M8',
-              onTap: () => _comingSoon('Kontak & Akun'),
-            ),
+          _menuItem(
+            icon: Icons.lock_outline_rounded,
+            title: 'Privasi',
+            subtitle: 'Kelola privasi dan visibilitas profil',
+            onTap: () => _comingSoon('Privasi'),
+          ),
 
-            _menuItem(
-              icon: Icons.lock_outline_rounded,
-              title: 'Privasi',
-              subtitle: 'Kelola privasi dan visibilitas profil',
-              onTap: () => _comingSoon('Privasi'),
-            ),
+          const SizedBox(height: 8),
 
-            const SizedBox(height: 8),
+          _sectionTitle('Preferensi'),
 
-            _sectionTitle('Preferensi'),
+          _menuItem(
+            icon: Icons.notifications_none_rounded,
+            title: 'Notifikasi',
+            subtitle: 'Atur pemberitahuan pesan dan aktivitas M8',
+            onTap: () => _comingSoon('Notifikasi'),
+          ),
 
-            _menuItem(
-              icon: Icons.notifications_none_rounded,
-              title: 'Notifikasi',
-              subtitle: 'Atur pemberitahuan pesan dan aktivitas M8',
-              onTap: () => _comingSoon('Notifikasi'),
-            ),
+          _menuItem(
+            icon: Icons.palette_outlined,
+            title: 'Tampilan',
+            subtitle: 'Atur tampilan dan nuansa M8 Messenger',
+            onTap: () => _comingSoon('Tampilan'),
+          ),
 
-            _menuItem(
-              icon: Icons.palette_outlined,
-              title: 'Tampilan',
-              subtitle: 'Atur tampilan dan nuansa M8 Messenger',
-              onTap: () => _comingSoon('Tampilan'),
-            ),
+          _menuItem(
+            icon: Icons.language_rounded,
+            title: 'Bahasa',
+            subtitle: 'Pilih bahasa yang digunakan di M8',
+            onTap: () => _comingSoon('Bahasa'),
+          ),
 
-            _menuItem(
-              icon: Icons.language_rounded,
-              title: 'Bahasa',
-              subtitle: 'Pilih bahasa yang digunakan di M8',
-              onTap: () => _comingSoon('Bahasa'),
-            ),
-
-            const SizedBox(height: 8),
+          const SizedBox(height: 8),
           _sectionTitle('Aplikasi'),
 
           _menuItem(
