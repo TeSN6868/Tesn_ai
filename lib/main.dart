@@ -456,7 +456,7 @@ class _LoginPageState extends State<LoginPage> {
                             controller: pinController,
                             textInputAction: TextInputAction.next,
                             style: const TextStyle(
-                              color: m8Text,
+                              color: m8White,
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
@@ -498,12 +498,12 @@ class _LoginPageState extends State<LoginPage> {
                             obscureText: obscurePassword,
                             onSubmitted: (_) => login(),
                             style: const TextStyle(
-                              color: m8Text,
+                              color: m8White,
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: const TextStyle(color: m8Text),
+                              labelStyle: const TextStyle(color: m8TextMuted),
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
                                 color: Colors.white,
@@ -830,7 +830,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: m8Text),
+      labelStyle: const TextStyle(color: m8TextMuted),
       prefixIcon: Icon(icon, color: m8Text),
       suffixIcon: suffixIcon,
       filled: true,
@@ -1491,7 +1491,7 @@ class _SettingsPageState extends State<SettingsPage> {
           height: 42,
           decoration: BoxDecoration(
             color: m8WhiteSoft,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(18),
           ),
           child: Icon(icon, color: m8Blue),
         ),
@@ -2194,7 +2194,7 @@ class _ChatsPageState extends State<ChatsPage> {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: selected ? m8Blue : Colors.transparent,
-                  borderRadius: BorderRadius.zero,
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
                   tabs[index],
@@ -2897,10 +2897,10 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
               labelStyle: const TextStyle(color: m8TextMuted),
               hintStyle: const TextStyle(color: m8TextMuted),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(18),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(18),
                 borderSide: const BorderSide(color: m8Blue),
               ),
             ),
@@ -4440,7 +4440,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: m8White,
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(18),
                                         border: Border.all(
                                           color: m8Blue.withOpacity(0.45),
                                           width: 0.6,
@@ -5041,7 +5041,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 maxLines: 5,
                                 textInputAction: TextInputAction.newline,
                                 style: const TextStyle(
-                                  color: m8Text,
+                                  color: m8White,
                                   fontSize: 15,
                                 ),
                                 decoration: InputDecoration(
@@ -5190,14 +5190,14 @@ class _M8StoryMiniCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.zero,
+      borderRadius: BorderRadius.circular(18),
       child: Container(
         width: 68,
         height: 68,
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: isMine ? m8BlueDark : m8White,
-          borderRadius: BorderRadius.zero,
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: m8Blue.withValues(alpha: 0.7), width: 0.8),
         ),
         child: Column(
@@ -5208,7 +5208,7 @@ class _M8StoryMiniCard extends StatelessWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: isMine ? m8Blue : m8BlueDark,
-                borderRadius: BorderRadius.zero,
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Icon(
                 isMine ? Icons.add_rounded : Icons.auto_awesome_rounded,
@@ -6207,7 +6207,7 @@ class _ProfilePageState extends State<ProfilePage> {
             autofocus: true,
             maxLength: 50,
             style: const TextStyle(
-              color: m8BlueDark,
+              color: m8White,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
