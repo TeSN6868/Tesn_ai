@@ -503,7 +503,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: const TextStyle(color: m8TextMuted),
+                              labelStyle: const TextStyle(color: m8BlueDark),
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
                                 color: Colors.white,
@@ -830,7 +830,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: m8TextMuted),
+      labelStyle: const TextStyle(color: m8BlueDark),
       prefixIcon: Icon(icon, color: m8Text),
       suffixIcon: suffixIcon,
       filled: true,
@@ -1910,9 +1910,12 @@ class _ChatsPageState extends State<ChatsPage> {
           content: TextField(
             controller: controller,
             autofocus: true,
+            style: const TextStyle(color: m8BlueDark),
             decoration: const InputDecoration(
               labelText: 'M8 PIN tujuan',
               hintText: 'Contoh: TEST0001',
+              labelStyle: TextStyle(color: m8BlueDark),
+              hintStyle: TextStyle(color: m8TextMuted),
             ),
           ),
           actions: [
@@ -2171,7 +2174,7 @@ class _ChatsPageState extends State<ChatsPage> {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: m8White,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
       ),
       child: Row(
@@ -2889,12 +2892,12 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
           ),
           content: TextField(
             controller: controller,
-            style: const TextStyle(color: m8White),
+            style: const TextStyle(color: m8BlueDark),
             textCapitalization: TextCapitalization.none,
             decoration: InputDecoration(
               labelText: 'PIN M8',
               hintText: 'Masukkan PIN M8',
-              labelStyle: const TextStyle(color: m8TextMuted),
+              labelStyle: const TextStyle(color: m8BlueDark),
               hintStyle: const TextStyle(color: m8TextMuted),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
@@ -3678,6 +3681,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           title: const Text("Edit pesan"),
           content: TextField(
             controller: editController,
+            style: const TextStyle(color: m8BlueDark),
             autofocus: true,
             maxLines: 5,
             minLines: 1,
@@ -4844,7 +4848,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             child: Stack(
                               children: [
                                 ClipRRect(
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(18),
                                   child: Image.file(
                                     File(pendingImage!.path),
                                     width: 82,
@@ -6207,7 +6211,7 @@ class _ProfilePageState extends State<ProfilePage> {
             autofocus: true,
             maxLength: 50,
             style: const TextStyle(
-              color: m8White,
+              color: m8BlueDark,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
