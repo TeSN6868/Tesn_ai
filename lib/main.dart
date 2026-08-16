@@ -3152,13 +3152,22 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
           ),
           content: TextField(
             controller: controller,
-            style: const TextStyle(color: m8BlueDark),
+            cursorColor: m8White,
+            style: const TextStyle(
+              color: m8White,
+              fontWeight: FontWeight.w700,
+            ),
             textCapitalization: TextCapitalization.none,
             decoration: InputDecoration(
               labelText: 'PIN M8',
               hintText: 'Masukkan PIN M8',
-              labelStyle: const TextStyle(color: m8BlueDark),
-              hintStyle: const TextStyle(color: m8TextMuted),
+              labelStyle: const TextStyle(
+                color: m8White,
+                fontWeight: FontWeight.w700,
+              ),
+              hintStyle: TextStyle(
+                color: m8White.withValues(alpha: 0.65),
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
