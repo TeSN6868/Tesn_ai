@@ -2715,14 +2715,14 @@ class _M8GroupInfoPage extends StatelessWidget {
         title: const Text(
           'Info Grup',
           style: TextStyle(color: m8White, fontWeight: FontWeight.w800),
-          actions: [
-            IconButton(
-              tooltip: 'Edit nama grup',
-              onPressed: onEditName,
-              icon: const Icon(Icons.edit_rounded, color: m8White),
-            ),
-          ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Edit nama grup',
+            onPressed: onEditName,
+            icon: const Icon(Icons.edit_rounded, color: m8White),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 30),
