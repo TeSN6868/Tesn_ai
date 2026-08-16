@@ -5,58 +5,44 @@ on:
   push:
     branches:
       - main
+      - master
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java 21
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
-          cache: gradle
+          java-version: '17'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.8'
+          flutter-version: '3.44.9'
           channel: stable
           cache: true
 
-      - name: Flutter doctor
-        run: flutter doctor -v
+      - name: Flutter version
+        run: flutter --version
 
-      - name: Install dependencies
+      - name: Get dependencies
         run: flutter pub get
 
-      - name: Prepare M8 release keystore
-        env:
-          M8_KEYSTORE_BASE64: ${{ secrets.M8_KEYSTORE_BASE64 }}
-          M8_KEYSTORE_PASSWORD: ${{ secrets.M8_KEYSTORE_PASSWORD }}
-        run: |
-          mkdir -p android/app/keystore
-          echo "$M8_KEYSTORE_BASE64" | base64 --decode > android/app/keystore/m8-release.p12
-          chmod 600 android/app/keystore/m8-release.p12
-          cat > android/key.properties <<EOF
-          storePassword=$M8_KEYSTORE_PASSWORD
-          keyPassword=$M8_KEYSTORE_PASSWORD
-          keyAlias=m8
-          storeFile=app/keystore/m8-release.p12
-          storeType=PKCS12
-          EOF
-          chmod 600 android/key.properties
+      - name: Analyze
+        run: dart analyze
 
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --debug
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: M8-Messenger-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: M8-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error

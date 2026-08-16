@@ -2600,55 +2600,40 @@ class _ChatsPageState extends State<ChatsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
       children: [
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: _M8StoryRail(
-            onMyStoryTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const StoryPage()),
-              );
-            },
-          ),
+        _M8StoryRail(
+          onMyStoryTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const StoryPage()),
+            );
+          },
         ),
 
-        Positioned(top: 88, left: 0, right: 0, child: buildMessengerTabs()),
+        buildMessengerTabs(),
 
-        Positioned(
-          top: 124,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: Column(
+        Expanded(
+          child: Stack(
             children: [
-              Expanded(
-                child: Stack(
-                  children: [
-                    if (loading)
-                      const Center(child: CircularProgressIndicator())
-                    else if (selectedTab == 0)
-                      buildAllMessenger()
-                    else if (selectedTab == 1)
-                      buildPrivateChats()
-                    else
-                      buildGroupList(),
-                  ],
+              if (loading)
+                const Center(child: CircularProgressIndicator())
+              else if (selectedTab == 0)
+                buildAllMessenger()
+              else if (selectedTab == 1)
+                buildPrivateChats()
+              else
+                buildGroupList(),
+
+              Positioned(
+                right: 20,
+                bottom: 20,
+                child: FloatingActionButton(
+                  onPressed: showNewChatMenu,
+                  child: const Icon(Icons.add_comment_rounded),
                 ),
               ),
             ],
-          ),
-        ),
-
-        Positioned(
-          right: 20,
-          bottom: 20,
-          child: FloatingActionButton(
-            onPressed: showNewChatMenu,
-            child: const Icon(Icons.add_comment_rounded),
           ),
         ),
       ],
