@@ -5594,14 +5594,14 @@ class _M8LiveStoryCard extends StatelessWidget {
         : 'Pengguna M8';
 
     final type = story['media_type']?.toString() ?? 'image';
-
+    final url = story['media_url']?.toString().trim() ?? '';
     final caption = story['caption']?.toString().trim() ?? '';
 
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: m8White,
           borderRadius: BorderRadius.circular(18),
@@ -5609,17 +5609,49 @@ class _M8LiveStoryCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: m8BlueDark,
-                shape: BoxShape.circle,
-                border: Border.all(color: m8Blue, width: 2),
-              ),
-              child: Icon(
-                type == 'video' ? Icons.videocam_rounded : Icons.photo_rounded,
-                color: m8BlueLight,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: SizedBox(
+                width: 62,
+                height: 62,
+                child: type == 'image' && url.isNotEmpty
+                    ? Image.network(
+                        url,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+
+                          return const Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        },
+                        errorBuilder: (_, __, ___) {
+                          return Container(
+                            color: m8BlueDark,
+                            child: const Icon(
+                              Icons.broken_image_rounded,
+                              color: m8BlueLight,
+                              size: 30,
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: m8BlueDark,
+                        child: Icon(
+                          type == 'video'
+                              ? Icons.videocam_rounded
+                              : Icons.photo_rounded,
+                          color: m8BlueLight,
+                          size: 30,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -5715,17 +5747,54 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
           children: [
             if (type == 'image')
               InteractiveViewer(
-                child: Image.network(
-                  url,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Center(
-                    child: Icon(
-                      Icons.broken_image_rounded,
-                      color: Colors.white,
-                      size: 70,
-                    ),
-                  ),
-                ),
+                minScale: 0.8,
+                maxScale: 4.0,
+                child: url.isNotEmpty
+                    ? Image.network(
+                        url,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          );
+                        },
+                        errorBuilder: (_, error, ___) {
+                          debugPrint('M8 STORY IMAGE ERROR: $error');
+
+                          return const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.broken_image_rounded,
+                                  color: Colors.white,
+                                  size: 70,
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Foto Story tidak dapat dimuat',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Text(
+                          'URL foto Story kosong',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
               )
             else
               Center(
