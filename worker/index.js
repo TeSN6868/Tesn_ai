@@ -246,6 +246,552 @@ export default {
       }
 
       // ============================================================
+      // M8 GROUPS
+      // ============================================================
+
+      async function ensureGroupTables() {
+        await env.DB.batch([
+          env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS groups (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL,
+              description TEXT,
+              owner_pin TEXT NOT NULL,
+              photo_url TEXT,
+              created_at INTEGER NOT NULL
+            )
+          `),
+          env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS group_members (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              group_id INTEGER NOT NULL,
+              member_pin TEXT NOT NULL,
+              role TEXT NOT NULL DEFAULT 'member',
+              joined_at INTEGER NOT NULL,
+              UNIQUE(group_id, member_pin)
+            )
+          `),
+          env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS group_messages (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              group_id INTEGER NOT NULL,
+              sender_pin TEXT NOT NULL,
+              message TEXT NOT NULL,
+              timestamp INTEGER NOT NULL,
+              status TEXT NOT NULL DEFAULT 'sent'
+            )
+          `),
+        ]);
+      }
+
+      // ============================================================
+      // GET GROUPS
+      // ============================================================
+
+      if (url.pathname === "/api/groups" && request.method === "GET") {
+        await ensureGroupTables();
+
+        const myPin = url.searchParams.get("m8_pin")?.trim();
+
+        if (!myPin) {
+          return json({
+            success: false,
+            error: "m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const result = await env.DB.prepare(`
+          SELECT
+            g.id,
+            g.name,
+            g.description,
+            g.owner_pin,
+            g.photo_url,
+            g.created_at,
+            COUNT(gm.id) AS member_count
+          FROM groups g
+          INNER JOIN group_members gm
+            ON gm.group_id = g.id
+          WHERE EXISTS (
+            SELECT 1
+            FROM group_members mine
+            WHERE mine.group_id = g.id
+              AND mine.member_pin = ?
+          )
+          GROUP BY
+            g.id,
+            g.name,
+            g.description,
+            g.owner_pin,
+            g.photo_url,
+            g.created_at
+          ORDER BY g.id DESC
+        `)
+          .bind(myPin)
+          .all();
+
+        return json({
+          success: true,
+          groups: result.results || [],
+        });
+      }
+
+      // ============================================================
+      // CREATE GROUP
+      // ============================================================
+
+      if (url.pathname === "/api/groups" && request.method === "POST") {
+        await ensureGroupTables();
+
+        const body = await request.json();
+
+        const ownerPin = String(body.owner_pin || "").trim();
+        const name = String(body.name || "").trim();
+        const description = String(body.description || "").trim();
+        const photoUrl = String(body.photo_url || "").trim();
+
+        let members = Array.isArray(body.members)
+          ? body.members.map((x) => String(x).trim()).filter(Boolean)
+          : [];
+
+        if (!ownerPin || !name) {
+          return json({
+            success: false,
+            error: "owner_pin dan nama grup wajib diisi.",
+          }, 400);
+        }
+
+        if (name.length > 80) {
+          return json({
+            success: false,
+            error: "Nama grup maksimal 80 karakter.",
+          }, 400);
+        }
+
+        // Pemilik selalu menjadi anggota grup.
+        members = [...new Set([ownerPin, ...members])];
+
+        if (members.length > 100) {
+          return json({
+            success: false,
+            error: "Maksimal 100 anggota dalam satu grup.",
+          }, 400);
+        }
+
+        // Pastikan semua PIN anggota benar-benar terdaftar.
+        const placeholders = members.map(() => "?").join(",");
+
+        const usersResult = await env.DB.prepare(`
+          SELECT m8_pin
+          FROM users
+          WHERE m8_pin IN (${placeholders})
+        `)
+          .bind(...members)
+          .all();
+
+        const registeredPins = new Set(
+          (usersResult.results || [])
+            .map((row) => String(row.m8_pin))
+        );
+
+        const missingPins = members.filter(
+          (pin) => !registeredPins.has(pin)
+        );
+
+        if (missingPins.length > 0) {
+          return json({
+            success: false,
+            error: "Ada PIN M8 yang tidak ditemukan.",
+            missing_pins: missingPins,
+          }, 404);
+        }
+
+        const createdAt = Date.now();
+
+        const groupResult = await env.DB.prepare(`
+          INSERT INTO groups
+            (name, description, owner_pin, photo_url, created_at)
+          VALUES (?, ?, ?, ?, ?)
+        `)
+          .bind(
+            name,
+            description || null,
+            ownerPin,
+            photoUrl || null,
+            createdAt,
+          )
+          .run();
+
+        if (!groupResult.success) {
+          throw new Error("Gagal membuat grup.");
+        }
+
+        const groupId = groupResult.meta.last_row_id;
+
+        const statements = members.map((pin) =>
+          env.DB.prepare(`
+            INSERT INTO group_members
+              (group_id, member_pin, role, joined_at)
+            VALUES (?, ?, ?, ?)
+          `).bind(
+            groupId,
+            pin,
+            pin === ownerPin ? "owner" : "member",
+            createdAt,
+          )
+        );
+
+        await env.DB.batch(statements);
+
+        const group = await env.DB.prepare(`
+          SELECT
+            id,
+            name,
+            description,
+            owner_pin,
+            photo_url,
+            created_at
+          FROM groups
+          WHERE id = ?
+        `)
+          .bind(groupId)
+          .first();
+
+        return json({
+          success: true,
+          group,
+          member_count: members.length,
+        }, 201);
+      }
+
+      // ============================================================
+      // GET GROUP MEMBERS
+      // ============================================================
+
+      if (
+        url.pathname === "/api/groups/members" &&
+        request.method === "GET"
+      ) {
+        await ensureGroupTables();
+
+        const groupId = Number(
+          url.searchParams.get("group_id")
+        );
+
+        const myPin = url.searchParams.get("m8_pin")?.trim();
+
+        if (!groupId || !myPin) {
+          return json({
+            success: false,
+            error: "group_id dan m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const access = await env.DB.prepare(`
+          SELECT id
+          FROM group_members
+          WHERE group_id = ?
+            AND member_pin = ?
+          LIMIT 1
+        `)
+          .bind(groupId, myPin)
+          .first();
+
+        if (!access) {
+          return json({
+            success: false,
+            error: "Kamu bukan anggota grup ini.",
+          }, 403);
+        }
+
+        const result = await env.DB.prepare(`
+          SELECT
+            gm.id,
+            gm.group_id,
+            gm.member_pin,
+            gm.role,
+            gm.joined_at,
+            u.name,
+            u.profile_photo_url
+          FROM group_members gm
+          LEFT JOIN users u
+            ON u.m8_pin = gm.member_pin
+          WHERE gm.group_id = ?
+          ORDER BY
+            CASE WHEN gm.role = 'owner' THEN 0 ELSE 1 END,
+            gm.id ASC
+        `)
+          .bind(groupId)
+          .all();
+
+        return json({
+          success: true,
+          members: result.results || [],
+        });
+      }
+
+      // ============================================================
+      // ADD GROUP MEMBER
+      // ============================================================
+
+      if (
+        url.pathname === "/api/groups/members" &&
+        request.method === "POST"
+      ) {
+        await ensureGroupTables();
+
+        const body = await request.json();
+
+        const groupId = Number(body.group_id);
+        const requesterPin = String(
+          body.requester_pin || ""
+        ).trim();
+        const memberPin = String(
+          body.member_pin || ""
+        ).trim();
+
+        if (!groupId || !requesterPin || !memberPin) {
+          return json({
+            success: false,
+            error: "group_id, requester_pin dan member_pin wajib diisi.",
+          }, 400);
+        }
+
+        const requester = await env.DB.prepare(`
+          SELECT role
+          FROM group_members
+          WHERE group_id = ?
+            AND member_pin = ?
+          LIMIT 1
+        `)
+          .bind(groupId, requesterPin)
+          .first();
+
+        if (!requester) {
+          return json({
+            success: false,
+            error: "Kamu bukan anggota grup.",
+          }, 403);
+        }
+
+        if (
+          requester.role !== "owner" &&
+          requester.role !== "admin"
+        ) {
+          return json({
+            success: false,
+            error: "Hanya pemilik atau admin yang dapat menambah anggota.",
+          }, 403);
+        }
+
+        const user = await env.DB.prepare(`
+          SELECT m8_pin
+          FROM users
+          WHERE m8_pin = ?
+          LIMIT 1
+        `)
+          .bind(memberPin)
+          .first();
+
+        if (!user) {
+          return json({
+            success: false,
+            error: "PIN M8 anggota tidak ditemukan.",
+          }, 404);
+        }
+
+        const existing = await env.DB.prepare(`
+          SELECT id
+          FROM group_members
+          WHERE group_id = ?
+            AND member_pin = ?
+          LIMIT 1
+        `)
+          .bind(groupId, memberPin)
+          .first();
+
+        if (existing) {
+          return json({
+            success: true,
+            message: "Anggota sudah berada di grup.",
+            existing: true,
+          });
+        }
+
+        const count = await env.DB.prepare(`
+          SELECT COUNT(*) AS total
+          FROM group_members
+          WHERE group_id = ?
+        `)
+          .bind(groupId)
+          .first();
+
+        if (Number(count?.total || 0) >= 100) {
+          return json({
+            success: false,
+            error: "Grup sudah mencapai 100 anggota.",
+          }, 409);
+        }
+
+        await env.DB.prepare(`
+          INSERT INTO group_members
+            (group_id, member_pin, role, joined_at)
+          VALUES (?, ?, 'member', ?)
+        `)
+          .bind(groupId, memberPin, Date.now())
+          .run();
+
+        return json({
+          success: true,
+          message: "Anggota berhasil ditambahkan.",
+        }, 201);
+      }
+
+      // ============================================================
+      // GET GROUP MESSAGES
+      // ============================================================
+
+      if (
+        url.pathname === "/api/group-messages" &&
+        request.method === "GET"
+      ) {
+        await ensureGroupTables();
+
+        const groupId = Number(
+          url.searchParams.get("group_id")
+        );
+
+        const myPin = url.searchParams.get("m8_pin")?.trim();
+
+        if (!groupId || !myPin) {
+          return json({
+            success: false,
+            error: "group_id dan m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const access = await env.DB.prepare(`
+          SELECT id
+          FROM group_members
+          WHERE group_id = ?
+            AND member_pin = ?
+          LIMIT 1
+        `)
+          .bind(groupId, myPin)
+          .first();
+
+        if (!access) {
+          return json({
+            success: false,
+            error: "Kamu bukan anggota grup ini.",
+          }, 403);
+        }
+
+        const result = await env.DB.prepare(`
+          SELECT
+            id,
+            group_id,
+            sender_pin,
+            message,
+            timestamp,
+            status
+          FROM group_messages
+          WHERE group_id = ?
+          ORDER BY id ASC
+        `)
+          .bind(groupId)
+          .all();
+
+        return json({
+          success: true,
+          messages: result.results || [],
+        });
+      }
+
+      // ============================================================
+      // SEND GROUP MESSAGE
+      // ============================================================
+
+      if (
+        url.pathname === "/api/group-messages" &&
+        request.method === "POST"
+      ) {
+        await ensureGroupTables();
+
+        const body = await request.json();
+
+        const groupId = Number(body.group_id);
+        const senderPin = String(
+          body.sender_pin || ""
+        ).trim();
+        const message = String(
+          body.message || ""
+        ).trim();
+
+        if (!groupId || !senderPin || !message) {
+          return json({
+            success: false,
+            error: "group_id, sender_pin dan message wajib diisi.",
+          }, 400);
+        }
+
+        const access = await env.DB.prepare(`
+          SELECT id
+          FROM group_members
+          WHERE group_id = ?
+            AND member_pin = ?
+          LIMIT 1
+        `)
+          .bind(groupId, senderPin)
+          .first();
+
+        if (!access) {
+          return json({
+            success: false,
+            error: "Pengirim bukan anggota grup.",
+          }, 403);
+        }
+
+        const timestamp = Date.now();
+
+        const result = await env.DB.prepare(`
+          INSERT INTO group_messages
+            (group_id, sender_pin, message, timestamp, status)
+          VALUES (?, ?, ?, ?, 'sent')
+        `)
+          .bind(
+            groupId,
+            senderPin,
+            message,
+            timestamp,
+          )
+          .run();
+
+        if (!result.success) {
+          throw new Error("Gagal menyimpan pesan grup.");
+        }
+
+        const saved = await env.DB.prepare(`
+          SELECT
+            id,
+            group_id,
+            sender_pin,
+            message,
+            timestamp,
+            status
+          FROM group_messages
+          WHERE id = ?
+        `)
+          .bind(result.meta.last_row_id)
+          .first();
+
+        return json({
+          success: true,
+          message: saved,
+        }, 201);
+      }
+
+      // ============================================================
       // CHATS
       // ============================================================
 
