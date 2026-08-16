@@ -453,10 +453,11 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         children: <Widget>[
                           TextField(
+                            cursorColor: m8BlueDark,
                             controller: pinController,
                             textInputAction: TextInputAction.next,
                             style: const TextStyle(
-                              color: m8White,
+                              color: m8BlueDark,
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
@@ -494,16 +495,21 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 14),
 
                           TextField(
+                            cursorColor: m8BlueDark,
                             controller: passwordController,
                             obscureText: obscurePassword,
                             onSubmitted: (_) => login(),
                             style: const TextStyle(
-                              color: m8White,
+                              color: m8BlueDark,
                               fontWeight: FontWeight.w600,
                             ),
                             decoration: InputDecoration(
                               labelText: 'Password',
                               labelStyle: const TextStyle(color: m8BlueDark),
+                              floatingLabelStyle: const TextStyle(
+                                color: m8BlueDark,
+                              ),
+                              hintStyle: const TextStyle(color: m8TextMuted),
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
                                 color: Colors.white,
@@ -518,7 +524,7 @@ class _LoginPageState extends State<LoginPage> {
                                   obscurePassword
                                       ? Icons.visibility_outlined
                                       : Icons.visibility_off_outlined,
-                                  color: Colors.white,
+                                  color: m8BlueDark,
                                 ),
                               ),
                               filled: true,
