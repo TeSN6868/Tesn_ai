@@ -5733,7 +5733,11 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
 
     final name = story['user_name']?.toString() ?? 'Pengguna M8';
 
-    final url = story['media_url']?.toString() ?? '';
+    final rawUrl = story['media_url']?.toString().trim() ?? '';
+    final cacheVersion =
+        story['created_at']?.toString() ??
+        DateTime.now().millisecondsSinceEpoch.toString();
+    final url = rawUrl.isNotEmpty ? '$rawUrl?v=$cacheVersion' : '';
 
     final type = story['media_type']?.toString() ?? 'image';
 
