@@ -3553,25 +3553,170 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
           SafeArea(
             top: false,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
               decoration: BoxDecoration(
                 color: m8White,
                 border: Border(
-                  top: BorderSide(color: m8Blue.withValues(alpha: 0.10)),
+                  top: BorderSide(
+                    color: m8Blue.withValues(alpha: 0.10),
+                  ),
                 ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  IconButton(
+                    tooltip: 'Lampiran',
+                    onPressed: sending
+                        ? null
+                        : () {
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: m8White,
+                              showDragHandle: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(24),
+                                ),
+                              ),
+                              builder: (sheetContext) {
+                                return SafeArea(
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      18,
+                                      4,
+                                      18,
+                                      24,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            'Lampiran',
+                                            style: TextStyle(
+                                              fontSize: 19,
+                                              fontWeight: FontWeight.w800,
+                                              color: m8Text,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 18),
+                                        GridView.count(
+                                          shrinkWrap: true,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          crossAxisCount: 4,
+                                          mainAxisSpacing: 14,
+                                          crossAxisSpacing: 8,
+                                          childAspectRatio: 0.78,
+                                          children: [
+                                            _AttachmentItem(
+                                              icon: Icons.camera_alt_rounded,
+                                              label: 'Kamera',
+                                              onTap: () {
+                                                Navigator.pop(sheetContext);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Kamera grup akan diaktifkan berikutnya.',
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            _AttachmentItem(
+                                              icon:
+                                                  Icons.photo_library_rounded,
+                                              label: 'Gambar',
+                                              onTap: () {
+                                                Navigator.pop(sheetContext);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Gambar grup akan diaktifkan berikutnya.',
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            _AttachmentItem(
+                                              icon: Icons
+                                                  .insert_drive_file_rounded,
+                                              label: 'File',
+                                              onTap: () {
+                                                Navigator.pop(sheetContext);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'File grup akan diaktifkan berikutnya.',
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            _AttachmentItem(
+                                              icon:
+                                                  Icons.location_on_rounded,
+                                              label: 'Lokasi',
+                                              onTap: () {
+                                                Navigator.pop(sheetContext);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Lokasi grup akan diaktifkan berikutnya.',
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            _AttachmentItem(
+                                              icon: Icons.music_note_rounded,
+                                              label: 'Musik',
+                                              onTap: () {
+                                                Navigator.pop(sheetContext);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Musik grup akan diaktifkan berikutnya.',
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                    icon: const Icon(
+                      Icons.add_circle_outline_rounded,
+                      color: m8Blue,
+                    ),
+                  ),
                   Expanded(
                     child: TextField(
-                      style: const TextStyle(color: m8White),
+                      style: const TextStyle(
+                        color: m8Text,
+                        fontSize: 15,
+                      ),
                       controller: _messageController,
                       minLines: 1,
                       maxLines: 5,
                       textInputAction: TextInputAction.newline,
                       decoration: InputDecoration(
                         hintText: 'Tulis pesan ke grup...',
+                        hintStyle: const TextStyle(color: m8TextMuted),
                         filled: true,
                         fillColor: m8WhiteSoft,
                         border: OutlineInputBorder(
@@ -3590,7 +3735,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 7),
+                  const SizedBox(width: 6),
                   FloatingActionButton(
                     mini: true,
                     elevation: 0,
