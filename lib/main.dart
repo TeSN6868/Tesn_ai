@@ -2622,7 +2622,7 @@ class _ChatsPageState extends State<ChatsPage> {
           onMyStoryTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const StoryPage()),
+              MaterialPageRoute(builder: (_) => StoryPage(user: widget.user)),
             );
           },
         ),
@@ -5260,7 +5260,9 @@ class _M8StoryMiniCard extends StatelessWidget {
 }
 
 class StoryPage extends StatefulWidget {
-  const StoryPage({super.key});
+  final Map<String, dynamic> user;
+
+  const StoryPage({super.key, required this.user});
 
   @override
   State<StoryPage> createState() => _StoryPageState();
@@ -5280,8 +5282,8 @@ class _StoryPageState extends State<StoryPage> {
   Future<void> _loadStories() async {
     try {
       final pin =
-          currentUser?['m8_pin']?.toString() ??
-          currentUser?['pin']?.toString() ??
+          widget.user['m8_pin']?.toString() ??
+          widget.user['pin']?.toString() ??
           '';
 
       if (pin.isEmpty) {
@@ -5430,8 +5432,8 @@ class _StoryPageState extends State<StoryPage> {
       }
 
       final pin =
-          currentUser?['m8_pin']?.toString() ??
-          currentUser?['pin']?.toString() ??
+          widget.user['m8_pin']?.toString() ??
+          widget.user['pin']?.toString() ??
           '';
 
       if (pin.isEmpty) {
@@ -6437,6 +6439,591 @@ class _ProfilePageState extends State<ProfilePage> {
             subtitle: 'Keluar dari akun M8',
             danger: true,
             onTap: widget.onLogout,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AttachmentItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _AttachmentItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: m8Blue, size: 25),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 11,
+              color: m8TextMuted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class VoiceCallPage extends StatefulWidget {
+  final String myPin;
+  final String otherPin;
+  final M8CallService call;
+  final bool videoCall;
+  final String? incomingCallId;
+
+  const VoiceCallPage({
+    super.key,
+    required this.myPin,
+    required this.otherPin,
+    required this.call,
+    this.videoCall = false,
+    this.incomingCallId,
+  });
+
+  @override
+  State<VoiceCallPage> createState() => _VoiceCallPageState();
+}
+
+class _VoiceCallPageState extends State<VoiceCallPage> {
+  Timer? timer;
+  int seconds = 0;
+
+  bool connecting = true;
+  bool muted = false;
+  bool cameraOff = false;
+  bool speakerOn = false;
+
+  String callStatus = 'Menghubungkan...';
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.call.onCallStatusChanged = _handleCallStatus;
+
+    _startCall();
+  }
+
+  void _handleCallStatus(String status) {
+    if (!mounted) return;
+
+    setState(() {
+      switch (status) {
+        case 'ringing':
+          callStatus = 'Berdering...';
+          connecting = true;
+          break;
+
+        case 'connecting':
+          callStatus = 'Menghubungkan...';
+          connecting = true;
+          break;
+
+        case 'connected':
+          callStatus = widget.videoCall
+              ? 'Video call terhubung'
+              : 'Panggilan suara terhubung';
+          connecting = false;
+
+          timer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+            if (mounted) {
+              setState(() => seconds++);
+            }
+          });
+          break;
+
+        case 'disconnected':
+          timer?.cancel();
+          timer = null;
+          callStatus = 'Koneksi terputus';
+          connecting = false;
+          break;
+
+        case 'failed':
+          timer?.cancel();
+          timer = null;
+          callStatus = 'Panggilan gagal';
+          connecting = false;
+          break;
+
+        case 'rejected':
+          timer?.cancel();
+          timer = null;
+          callStatus = 'Panggilan ditolak';
+          connecting = false;
+          break;
+
+        case 'ended':
+          timer?.cancel();
+          timer = null;
+          callStatus = 'Panggilan berakhir';
+          connecting = false;
+          break;
+
+        default:
+          callStatus = status;
+          connecting = true;
+      }
+    });
+  }
+
+  Future<void> _startCall() async {
+    try {
+      await widget.call.initializeRenderers();
+
+      if (widget.incomingCallId != null) {
+        await widget.call.acceptCall(
+          incomingCallId: widget.incomingCallId!,
+          calleePin: widget.myPin,
+          videoCall: widget.videoCall,
+        );
+      } else {
+        await widget.call.startCall(
+          callerPin: widget.myPin,
+          calleePin: widget.otherPin,
+          videoCall: widget.videoCall,
+        );
+      }
+
+      if (!mounted) return;
+
+      // Voice Call = audio saja.
+      // Video Call = kamera tetap aktif.
+      if (!widget.videoCall) {
+        final stream = widget.call.localStream;
+        for (final track in stream?.getVideoTracks() ?? []) {
+          track.enabled = false;
+        }
+      }
+
+      setState(() {
+        cameraOff = !widget.videoCall;
+      });
+
+      // Status panggilan dan timer dikendalikan oleh
+      // M8CallService melalui onCallStatusChanged.
+      if (widget.call.callStatus == 'connected') {
+        _handleCallStatus('connected');
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        connecting = false;
+        callStatus = 'Panggilan gagal';
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Panggilan gagal: $e')));
+    }
+  }
+
+  String get durationText {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${secs.toString().padLeft(2, '0')}';
+  }
+
+  void toggleMute() {
+    final stream = widget.call.localStream;
+    if (stream == null) return;
+
+    for (final track in stream.getAudioTracks()) {
+      track.enabled = !track.enabled;
+    }
+
+    setState(() {
+      muted = !muted;
+    });
+  }
+
+  void toggleCamera() {
+    final stream = widget.call.localStream;
+    if (stream == null) return;
+
+    for (final track in stream.getVideoTracks()) {
+      track.enabled = !track.enabled;
+    }
+
+    setState(() {
+      cameraOff = !cameraOff;
+    });
+  }
+
+  Future<void> switchCamera() async {
+    final stream = widget.call.localStream;
+    if (stream == null) return;
+
+    final tracks = stream.getVideoTracks();
+    if (tracks.isEmpty) return;
+
+    await Helper.switchCamera(tracks.first);
+  }
+
+  Future<void> toggleSpeaker() async {
+    final newState = !speakerOn;
+
+    setState(() {
+      speakerOn = newState;
+    });
+
+    try {
+      await Helper.setSpeakerphoneOn(newState);
+    } catch (_) {}
+  }
+
+  Future<void> hangUp() async {
+    // Jangan biarkan tombol Akhiri ditekan berkali-kali.
+    if (!mounted) return;
+
+    timer?.cancel();
+
+    // Cleanup WebRTC HARUS dilakukan sebelum halaman ditutup.
+    // Ini menghentikan microphone, audio track, peer connection,
+    // polling signaling, dan membersihkan audio routing Android.
+    try {
+      await widget.call.hangUp();
+    } catch (e) {
+      print('[M8 CALL UI] HANGUP ERROR: $e');
+    }
+
+    // Setelah WebRTC benar-benar dihentikan, baru kembali
+    // dari halaman panggilan ke halaman aplikasi sebelumnya.
+    if (mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  Widget _controlButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool active = true,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: active
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.white.withValues(alpha: 0.25),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            ),
+            child: Icon(icon, color: Colors.white, size: 24),
+          ),
+          const SizedBox(height: 7),
+          Text(label, style: const TextStyle(color: m8TextMuted, fontSize: 11)),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: widget.call.remoteRenderer.srcObject != null
+                  ? RTCVideoView(
+                      widget.call.remoteRenderer,
+                      objectFit:
+                          RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                    )
+                  : Container(
+                      color: m8Blue,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircleAvatar(
+                              radius: 52,
+                              backgroundColor: m8Blue,
+                              child: Icon(
+                                Icons.person,
+                                size: 55,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'M8 User',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'M8 PIN: ${widget.otherPin}',
+                              style: TextStyle(
+                                color: m8TextMuted,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Text(
+                              callStatus,
+                              style: const TextStyle(
+                                color: m8TextMuted,
+                                fontSize: 14,
+                              ),
+                            ),
+                            if (connecting) ...[
+                              const SizedBox(height: 16),
+                              const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: m8Blue,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+            ),
+
+            Positioned(
+              top: 18,
+              left: 18,
+              right: 18,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: hangUp,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        callStatus,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      if (!connecting)
+                        Text(
+                          durationText,
+                          style: const TextStyle(
+                            color: m8TextMuted,
+                            fontSize: 13,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 44),
+                ],
+              ),
+            ),
+
+            if (widget.videoCall && widget.call.localRenderer.srcObject != null)
+              Positioned(
+                top: 82,
+                right: 18,
+                child: Container(
+                  width: 105,
+                  height: 145,
+                  decoration: BoxDecoration(
+                    color: m8Blue,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: m8White.withValues(alpha: 0.78),
+                      width: 1.5,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(blurRadius: 14, spreadRadius: 1),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: cameraOff
+                      ? const Center(
+                          child: Icon(
+                            Icons.videocam_off,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        )
+                      : RTCVideoView(
+                          widget.call.localRenderer,
+                          mirror: true,
+                          objectFit:
+                              RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                        ),
+                ),
+              ),
+
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 28,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _controlButton(
+                        icon: muted ? Icons.mic_off : Icons.mic,
+                        label: muted ? 'Nyalakan' : 'Bisukan',
+                        onTap: toggleMute,
+                        active: !muted,
+                      ),
+                      _controlButton(
+                        icon: speakerOn ? Icons.volume_up : Icons.volume_off,
+                        label: 'Speaker',
+                        onTap: toggleSpeaker,
+                        active: speakerOn,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: hangUp,
+                    child: Container(
+                      width: 68,
+                      height: 68,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.call_end,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Akhiri',
+                    style: TextStyle(color: m8TextMuted, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CallButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _CallButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: const BoxDecoration(
+              color: m8BlueLight,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 27),
+          ),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(color: m8TextMuted, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+}
+
+class CallsPage extends StatelessWidget {
+  const CallsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.call, size: 70, color: m8Blue),
+          const SizedBox(height: 18),
+          const Text(
+            'Panggilan M8',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Fitur panggilan akan kita aktifkan berikutnya.',
+            style: TextStyle(color: m8TextMuted),
           ),
         ],
       ),
