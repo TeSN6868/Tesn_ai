@@ -3052,23 +3052,35 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
 
                           final role = member['role']?.toString() ?? 'member';
 
+                          final photoUrl =
+                              member['profile_photo_url']?.toString().trim() ??
+                              '';
+
                           return ListTile(
                             leading: CircleAvatar(
+                              radius: 25,
                               backgroundColor: m8Blue,
-                              child: Text(
-                                name.isNotEmpty
-                                    ? name
-                                          .substring(
-                                            0,
-                                            name.length > 2 ? 2 : name.length,
-                                          )
-                                          .toUpperCase()
-                                    : '?',
-                                style: const TextStyle(
-                                  color: m8White,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              backgroundImage: photoUrl.isNotEmpty
+                                  ? NetworkImage(photoUrl)
+                                  : null,
+                              child: photoUrl.isEmpty
+                                  ? Text(
+                                      name.isNotEmpty
+                                          ? name
+                                                .substring(
+                                                  0,
+                                                  name.length > 2
+                                                      ? 2
+                                                      : name.length,
+                                                )
+                                                .toUpperCase()
+                                          : '?',
+                                      style: const TextStyle(
+                                        color: m8White,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : null,
                             ),
                             title: Text(
                               name,
@@ -3078,8 +3090,12 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                               ),
                             ),
                             subtitle: Text(
-                              pin,
-                              style: const TextStyle(color: m8TextMuted),
+                              'M8 PIN: $pin • ${role == 'owner' ? 'Pemilik grup' : 'Anggota'}',
+                              style: const TextStyle(
+                                color: m8TextMuted,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             trailing: role == 'owner'
                                 ? const Icon(
