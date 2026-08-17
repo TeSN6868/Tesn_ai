@@ -12,9 +12,11 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'm8_call_service.dart';
 import 'm8_notification_service.dart';
+import 'm8_voice_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 
@@ -4577,6 +4579,14 @@ class ChatRoomPage extends StatefulWidget {
 
 class _ChatRoomPageState extends State<ChatRoomPage> {
   final AudioPlayer _chatHeyPlayer = AudioPlayer();
+
+  // B'Jo Voice Message
+  final M8VoiceService _voiceService = M8VoiceService();
+  bool _isRecordingVoice = false;
+  DateTime? _voiceRecordingStartedAt;
+  Timer? _voiceRecordingTimer;
+  int _voiceRecordingSeconds = 0;
+
   bool _chatLoadedOnce = false;
   final Set<String> _heyPlayedMessageIds = <String>{};
   final Set<String> _notificationShownMessageIds = <String>{};
@@ -4693,14 +4703,163 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     }
   }
 
+  Future<void> startVoiceRecording() async {
+    if (_isRecordingVoice || sending) return;
+
+    try {
+      final allowed = await _voiceService.hasPermission();
+
+      if (!allowed) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Izin mikrofon belum diberikan.'),
+          ),
+        );
+        return;
+      }
+
+      final directory = await getTemporaryDirectory();
+
+      final filePath =
+          '${directory.path}/bjo_voice_${DateTime.now().microsecondsSinceEpoch}.m4a';
+
+      await _voiceService.start(filePath);
+
+      if (!mounted) return;
+
+      setState(() {
+        _isRecordingVoice = true;
+        _voiceRecordingStartedAt = DateTime.now();
+        _voiceRecordingSeconds = 0;
+      });
+
+      _voiceRecordingTimer?.cancel();
+      _voiceRecordingTimer = Timer.periodic(
+        const Duration(seconds: 1),
+        (_) {
+          if (!mounted || !_isRecordingVoice) return;
+
+          final started = _voiceRecordingStartedAt;
+
+          if (started == null) return;
+
+          setState(() {
+            _voiceRecordingSeconds =
+                DateTime.now().difference(started).inSeconds;
+          });
+        },
+      );
+    } catch (e) {
+      debugPrint('[BJO VOICE] START ERROR: $e');
+
+      _voiceRecordingTimer?.cancel();
+      _voiceRecordingTimer = null;
+
+      if (mounted) {
+        setState(() {
+          _isRecordingVoice = false;
+          _voiceRecordingStartedAt = null;
+          _voiceRecordingSeconds = 0;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memulai rekaman suara: $e'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<String?> stopVoiceRecording() async {
+    if (!_isRecordingVoice) return null;
+
+    try {
+      _voiceRecordingTimer?.cancel();
+      _voiceRecordingTimer = null;
+
+      final path = await _voiceService.stop();
+
+      if (mounted) {
+        setState(() {
+          _isRecordingVoice = false;
+          _voiceRecordingStartedAt = null;
+        });
+      }
+
+      if (!_voiceService.fileExists(path)) {
+        throw Exception('File rekaman tidak ditemukan.');
+      }
+
+      debugPrint('[BJO VOICE] RECORDING READY: $path');
+
+      return path;
+    } catch (e) {
+      debugPrint('[BJO VOICE] STOP ERROR: $e');
+
+      if (mounted) {
+        setState(() {
+          _isRecordingVoice = false;
+          _voiceRecordingStartedAt = null;
+          _voiceRecordingSeconds = 0;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menghentikan rekaman: $e'),
+          ),
+        );
+      }
+
+      return null;
+    }
+  }
+
+  Future<void> cancelVoiceRecording() async {
+    if (!_isRecordingVoice) return;
+
+    try {
+      _voiceRecordingTimer?.cancel();
+      _voiceRecordingTimer = null;
+
+      await _voiceService.cancel();
+
+      if (mounted) {
+        setState(() {
+          _isRecordingVoice = false;
+          _voiceRecordingStartedAt = null;
+          _voiceRecordingSeconds = 0;
+        });
+      }
+    } catch (e) {
+      debugPrint('[BJO VOICE] CANCEL ERROR: $e');
+    }
+  }
+
+  String _formatVoiceDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${secs.toString().padLeft(2, '0')}';
+  }
+
   @override
   void dispose() {
+    _voiceRecordingTimer?.cancel();
+    _voiceRecordingTimer = null;
+
     typingTimer?.cancel();
     typingPollTimer?.cancel();
     messagePollTimer?.cancel();
+
     controller.dispose();
     _chatHeyPlayer.dispose();
     _chatScrollController.dispose();
+    _voiceService.dispose();
+
     super.dispose();
   }
 
@@ -6164,27 +6323,141 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: IconButton.filled(
-                                onPressed: sending ? null : sendMessage,
-                                style: IconButton.styleFrom(
-                                  backgroundColor: m8Blue,
-                                  foregroundColor: Colors.white,
-                                ),
-                                icon: sending
-                                    ? const SizedBox(
-                                        width: 19,
-                                        height: 19,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
+
+                            if (_isRecordingVoice)
+                              Expanded(
+                                child: Container(
+                                  height: 40,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: m8WhiteSoft,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: m8Blue.withValues(alpha: 0.35),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.fiber_manual_record_rounded,
+                                        color: m8Blue,
+                                        size: 13,
+                                      ),
+                                      const SizedBox(width: 7),
+                                      Text(
+                                        _formatVoiceDuration(
+                                          _voiceRecordingSeconds,
                                         ),
-                                      )
-                                    : const Icon(Icons.send_rounded, size: 20),
+                                        style: const TextStyle(
+                                          color: m8Text,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      GestureDetector(
+                                        onTap: cancelVoiceRecording,
+                                        child: const Icon(
+                                          Icons.delete_outline_rounded,
+                                          color: m8TextMuted,
+                                          size: 22,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      GestureDetector(
+                                        onTap: () async {
+                                          final path =
+                                              await stopVoiceRecording();
+
+                                          if (path != null && mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Rekaman suara siap dikirim.',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        child: const Icon(
+                                          Icons.stop_circle_rounded,
+                                          color: m8Blue,
+                                          size: 28,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            else ...[
+                              SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: GestureDetector(
+                                  onLongPressStart: (_) {
+                                    startVoiceRecording();
+                                  },
+                                  onLongPressEnd: (_) async {
+                                    if (_isRecordingVoice) {
+                                      final path =
+                                          await stopVoiceRecording();
+
+                                      if (path != null && mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Rekaman suara siap dikirim.',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: m8WhiteSoft,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.mic_rounded,
+                                      color: m8Blue,
+                                      size: 21,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 4),
+                              SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: IconButton.filled(
+                                  onPressed:
+                                      sending ? null : sendMessage,
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: m8Blue,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  icon: sending
+                                      ? const SizedBox(
+                                          width: 19,
+                                          height: 19,
+                                          child:
+                                              CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.send_rounded,
+                                          size: 20,
+                                        ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ],
