@@ -9086,6 +9086,97 @@ class BJoProfilePage extends StatelessWidget {
 
   String get pin => user['m8_pin']?.toString() ?? user['pin']?.toString() ?? '';
 
+  void _showPin(BuildContext context) {
+    if (pin.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("PIN B'Jo belum tersedia."),
+        ),
+      );
+      return;
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.pin_rounded),
+              SizedBox(width: 10),
+              Text(
+                "PIN B'Jo",
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "PIN ini adalah identitas unik akun B'Jo kamu.",
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: m8Blue.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SelectableText(
+                  pin,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                "Bagikan PIN hanya kepada orang yang ingin kamu hubungi melalui B'Jo.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: m8TextMuted,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton.icon(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: pin));
+                if (dialogContext.mounted) {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    const SnackBar(
+                      content: Text("PIN B'Jo berhasil disalin."),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.copy_rounded),
+              label: const Text("Salin PIN"),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Tutup"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _comingSoon(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$title akan diaktifkan berikutnya.')),
@@ -9214,7 +9305,7 @@ class BJoProfilePage extends StatelessWidget {
             icon: Icons.pin_rounded,
             title: "PIN B'Jo",
             subtitle: 'Kelola PIN akun B’Jo',
-            onTap: () => _comingSoon(context, "PIN B'Jo"),
+            onTap: () => _showPin(context),
           ),
 
           _securityItem(
