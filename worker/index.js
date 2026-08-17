@@ -1699,8 +1699,8 @@ export default {
         }, 404);
       }
 
-      const now = Date.now();
-      const activeTimeout = now - 60000;
+      const currentTime = Date.now();
+      const activeTimeout = currentTime - 60000;
 
 // Bersihkan sesi panggilan yang sudah stale agar crash/force-close
 // tidak mengunci pengguna pada status ringing/accepted.
@@ -1714,7 +1714,7 @@ export default {
             caller_pin = ?
             OR callee_pin = ?
           )
-      `).bind(now, activeTimeout, callerPin, callerPin).run();
+      `).bind(currentTime, activeTimeout, callerPin, callerPin).run();
 
       const active = await env.DB.prepare(`
         SELECT id
