@@ -103,6 +103,11 @@ const m8BlueLight = Color(0xFF3D7EEB);
 
 const m8White = Color(0xFFFFFFFF);
 const m8WhiteSoft = Color(0xFFF6F8F9);
+const bjoChatBackground = Color(0xFFF4F8FC);
+const bjoChatBubble = Color(0xFFDCEBFA);
+const bjoChatNavy = Color(0xFF12304A);
+const bjoPearlWhite = Color(0xFFF8FBFF);
+
 
 const m8Text = Color(0xFF172331);
 const m8TextMuted = Color(0xFF6D7B87);
@@ -3864,7 +3869,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
           child: Container(
             padding: const EdgeInsets.fromLTRB(13, 9, 13, 7),
             decoration: BoxDecoration(
-              color: mine ? m8Blue : m8White,
+              color: mine ? bjoChatBubble : bjoChatBubble,
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(16),
                 topRight: const Radius.circular(16),
@@ -3873,7 +3878,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
               ),
               border: mine
                   ? null
-                  : Border.all(color: m8Blue.withValues(alpha: 0.10)),
+                  : Border.all(color: m8Blue.withValues(alpha: 0.12)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -3893,7 +3898,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                 Text(
                   text,
                   style: TextStyle(
-                    color: mine ? m8White : m8Text,
+                    color: bjoChatNavy,
                     fontSize: 14,
                   ),
                 ),
@@ -3921,9 +3926,9 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: m8WhiteSoft,
+      backgroundColor: bjoChatBackground,
       appBar: AppBar(
-        backgroundColor: m8White,
+        backgroundColor: m8BlueDark,
         foregroundColor: m8Text,
         elevation: 0,
         titleSpacing: 0,
@@ -3952,14 +3957,17 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: m8Text,
+                        color: bjoPearlWhite,
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
                     ),
                     Text(
                       '${members.length} anggota',
-                      style: const TextStyle(color: m8TextMuted, fontSize: 10),
+                      style: TextStyle(
+                      color: bjoPearlWhite.withValues(alpha: 0.72),
+                      fontSize: 10,
+                    ),
                     ),
                   ],
                 ),
@@ -3978,43 +3986,58 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
       body: Column(
         children: [
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: loadGroup,
-              child: loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : messages.isEmpty
-                  ? ListView(
-                      children: const [
-                        SizedBox(height: 180),
-                        Icon(Icons.forum_outlined, size: 64, color: m8Blue),
-                        SizedBox(height: 16),
-                        Center(
-                          child: Text(
-                            'Belum ada pesan',
-                            style: TextStyle(
-                              color: m8Text,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18,
+            child: Container(
+              color: bjoChatBackground,
+              child: RefreshIndicator(
+                onRefresh: loadGroup,
+                child: loading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: m8Blue,
+                        ),
+                      )
+                    : messages.isEmpty
+                        ? ListView(
+                            children: const [
+                              SizedBox(height: 180),
+                              Icon(
+                                Icons.forum_outlined,
+                                size: 64,
+                                color: m8Blue,
+                              ),
+                              SizedBox(height: 16),
+                              Center(
+                                child: Text(
+                                  'Belum ada pesan',
+                                  style: TextStyle(
+                                    color: m8Text,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 6),
+                              Center(
+                                child: Text(
+                                  'Mulai percakapan di grup ini.',
+                                  style: TextStyle(
+                                    color: m8TextMuted,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10,
                             ),
+                            itemCount: messages.length,
+                            itemBuilder: (context, index) {
+                              return _buildMessage(messages[index]);
+                            },
                           ),
-                        ),
-                        SizedBox(height: 6),
-                        Center(
-                          child: Text(
-                            'Mulai percakapan di grup ini.',
-                            style: TextStyle(color: m8TextMuted),
-                          ),
-                        ),
-                      ],
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        return _buildMessage(messages[index]);
-                      },
-                    ),
+              ),
             ),
           ),
           SafeArea(
