@@ -1699,7 +1699,22 @@ export default {
         }, 404);
       }
 
-      const activeTimeout = Date.now() - 60000;
+      const now = Date.now();
+      const activeTimeout = now - 60000;
+
+// Bersihkan sesi panggilan yang sudah stale agar crash/force-close
+// tidak mengunci pengguna pada status ringing/accepted.
+      await env.DB.prepare(`
+        UPDATE call_sessions
+        SET status = 'ended', updated_at = ?
+        WHERE
+          status IN ('ringing', 'accepted')
+          AND updated_at <= ?
+          AND (
+            caller_pin = ?
+            OR callee_pin = ?
+          )
+      `).bind(now, activeTimeout, callerPin, callerPin).run();
 
       const active = await env.DB.prepare(`
         SELECT id
@@ -1768,9 +1783,10 @@ export default {
         FROM call_sessions
         WHERE callee_pin = ?
           AND status = 'ringing'
+          AND updated_at > ?
         ORDER BY created_at DESC
         LIMIT 5
-      `).bind(pin).all();
+      `).bind(pin, Date.now() - 60000).all();
 
       return json({
         success: true,
