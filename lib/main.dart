@@ -4055,6 +4055,11 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                 children: [
                   IconButton(
                     tooltip: 'Lampiran',
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
                     onPressed: sending
                         ? null
                         : () {
@@ -4223,7 +4228,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 3),
                   FloatingActionButton(
                     mini: true,
                     elevation: 0,
