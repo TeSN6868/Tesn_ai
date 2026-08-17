@@ -45,22 +45,37 @@ export default {
         }
 
         const contentType =
-          request.headers.get("content-type") || "";
+          (request.headers.get("content-type") || "")
+            .split(";")[0]
+            .trim()
+            .toLowerCase();
 
-        if (!contentType.startsWith("image/")) {
+        const allowedTypes = new Set([
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "image/gif",
+          "video/mp4",
+          "video/webm",
+          "video/quicktime",
+        ]);
+
+        if (!allowedTypes.has(contentType)) {
           return json({
             success: false,
-            error: "File harus berupa gambar.",
+            error: "Format media tidak didukung. Gunakan JPG, PNG, WEBP, GIF, MP4, WEBM, atau MOV.",
           }, 400);
         }
+
+        const maxSize = 25 * 1024 * 1024;
 
         const contentLength =
           Number(request.headers.get("content-length") || 0);
 
-        if (contentLength > 5 * 1024 * 1024) {
+        if (contentLength > maxSize) {
           return json({
             success: false,
-            error: "Ukuran foto maksimal 5 MB.",
+            error: "Ukuran media maksimal 25 MB.",
           }, 413);
         }
 
@@ -69,24 +84,26 @@ export default {
         if (!body || body.byteLength === 0) {
           return json({
             success: false,
-            error: "File gambar kosong.",
+            error: "File media kosong.",
           }, 400);
         }
 
-        if (body.byteLength > 5 * 1024 * 1024) {
+        if (body.byteLength > maxSize) {
           return json({
             success: false,
-            error: "Ukuran foto maksimal 5 MB.",
+            error: "Ukuran media maksimal 25 MB.",
           }, 413);
         }
 
-        const ext = contentType === "image/png"
-          ? "png"
-          : contentType === "image/webp"
-              ? "webp"
-              : contentType === "image/gif"
-                  ? "gif"
-                  : "jpg";
+        const ext = {
+          "image/jpeg": "jpg",
+          "image/png": "png",
+          "image/webp": "webp",
+          "image/gif": "gif",
+          "video/mp4": "mp4",
+          "video/webm": "webm",
+          "video/quicktime": "mov",
+        }[contentType] || "bin";
 
         const key =
           `messages/${Date.now()}-${crypto.randomUUID()}.${ext}`;
