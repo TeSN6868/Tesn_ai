@@ -349,7 +349,7 @@ class _LoginPageState extends State<LoginPage> {
 
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => HomePage(
+            builder: (_) => BJoMainShell(
               token: token,
               user: Map<String, dynamic>.from(data['user']),
             ),
@@ -1017,8 +1017,571 @@ class _RegisterPageState extends State<RegisterPage> {
 }
 
 // ============================================================
+
+// ============================================================
+// B'JO MAIN SHELL
+// ============================================================
+
+class BJoMainShell extends StatefulWidget {
+  final String token;
+  final Map<String, dynamic> user;
+
+  const BJoMainShell({
+    super.key,
+    required this.token,
+    required this.user,
+  });
+
+  @override
+  State<BJoMainShell> createState() => _BJoMainShellState();
+}
+
+class _BJoMainShellState extends State<BJoMainShell> {
+  int currentIndex = 0;
+
+  String get myPin =>
+      widget.user['m8_pin']?.toString() ??
+      widget.user['pin']?.toString() ??
+      '';
+
+  String get title {
+    switch (currentIndex) {
+      case 0:
+        return "B'Jo Chat";
+      case 1:
+        return "B'Jo Story";
+      case 2:
+        return "B'Jo Grup";
+      case 3:
+        return "B'Jo Beranda";
+      default:
+        return "B'Jo";
+    }
+  }
+
+  Widget page() {
+    switch (currentIndex) {
+      case 0:
+        return ChatsPage(
+          token: widget.token,
+          myPin: myPin,
+        );
+
+      case 1:
+        return StoryPage(
+          user: widget.user,
+        );
+
+      case 2:
+        return BJoGroupsPage(
+          token: widget.token,
+          myPin: myPin,
+        );
+
+      case 3:
+        return BJoBerandaPage(
+          user: widget.user,
+        );
+
+      default:
+        return ChatsPage(
+          token: widget.token,
+          myPin: myPin,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        elevation: 0,
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        actions: [
+          IconButton(
+            tooltip: "Profil B'Jo",
+            icon: const Icon(Icons.person_rounded),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => BJoProfilePage(
+                    user: widget.user,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: M8DenimBackground(
+        child: page(),
+      ),
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: m8Blue,
+        indicatorColor: m8BlueDark,
+        surfaceTintColor: Colors.transparent,
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(
+              Icons.chat_bubble_outline,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.chat_bubble,
+              color: m8White,
+            ),
+            label: 'Chat',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.auto_awesome_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.auto_awesome,
+              color: m8White,
+            ),
+            label: 'Story',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.groups_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.groups,
+              color: m8White,
+            ),
+            label: 'Grup',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.dashboard_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.dashboard,
+              color: m8White,
+            ),
+            label: 'Beranda',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// B'JO BERANDA
+// ============================================================
+
+class BJoBerandaPage extends StatelessWidget {
+  final Map<String, dynamic> user;
+
+  const BJoBerandaPage({
+    super.key,
+    required this.user,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(18, 20, 18, 30),
+      children: [
+        const Text(
+          "B'Jo",
+          style: TextStyle(
+            color: m8White,
+            fontSize: 30,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Selamat datang, ${user['name']?.toString() ?? "Pengguna"}',
+          style: const TextStyle(
+            color: m8BlueLight,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 24),
+        _BJoBerandaCard(
+          Icons.calendar_month_rounded,
+          'Agenda',
+          'Atur jadwal dan kegiatan',
+        ),
+        _BJoBerandaCard(
+          Icons.menu_book_rounded,
+          'Jurnal',
+          'Catatan pribadi',
+        ),
+        _BJoBerandaCard(
+          Icons.trending_up_rounded,
+          'Saham',
+          'Pantau pergerakan saham',
+        ),
+        _BJoBerandaCard(
+          Icons.currency_exchange_rounded,
+          'Kurs',
+          'Pantau nilai tukar rupiah',
+        ),
+        _BJoBerandaCard(
+          Icons.account_balance_wallet_rounded,
+          'Keuangan',
+          'Kelola keuangan pribadi',
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: m8BlueDark,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: m8BlueLight.withValues(alpha: 0.45),
+            ),
+          ),
+          child: const Row(
+            children: [
+              Icon(
+                Icons.workspace_premium_rounded,
+                color: Colors.amber,
+                size: 34,
+              ),
+              SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "B'Jo Premium",
+                      style: TextStyle(
+                        color: m8White,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'Analitik • Private Vault • Smart Alert',
+                      style: TextStyle(
+                        color: m8BlueLight,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: m8White,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BJoBerandaCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _BJoBerandaCard(
+    this.icon,
+    this.title,
+    this.subtitle,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: m8Blue.withValues(alpha: 0.35),
+        ),
+      ),
+      child: ListTile(
+        leading: Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: m8BlueDark,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            icon,
+            color: m8White,
+          ),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: m8BlueDark,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(
+            color: m8TextMuted,
+            fontSize: 12,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: m8Blue,
+        ),
+      ),
+    );
+  }
+}
+
 // HOME
 // ============================================================
+
+// ============================================================
+// B'JO GROUPS PAGE
+// ============================================================
+
+class BJoGroupsPage extends StatefulWidget {
+  final String token;
+  final String myPin;
+
+  const BJoGroupsPage({
+    super.key,
+    required this.token,
+    required this.myPin,
+  });
+
+  @override
+  State<BJoGroupsPage> createState() => _BJoGroupsPageState();
+}
+
+class _BJoGroupsPageState extends State<BJoGroupsPage> {
+  bool loading = true;
+  List<Map<String, dynamic>> groups = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGroups();
+  }
+
+  Future<void> _loadGroups() async {
+    if (mounted) {
+      setState(() {
+        loading = true;
+      });
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/groups?m8_pin=${Uri.encodeComponent(widget.myPin)}',
+        ),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Gagal mengambil daftar grup.');
+      }
+
+      final data = jsonDecode(response.body);
+      final list = data['groups'];
+
+      if (list is List) {
+        groups = list
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      } else {
+        groups = [];
+      }
+    } catch (e) {
+      debugPrint('BJoGroupsPage error: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memuat grup: $e'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    }
+  }
+
+  void _openGroup(Map<String, dynamic> group) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => M8GroupChatPage(
+          token: widget.token,
+          myPin: widget.myPin,
+          group: group,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: m8White,
+        ),
+      );
+    }
+
+    if (groups.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _loadGroups,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(24, 80, 24, 40),
+          children: const [
+            Icon(
+              Icons.groups_rounded,
+              size: 78,
+              color: m8White,
+            ),
+            SizedBox(height: 20),
+            Text(
+              "Belum ada grup",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: m8White,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Grup B'Jo yang kamu ikuti akan muncul di sini.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: m8BlueLight,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadGroups,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 30),
+        itemCount: groups.length,
+        itemBuilder: (context, index) {
+          final group = groups[index];
+
+          final name =
+              group['name']?.toString().trim().isNotEmpty == true
+                  ? group['name'].toString()
+                  : "Grup B'Jo";
+
+          final description =
+              group['description']?.toString().trim() ?? '';
+
+          final memberCount =
+              group['member_count']?.toString() ?? '0';
+
+          final photoUrl =
+              group['photo_url']?.toString().trim() ?? '';
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: m8Blue.withValues(alpha: 0.18),
+              ),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 6,
+              ),
+              leading: CircleAvatar(
+                radius: 27,
+                backgroundColor: m8BlueDark,
+                backgroundImage: photoUrl.isNotEmpty
+                    ? NetworkImage(photoUrl)
+                    : null,
+                child: photoUrl.isEmpty
+                    ? const Icon(
+                        Icons.groups_rounded,
+                        color: m8White,
+                        size: 28,
+                      )
+                    : null,
+              ),
+              title: Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: m8BlueDark,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
+                ),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  description.isNotEmpty
+                      ? '$memberCount anggota • $description'
+                      : '$memberCount anggota',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: m8TextMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              trailing: const Icon(
+                Icons.chevron_right_rounded,
+                color: m8Blue,
+              ),
+              onTap: () => _openGroup(group),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   final String token;
@@ -6544,6 +7107,246 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+
+// ============================================================
+// B'JO PROFILE
+// ============================================================
+
+class BJoProfilePage extends StatelessWidget {
+  final Map<String, dynamic> user;
+
+  const BJoProfilePage({
+    super.key,
+    required this.user,
+  });
+
+  String get name =>
+      user['name']?.toString().trim().isNotEmpty == true
+          ? user['name'].toString()
+          : "Pengguna B'Jo";
+
+  String get pin =>
+      user['m8_pin']?.toString() ??
+      user['pin']?.toString() ??
+      '';
+
+  void _comingSoon(BuildContext context, String title) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$title akan diaktifkan berikutnya.'),
+      ),
+    );
+  }
+
+  Widget _securityItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: m8Blue.withValues(alpha: 0.16),
+        ),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 5,
+        ),
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: m8BlueDark,
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Icon(
+            icon,
+            color: m8White,
+          ),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: m8BlueDark,
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(
+            color: m8TextMuted,
+            fontSize: 11,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: m8Blue,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return M8DenimBackground(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
+        children: [
+          // HEADER PROFIL
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: m8BlueDark,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: m8BlueLight.withValues(alpha: 0.35),
+              ),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: m8White,
+                  child: Text(
+                    name.isNotEmpty
+                        ? name.substring(0, 1).toUpperCase()
+                        : 'B',
+                    style: const TextStyle(
+                      color: m8BlueDark,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: m8White,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        pin.isEmpty
+                            ? "PIN B'Jo belum tersedia"
+                            : "PIN B'Jo • $pin",
+                        style: const TextStyle(
+                          color: m8BlueLight,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          const Text(
+            'KEAMANAN',
+            style: TextStyle(
+              color: m8White,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          _securityItem(
+            context,
+            icon: Icons.pin_rounded,
+            title: "PIN B'Jo",
+            subtitle: 'Kelola PIN akun B’Jo',
+            onTap: () => _comingSoon(context, "PIN B'Jo"),
+          ),
+
+          _securityItem(
+            context,
+            icon: Icons.devices_rounded,
+            title: 'Otorisasi perangkat',
+            subtitle: 'Kelola perangkat yang dipercaya',
+            onTap: () => _comingSoon(context, 'Otorisasi perangkat'),
+          ),
+
+          _securityItem(
+            context,
+            icon: Icons.phonelink_lock_rounded,
+            title: 'Sesi aktif',
+            subtitle: 'Lihat perangkat yang sedang login',
+            onTap: () => _comingSoon(context, 'Sesi aktif'),
+          ),
+
+          _securityItem(
+            context,
+            icon: Icons.verified_user_rounded,
+            title: 'Verifikasi server',
+            subtitle: 'Periksa status koneksi dan server B’Jo',
+            onTap: () => _comingSoon(context, 'Verifikasi server'),
+          ),
+
+          _securityItem(
+            context,
+            icon: Icons.lock_rounded,
+            title: 'Kunci aplikasi',
+            subtitle: 'Lindungi aplikasi dengan penguncian',
+            onTap: () => _comingSoon(context, 'Kunci aplikasi'),
+          ),
+
+          _securityItem(
+            context,
+            icon: Icons.lock_person_rounded,
+            title: 'Private Vault',
+            subtitle: 'Ruang pribadi untuk data sensitif',
+            onTap: () => _comingSoon(context, 'Private Vault'),
+          ),
+
+          _securityItem(
+            context,
+            icon: Icons.login_rounded,
+            title: 'Login perangkat baru',
+            subtitle: 'Tambahkan perangkat baru secara aman',
+            onTap: () => _comingSoon(context, 'Login perangkat baru'),
+          ),
+
+          const SizedBox(height: 8),
+
+          _securityItem(
+            context,
+            icon: Icons.logout_rounded,
+            title: 'Logout semua perangkat',
+            subtitle: 'Keluar dari seluruh sesi B’Jo',
+            onTap: () => _comingSoon(
+              context,
+              'Logout semua perangkat',
+            ),
+          ),
+        ],
       ),
     );
   }
