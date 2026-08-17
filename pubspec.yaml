@@ -72,7 +72,6 @@ flutter:
   assets:
     - assets/m8_icon-final.png
     - assets/sounds/m8_hey.wav
-    - assets/sounds/m8_ringtone.wav
     - assets/sounds/m8_ringtone_02.wav
     - assets/sounds/m8_ringtone_03.wav
     - assets/sounds/m8_ringtone_04.wav

@@ -1950,12 +1950,27 @@ class _HomePageState extends State<HomePage> {
   Future<void> _startIncomingRingtone() async {
     try {
       await _incomingRingtonePlayer.stop();
+
+      final prefs = await SharedPreferences.getInstance();
+      final selected = prefs.getString('m8_selected_ringtone') ?? "B'Jo Tone 01";
+
+      const ringtoneAssets = <String, String>{
+        "B'Jo Tone 01": 'sounds/m8_ringtone_02.wav',
+        "B'Jo Tone 02": 'sounds/m8_ringtone_03.wav',
+        "B'Jo Tone 03": 'sounds/m8_ringtone_04.wav',
+        "B'Jo Tone 04": 'sounds/m8_ringtone_05.wav',
+        "B'Jo Tone 05": 'sounds/m8_ringtone_06.wav',
+      };
+
+      final asset = ringtoneAssets[selected] ?? 'sounds/m8_ringtone_02.wav';
+
       await _incomingRingtonePlayer.setReleaseMode(ReleaseMode.loop);
       await _incomingRingtonePlayer.setVolume(1.0);
-      await _incomingRingtonePlayer.play(AssetSource('sounds/m8_ringtone.wav'));
-      debugPrint('M8 RINGTONE: START');
+      await _incomingRingtonePlayer.play(AssetSource(asset));
+
+      debugPrint("B'Jo RINGTONE: $selected -> $asset");
     } catch (e) {
-      debugPrint('M8 RINGTONE ERROR: $e');
+      debugPrint('B\'Jo RINGTONE ERROR: $e');
     }
   }
 
@@ -2299,15 +2314,14 @@ class _SettingsPageState extends State<SettingsPage> {
   bool soundEnabled = true;
   bool vibrationEnabled = true;
 
-  String selectedRingtone = 'M8 Sound Pack 01';
+  String selectedRingtone = "B'Jo Tone 01";
 
   static const List<Map<String, String>> ringtonePacks = [
-    {'name': 'M8 Sound Pack 01', 'asset': 'sounds/m8_ringtone.wav'},
-    {'name': 'M8 Sound Pack 02', 'asset': 'sounds/m8_ringtone_02.wav'},
-    {'name': 'M8 Sound Pack 03', 'asset': 'sounds/m8_ringtone_03.wav'},
-    {'name': 'M8 Sound Pack 04', 'asset': 'sounds/m8_ringtone_04.wav'},
-    {'name': 'M8 Sound Pack 05', 'asset': 'sounds/m8_ringtone_05.wav'},
-    {'name': 'M8 Sound Pack 06', 'asset': 'sounds/m8_ringtone_06.wav'},
+    {'name': "B'Jo Tone 01", 'asset': 'sounds/m8_ringtone_02.wav'},
+    {'name': "B'Jo Tone 02", 'asset': 'sounds/m8_ringtone_03.wav'},
+    {'name': "B'Jo Tone 03", 'asset': 'sounds/m8_ringtone_04.wav'},
+    {'name': "B'Jo Tone 04", 'asset': 'sounds/m8_ringtone_05.wav'},
+    {'name': "B'Jo Tone 05", 'asset': 'sounds/m8_ringtone_06.wav'},
   ];
 
   Future<void> _loadRingtonePreference() async {
@@ -2521,7 +2535,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: const Icon(Icons.music_note_rounded, color: m8Blue),
             title: const Text(
-              'Nada dering M8',
+              "Nada Dering B'Jo",
               style: TextStyle(color: m8Text, fontWeight: FontWeight.w700),
             ),
             subtitle: Text(
@@ -2540,7 +2554,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       children: [
                         const ListTile(
                           title: Text(
-                            'Nada Dering M8',
+                            "Nada Dering B'Jo",
                             style: TextStyle(
                               color: m8Blue,
                               fontSize: 19,
