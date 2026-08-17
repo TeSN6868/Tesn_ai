@@ -2366,17 +2366,37 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _testHeySound() async {
+    debugPrint("B'Jo AUDIO TEST: mulai");
+
     try {
       await _heyPlayer.stop();
 
+      debugPrint("B'Jo AUDIO TEST: player stopped");
+
       await _heyPlayer.setVolume(1.0);
-      await _heyPlayer.play(AssetSource('sounds/m8_hey.wav'));
-    } catch (e) {
+
+      debugPrint("B'Jo AUDIO TEST: volume=1.0");
+
+      await _heyPlayer.play(
+        AssetSource('sounds/m8_hey.wav'),
+      );
+
+      debugPrint("B'Jo AUDIO TEST: play() berhasil dipanggil");
+
+      _heyPlayer.onPlayerStateChanged.listen((state) {
+        debugPrint("B'Jo AUDIO TEST STATE: $state");
+      });
+    } catch (e, stack) {
+      debugPrint("B'Jo AUDIO TEST ERROR: $e");
+      debugPrint("B'Jo AUDIO TEST STACK: $stack");
+
       if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Nada Hi! gagal diputar: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Nada Hi! gagal diputar: $e'),
+        ),
+      );
     }
   }
 
