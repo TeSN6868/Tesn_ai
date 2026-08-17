@@ -23,6 +23,16 @@ async function ensureStoryTables(db) {
       UNIQUE(story_id, viewer_pin)
     )
   `).run();
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS story_likes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      story_id TEXT NOT NULL,
+      user_pin TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      UNIQUE(story_id, user_pin)
+    )
+  `).run();
 }
 
 const corsHeaders = {
@@ -417,6 +427,313 @@ export default {
       }
 
       // ============================================================
+      // B'JO STORY - LOVE / UNLOVE
+      // ============================================================
+      if (url.pathname === "/api/stories/love" && request.method === "POST") {
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        await ensureStoryTables(env.DB);
+
+        const body = await request.json();
+
+        const storyId = String(body.story_id || "").trim();
+        const userPin = String(
+          body.m8_pin || body.user_pin || ""
+        ).trim();
+
+        if (!storyId || !userPin) {
+          return json({
+            success: false,
+            error: "story_id dan m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const story = await env.DB.prepare(`
+          SELECT story_id, user_pin
+          FROM stories
+          WHERE story_id = ?
+            AND is_active = 1
+          LIMIT 1
+        `).bind(storyId).first();
+
+        if (!story) {
+          return json({
+            success: false,
+            error: "Moment tidak ditemukan.",
+          }, 404);
+        }
+
+        const existing = await env.DB.prepare(`
+          SELECT id
+          FROM story_likes
+          WHERE story_id = ?
+            AND user_pin = ?
+          LIMIT 1
+        `).bind(storyId, userPin).first();
+
+        let liked;
+
+        if (existing) {
+          await env.DB.prepare(`
+            DELETE FROM story_likes
+            WHERE story_id = ?
+              AND user_pin = ?
+          `).bind(storyId, userPin).run();
+
+          liked = false;
+        } else {
+          await env.DB.prepare(`
+            INSERT INTO story_likes
+              (story_id, user_pin, created_at)
+            VALUES (?, ?, ?)
+          `).bind(
+            storyId,
+            userPin,
+            Math.floor(Date.now() / 1000)
+          ).run();
+
+          liked = true;
+        }
+
+        const count = await env.DB.prepare(`
+          SELECT COUNT(*) AS total
+          FROM story_likes
+          WHERE story_id = ?
+        `).bind(storyId).first();
+
+        return json({
+          success: true,
+          liked,
+          like_count: Number(count?.total || 0),
+        });
+      }
+
+      // ============================================================
+      // B'JO STORY - RECORD VIEW
+      // ============================================================
+      if (url.pathname === "/api/stories/view" && request.method === "POST") {
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        await ensureStoryTables(env.DB);
+
+        const body = await request.json();
+
+        const storyId = String(body.story_id || "").trim();
+        const viewerPin = String(
+          body.m8_pin || body.viewer_pin || ""
+        ).trim();
+
+        if (!storyId || !viewerPin) {
+          return json({
+            success: false,
+            error: "story_id dan m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const story = await env.DB.prepare(`
+          SELECT story_id
+          FROM stories
+          WHERE story_id = ?
+            AND is_active = 1
+          LIMIT 1
+        `).bind(storyId).first();
+
+        if (!story) {
+          return json({
+            success: false,
+            error: "Moment tidak ditemukan.",
+          }, 404);
+        }
+
+        const existing = await env.DB.prepare(`
+          SELECT id
+          FROM story_viewers
+          WHERE story_id = ?
+            AND viewer_pin = ?
+          LIMIT 1
+        `).bind(storyId, viewerPin).first();
+
+        if (!existing) {
+          await env.DB.prepare(`
+            INSERT INTO story_viewers
+              (story_id, viewer_pin, created_at)
+            VALUES (?, ?, ?)
+          `).bind(
+            storyId,
+            viewerPin,
+            Math.floor(Date.now() / 1000)
+          ).run();
+
+          await env.DB.prepare(`
+            UPDATE stories
+            SET view_count = view_count + 1
+            WHERE story_id = ?
+          `).bind(storyId).run();
+        }
+
+        const count = await env.DB.prepare(`
+          SELECT COUNT(*) AS total
+          FROM story_viewers
+          WHERE story_id = ?
+        `).bind(storyId).first();
+
+        return json({
+          success: true,
+          view_count: Number(count?.total || 0),
+        });
+      }
+
+      // ============================================================
+      // B'JO STORY - GET VIEWERS
+      // ============================================================
+      if (url.pathname === "/api/stories/viewers" && request.method === "GET") {
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        await ensureStoryTables(env.DB);
+
+        const storyId = url.searchParams.get("story_id")?.trim();
+        const ownerPin = url.searchParams.get("m8_pin")?.trim();
+
+        if (!storyId || !ownerPin) {
+          return json({
+            success: false,
+            error: "story_id dan m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const story = await env.DB.prepare(`
+          SELECT story_id, user_pin
+          FROM stories
+          WHERE story_id = ?
+            AND is_active = 1
+          LIMIT 1
+        `).bind(storyId).first();
+
+        if (!story) {
+          return json({
+            success: false,
+            error: "Moment tidak ditemukan.",
+          }, 404);
+        }
+
+        if (String(story.user_pin) !== ownerPin) {
+          return json({
+            success: false,
+            error: "Hanya pemilik Moment yang dapat melihat daftar penonton.",
+          }, 403);
+        }
+
+        const result = await env.DB.prepare(`
+          SELECT
+            sv.viewer_pin,
+            u.name AS viewer_name,
+            sv.created_at
+          FROM story_viewers sv
+          LEFT JOIN users u
+            ON u.m8_pin = sv.viewer_pin
+          WHERE sv.story_id = ?
+          ORDER BY sv.created_at DESC
+        `).bind(storyId).all();
+
+        return json({
+          success: true,
+          viewers: result.results || [],
+        });
+      }
+
+      // ============================================================
+      // B'JO STORY - DELETE
+      // ============================================================
+      if (url.pathname === "/api/stories/delete" && request.method === "POST") {
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        await ensureStoryTables(env.DB);
+
+        const body = await request.json();
+
+        const storyId = String(body.story_id || "").trim();
+        const ownerPin = String(
+          body.m8_pin || body.user_pin || ""
+        ).trim();
+
+        if (!storyId || !ownerPin) {
+          return json({
+            success: false,
+            error: "story_id dan m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const story = await env.DB.prepare(`
+          SELECT
+            story_id,
+            user_pin,
+            media_url
+          FROM stories
+          WHERE story_id = ?
+            AND is_active = 1
+          LIMIT 1
+        `).bind(storyId).first();
+
+        if (!story) {
+          return json({
+            success: false,
+            error: "Moment tidak ditemukan.",
+          }, 404);
+        }
+
+        if (String(story.user_pin) !== ownerPin) {
+          return json({
+            success: false,
+            error: "Hanya pemilik Moment yang dapat menghapusnya.",
+          }, 403);
+        }
+
+        await env.DB.batch([
+          env.DB.prepare(`
+            UPDATE stories
+            SET is_active = 0
+            WHERE story_id = ?
+          `).bind(storyId),
+
+          env.DB.prepare(`
+            DELETE FROM story_viewers
+            WHERE story_id = ?
+          `).bind(storyId),
+
+          env.DB.prepare(`
+            DELETE FROM story_likes
+            WHERE story_id = ?
+          `).bind(storyId),
+        ]);
+
+        return json({
+          success: true,
+          message: "Moment berhasil dihapus.",
+          story_id: storyId,
+        });
+      }
+
+      // ============================================================
       // B'JO STORY FEED - GET
       // ============================================================
       if (url.pathname === "/api/stories" && request.method === "GET") {
@@ -449,14 +766,29 @@ export default {
             s.created_at,
             s.expires_at,
             s.is_active,
-            s.view_count
+            s.view_count,
+            (
+              SELECT COUNT(*)
+              FROM story_likes sl
+              WHERE sl.story_id = s.story_id
+            ) AS like_count,
+            CASE
+              WHEN EXISTS (
+                SELECT 1
+                FROM story_likes sl2
+                WHERE sl2.story_id = s.story_id
+                  AND sl2.user_pin = ?
+              )
+              THEN 1
+              ELSE 0
+            END AS liked
           FROM stories s
           INNER JOIN users u
             ON u.m8_pin = s.user_pin
           WHERE s.is_active = 1
           ORDER BY s.created_at DESC
           LIMIT 100
-        `).all();
+        `).bind(myPin).all();
 
         return json({
           success: true,

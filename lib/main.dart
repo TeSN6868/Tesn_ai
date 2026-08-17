@@ -1044,7 +1044,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
       case 0:
         return "B'Jo Chat";
       case 1:
-        return "B'Jo Story";
+        return "B'Jo Moments";
       case 2:
         return "B'Jo Grup";
       case 3:
@@ -1116,7 +1116,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
           NavigationDestination(
             icon: Icon(Icons.auto_awesome_outlined, color: m8WhiteSoft),
             selectedIcon: Icon(Icons.auto_awesome, color: m8White),
-            label: 'Story',
+            label: 'Moments',
           ),
           NavigationDestination(
             icon: Icon(Icons.groups_outlined, color: m8WhiteSoft),
@@ -6045,7 +6045,10 @@ class _M8StoryRail extends StatelessWidget {
                   onTap: onMyStoryTap,
                 ),
                 const SizedBox(width: 8),
-                const _M8StoryMiniCard(title: 'Story', subtitle: 'Lihat'),
+                const _M8StoryMiniCard(
+                  title: 'Moments',
+                  subtitle: 'Lihat Moments',
+                ),
               ],
             ),
           ),
@@ -6623,7 +6626,7 @@ class _BJoComposerCard extends StatelessWidget {
   }
 }
 
-class _BJoPostCard extends StatelessWidget {
+class _BJoPostCard extends StatefulWidget {
   final Map<String, dynamic> post;
   final String currentPin;
   final String timeAgo;
@@ -6635,7 +6638,392 @@ class _BJoPostCard extends StatelessWidget {
   });
 
   @override
+  State<_BJoPostCard> createState() => _BJoPostCardState();
+}
+
+class _BJoPostCardState extends State<_BJoPostCard> {
+  bool _working = false;
+
+  late bool liked;
+  late int likeCount;
+  late int viewCount;
+
+  String get storyId => widget.post['story_id']?.toString().trim() ?? '';
+
+  String get ownerPin => widget.post['user_pin']?.toString().trim() ?? '';
+
+  bool get isOwner =>
+      widget.currentPin.isNotEmpty && widget.currentPin == ownerPin;
+
+  @override
+  void initState() {
+    super.initState();
+
+    liked = _toBool(widget.post['liked']);
+
+    likeCount = int.tryParse(widget.post['like_count']?.toString() ?? '0') ?? 0;
+
+    viewCount = int.tryParse(widget.post['view_count']?.toString() ?? '0') ?? 0;
+  }
+
+  bool _toBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+
+    final text = value?.toString().toLowerCase().trim();
+
+    return text == 'true' || text == '1';
+  }
+
+  Future<void> _toggleLike() async {
+    if (_working || storyId.isEmpty || widget.currentPin.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _working = true;
+    });
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$apiBase/api/stories/love'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'story_id': storyId,
+              'm8_pin': widget.currentPin,
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['error']?.toString() ?? 'Gagal mengubah Suka.');
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        liked = data['liked'] == true;
+        likeCount = int.tryParse(data['like_count']?.toString() ?? '0') ?? 0;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal mengubah Suka: $e')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _working = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _recordView() async {
+    if (storyId.isEmpty || widget.currentPin.isEmpty) {
+      return;
+    }
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$apiBase/api/stories/view'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'story_id': storyId,
+              'm8_pin': widget.currentPin,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        if (!mounted) return;
+
+        setState(() {
+          viewCount =
+              int.tryParse(data['view_count']?.toString() ?? '0') ?? viewCount;
+        });
+      }
+    } catch (e) {
+      debugPrint('BJO MOMENT VIEW ERROR: $e');
+    }
+  }
+
+  Future<void> _openMedia() async {
+    if (storyId.isEmpty) return;
+
+    await _recordView();
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _M8StoryViewer(
+          stories: [Map<String, dynamic>.from(widget.post)],
+          initialIndex: 0,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deletePost() async {
+    if (!isOwner || _working || storyId.isEmpty) {
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Hapus Moment?'),
+          content: const Text(
+            'Moment ini akan dihapus dari feed B’Jo. '
+            'Data Love dan penonton juga akan dihapus.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      _working = true;
+    });
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$apiBase/api/stories/delete'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'story_id': storyId,
+              'm8_pin': widget.currentPin,
+            }),
+          )
+          .timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['error']?.toString() ?? 'Gagal menghapus Moment.');
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Moment berhasil dihapus.')));
+
+      setState(() {
+        widget.post['is_active'] = 0;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menghapus Moment: $e')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _working = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _showViewers() async {
+    if (!isOwner || storyId.isEmpty) return;
+
+    try {
+      final uri = Uri.parse(
+        '$apiBase/api/stories/viewers'
+        '?story_id=${Uri.encodeComponent(storyId)}'
+        '&m8_pin=${Uri.encodeComponent(widget.currentPin)}',
+      );
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(
+          data['error']?.toString() ?? 'Gagal mengambil penonton.',
+        );
+      }
+
+      final raw = data['viewers'];
+
+      final viewers = <Map<String, dynamic>>[];
+
+      if (raw is List) {
+        for (final item in raw) {
+          if (item is Map) {
+            viewers.add(Map<String, dynamic>.from(item));
+          }
+        }
+      }
+
+      if (!mounted) return;
+
+      showModalBottomSheet(
+        context: context,
+        showDragHandle: true,
+        backgroundColor: m8White,
+        builder: (sheetContext) {
+          return SafeArea(
+            child: SizedBox(
+              height: MediaQuery.of(sheetContext).size.height * 0.55,
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility_rounded, color: m8Blue),
+                        SizedBox(width: 8),
+                        Text(
+                          'Yang Melihat Moment',
+                          style: TextStyle(
+                            color: m8BlueDark,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: viewers.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Belum ada yang melihat Moment ini.',
+                              style: TextStyle(color: m8TextMuted),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: viewers.length,
+                            itemBuilder: (_, index) {
+                              final viewer = viewers[index];
+
+                              final name = viewer['viewer_name']
+                                  ?.toString()
+                                  .trim();
+
+                              final pin =
+                                  viewer['viewer_pin']?.toString().trim() ?? '';
+
+                              return ListTile(
+                                leading: const CircleAvatar(
+                                  backgroundColor: m8BlueDark,
+                                  child: Icon(
+                                    Icons.person_rounded,
+                                    color: m8White,
+                                  ),
+                                ),
+                                title: Text(
+                                  name?.isNotEmpty == true
+                                      ? name!
+                                      : 'Pengguna B’Jo',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  '@$pin',
+                                  style: const TextStyle(color: m8TextMuted),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil daftar penonton: $e')),
+      );
+    }
+  }
+
+  Future<void> _showMenu() async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: m8White,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isOwner)
+                ListTile(
+                  leading: const Icon(Icons.visibility_rounded, color: m8Blue),
+                  title: const Text('Lihat Penonton'),
+                  subtitle: Text('$viewCount orang'),
+                  onTap: () {
+                    Navigator.pop(sheetContext, 'viewers');
+                  },
+                ),
+              if (isOwner)
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.red,
+                  ),
+                  title: const Text('Hapus Moment'),
+                  onTap: () {
+                    Navigator.pop(sheetContext, 'delete');
+                  },
+                ),
+              if (!isOwner)
+                const ListTile(
+                  leading: Icon(Icons.flag_outlined),
+                  title: Text('Laporkan'),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted) return;
+
+    if (action == 'viewers') {
+      await _showViewers();
+    } else if (action == 'delete') {
+      await _deletePost();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final post = widget.post;
+
     final name = post['user_name']?.toString().trim().isNotEmpty == true
         ? post['user_name'].toString()
         : "Pengguna B'Jo";
@@ -6644,6 +7032,10 @@ class _BJoPostCard extends StatelessWidget {
     final type = post['media_type']?.toString() ?? 'text';
     final text = post['caption']?.toString().trim() ?? '';
     final mediaUrl = post['media_url']?.toString().trim() ?? '';
+
+    if (post['is_active']?.toString() == '0') {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -6693,18 +7085,19 @@ class _BJoPostCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      "• $timeAgo",
+                      "• ${widget.timeAgo}",
                       style: const TextStyle(color: m8TextMuted, fontSize: 12),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: _working ? null : _showMenu,
                 icon: const Icon(Icons.more_horiz_rounded, color: m8TextMuted),
               ),
             ],
           ),
+
           if (text.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(
@@ -6716,79 +7109,45 @@ class _BJoPostCard extends StatelessWidget {
               ),
             ),
           ],
+
           if (type == 'image' && mediaUrl.isNotEmpty) ...[
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                mediaUrl,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) {
-                  return Container(
-                    height: 180,
-                    color: m8WhiteSoft,
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.broken_image_rounded,
-                      size: 42,
-                      color: m8TextMuted,
-                    ),
-                  );
-                },
+            GestureDetector(
+              onTap: _openMedia,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  mediaUrl,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) {
+                    return Container(
+                      height: 180,
+                      color: m8WhiteSoft,
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.broken_image_rounded,
+                        size: 42,
+                        color: m8TextMuted,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
+
           if (type == 'video' && mediaUrl.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              height: 220,
-              decoration: BoxDecoration(
-                color: m8BlueDark,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: InkWell(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) {
-                      return Dialog(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.videocam_rounded,
-                                size: 54,
-                                color: m8Blue,
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                "Video B'Jo",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                "Video sudah tersimpan di media B'Jo.",
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 14),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Tutup"),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
+            GestureDetector(
+              onTap: _openMedia,
+              child: Container(
+                width: double.infinity,
+                height: 220,
+                decoration: BoxDecoration(
+                  color: m8BlueDark,
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: const Center(
                   child: Icon(
                     Icons.play_circle_fill_rounded,
@@ -6799,15 +7158,43 @@ class _BJoPostCard extends StatelessWidget {
               ),
             ),
           ],
+
+          const SizedBox(height: 8),
+
+          Row(
+            children: [
+              Text(
+                '$likeCount Suka',
+                style: const TextStyle(color: m8TextMuted, fontSize: 12),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: isOwner ? _showViewers : null,
+                child: Text(
+                  '$viewCount dilihat',
+                  style: TextStyle(
+                    color: isOwner ? m8Blue : m8TextMuted,
+                    fontSize: 12,
+                    fontWeight: isOwner ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
           const SizedBox(height: 6),
           const Divider(height: 1),
+
           Row(
             children: [
               Expanded(
                 child: _BJoPostAction(
-                  icon: Icons.favorite_border_rounded,
-                  label: "Suka",
-                  onTap: () {},
+                  icon: liked
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  label: liked ? 'Suka $likeCount' : 'Suka',
+                  onTap: _working ? () {} : _toggleLike,
+                  active: liked,
                 ),
               ),
               Expanded(
@@ -6836,11 +7223,13 @@ class _BJoPostAction extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool active;
 
   const _BJoPostAction({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.active = false,
   });
 
   @override
@@ -6853,11 +7242,15 @@ class _BJoPostAction extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 19, color: m8TextMuted),
+            Icon(icon, size: 19, color: active ? m8Blue : m8TextMuted),
             const SizedBox(width: 5),
             Text(
               label,
-              style: const TextStyle(color: m8TextMuted, fontSize: 12),
+              style: TextStyle(
+                color: active ? m8Blue : m8TextMuted,
+                fontSize: 12,
+                fontWeight: active ? FontWeight.w700 : FontWeight.normal,
+              ),
             ),
           ],
         ),
@@ -6956,8 +7349,8 @@ class _M8LiveStoryCard extends StatelessWidget {
                   Text(
                     caption.isEmpty
                         ? type == 'video'
-                              ? 'Video Story'
-                              : 'Foto Story'
+                              ? 'Video Moment'
+                              : 'Foto Moment'
                         : caption,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -7019,10 +7412,23 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
       _videoMuted = false;
     });
 
-    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    debugPrint('BJO MOMENT VIDEO URL: $url');
+    debugPrint('BJO MOMENT VIDEO TYPE: $type');
+
+    final controller = VideoPlayerController.networkUrl(
+      Uri.parse(url),
+      httpHeaders: const {'Accept': 'video/mp4,video/webm,video/*,*/*'},
+    );
 
     try {
+      debugPrint('BJO MOMENT VIDEO: initialize mulai...');
       await controller.initialize();
+      debugPrint(
+        'BJO MOMENT VIDEO: initialize berhasil '
+        'duration=${controller.value.duration} '
+        'size=${controller.value.size} '
+        'aspect=${controller.value.aspectRatio}',
+      );
 
       if (!mounted) {
         await controller.dispose();
@@ -7038,8 +7444,14 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
       });
 
       await controller.play();
-    } catch (e) {
-      debugPrint('BJO STORY VIDEO ERROR: $e');
+    } catch (e, stack) {
+      debugPrint('================================================');
+      debugPrint('BJO MOMENT VIDEO ERROR');
+      debugPrint('URL: $url');
+      debugPrint('TYPE: $type');
+      debugPrint('ERROR: $e');
+      debugPrint('STACK: $stack');
+      debugPrint('================================================');
 
       await controller.dispose();
 
@@ -7183,7 +7595,7 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
                                 ),
                                 SizedBox(height: 12),
                                 Text(
-                                  'Foto Story tidak dapat dimuat',
+                                  'Foto Moment tidak dapat dimuat',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -7196,7 +7608,7 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
                       )
                     : const Center(
                         child: Text(
-                          'URL foto Story kosong',
+                          'URL foto Moment kosong',
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
