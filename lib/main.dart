@@ -1073,9 +1073,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _checkIncomingCalls() async {
-    final calls = await _incomingCallService.getIncomingCalls(pin);
+    try {
+      final calls = await _incomingCallService.getIncomingCalls(pin);
 
-    if (!mounted || calls.isEmpty) return;
+      if (!mounted || calls.isEmpty) return;
 
     final call = calls.first;
     final incomingId = call['id']?.toString();
@@ -1144,6 +1145,9 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+    } catch (e) {
+      debugPrint('M8 INCOMING CALL ERROR: $e');
+    }
   }
 
   @override
