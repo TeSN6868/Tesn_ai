@@ -6663,7 +6663,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 maxLines: 5,
                                 textInputAction: TextInputAction.newline,
                                 style: const TextStyle(
-                                  color: m8White,
+                                  color: bjoChatNavy,
                                   fontSize: 15,
                                 ),
                                 decoration: InputDecoration(
