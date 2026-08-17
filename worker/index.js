@@ -180,7 +180,7 @@ export default {
       }
 
       // ============================================================
-      // M8 STORY - CREATE
+      // M8 STORY FEED - CREATE
       // ============================================================
       if (url.pathname === "/api/stories" && request.method === "POST") {
         if (!env.DB) {
@@ -194,33 +194,48 @@ export default {
 
         const body = await request.json();
 
-        const userPin = String(body.m8_pin || body.user_pin || "").trim();
+        const userPin = String(
+          body.m8_pin || body.user_pin || ""
+        ).trim();
+
         const mediaUrl = String(body.media_url || "").trim();
-        const mediaType = String(body.media_type || "image").trim().toLowerCase();
-        const caption = String(body.caption || "").trim();
 
-        const rawViewers = Array.isArray(body.viewer_pins)
-          ? body.viewer_pins
-          : [];
+        const mediaType = String(
+          body.media_type || "text"
+        ).trim().toLowerCase();
 
-        const viewerPins = [...new Set(
-          rawViewers
-            .map((pin) => String(pin || "").trim())
-            .filter(Boolean)
-            .filter((pin) => pin !== userPin)
-        )];
+        const caption = String(
+          body.caption || body.text || ""
+        ).trim();
 
-        if (!userPin || !mediaUrl) {
+        if (!userPin) {
           return json({
             success: false,
-            error: "m8_pin dan media_url wajib diisi.",
+            error: "m8_pin wajib diisi.",
           }, 400);
         }
 
-        if (!["image", "video"].includes(mediaType)) {
+        if (!["text", "image", "video"].includes(mediaType)) {
           return json({
             success: false,
-            error: "media_type harus image atau video.",
+            error: "media_type harus text, image, atau video.",
+          }, 400);
+        }
+
+        if (mediaType === "text" && !caption) {
+          return json({
+            success: false,
+            error: "Tulisan tidak boleh kosong.",
+          }, 400);
+        }
+
+        if (
+          (mediaType === "image" || mediaType === "video") &&
+          !mediaUrl
+        ) {
+          return json({
+            success: false,
+            error: "media_url wajib diisi untuk foto atau video.",
           }, 400);
         }
 
@@ -234,18 +249,34 @@ export default {
         if (!user) {
           return json({
             success: false,
-            error: "Pengguna M8 tidak ditemukan.",
+            error: "Pengguna B'Jo tidak ditemukan.",
           }, 404);
         }
 
         const now = Math.floor(Date.now() / 1000);
-        const expiresAt = now + (24 * 60 * 60);
+
+        /*
+         * Story Feed tidak lagi menggunakan masa berlaku 24 jam.
+         * expires_at tetap diisi jauh ke depan agar database lama
+         * tetap kompatibel tanpa migrasi berbahaya.
+         */
+        const expiresAt = now + (10 * 365 * 24 * 60 * 60);
+
         const storyId = crypto.randomUUID();
 
         const result = await env.DB.prepare(`
           INSERT INTO stories
-            (story_id, user_pin, media_url, media_type, caption,
-             created_at, expires_at, is_active, view_count)
+            (
+              story_id,
+              user_pin,
+              media_url,
+              media_type,
+              caption,
+              created_at,
+              expires_at,
+              is_active,
+              view_count
+            )
           VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0)
         `).bind(
           storyId,
@@ -258,26 +289,12 @@ export default {
         ).run();
 
         if (!result.success) {
-          throw new Error("Gagal menyimpan Story M8.");
-        }
-
-        if (viewerPins.length > 0) {
-          for (const viewerPin of viewerPins) {
-            await env.DB.prepare(`
-              INSERT OR IGNORE INTO story_viewers
-                (story_id, viewer_pin, created_at)
-              VALUES (?, ?, ?)
-            `).bind(
-              storyId,
-              viewerPin,
-              now
-            ).run();
-          }
+          throw new Error("Gagal menyimpan posting B'Jo.");
         }
 
         return json({
           success: true,
-          message: "Story M8 berhasil dibuat.",
+          message: "Posting B'Jo berhasil dibuat.",
           story: {
             story_id: storyId,
             user_pin: userPin,
@@ -289,14 +306,12 @@ export default {
             expires_at: expiresAt,
             is_active: true,
             view_count: 0,
-            privacy: viewerPins.length > 0 ? "private_selected" : "private",
-            viewer_count: viewerPins.length,
           },
         }, 201);
       }
 
       // ============================================================
-      // M8 STORY - GET ACTIVE STORIES
+      // B'JO STORY FEED - GET
       // ============================================================
       if (url.pathname === "/api/stories" && request.method === "GET") {
         if (!env.DB) {
@@ -317,8 +332,6 @@ export default {
           }, 400);
         }
 
-        const now = Math.floor(Date.now() / 1000);
-
         const result = await env.DB.prepare(`
           SELECT
             s.story_id,
@@ -332,20 +345,12 @@ export default {
             s.is_active,
             s.view_count
           FROM stories s
-          INNER JOIN users u ON u.m8_pin = s.user_pin
+          INNER JOIN users u
+            ON u.m8_pin = s.user_pin
           WHERE s.is_active = 1
-            AND s.expires_at > ?
-            AND (
-              s.user_pin = ?
-              OR EXISTS (
-                SELECT 1
-                FROM story_viewers sv
-                WHERE sv.story_id = s.story_id
-                  AND sv.viewer_pin = ?
-              )
-            )
           ORDER BY s.created_at DESC
-        `).bind(now, myPin, myPin).all();
+          LIMIT 100
+        `).all();
 
         return json({
           success: true,

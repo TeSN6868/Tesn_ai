@@ -1026,11 +1026,7 @@ class BJoMainShell extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
 
-  const BJoMainShell({
-    super.key,
-    required this.token,
-    required this.user,
-  });
+  const BJoMainShell({super.key, required this.token, required this.user});
 
   @override
   State<BJoMainShell> createState() => _BJoMainShellState();
@@ -1040,9 +1036,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
   int currentIndex = 0;
 
   String get myPin =>
-      widget.user['m8_pin']?.toString() ??
-      widget.user['pin']?.toString() ??
-      '';
+      widget.user['m8_pin']?.toString() ?? widget.user['pin']?.toString() ?? '';
 
   String get title {
     switch (currentIndex) {
@@ -1062,32 +1056,19 @@ class _BJoMainShellState extends State<BJoMainShell> {
   Widget page() {
     switch (currentIndex) {
       case 0:
-        return ChatsPage(
-          token: widget.token,
-          myPin: myPin,
-        );
+        return ChatsPage(token: widget.token, myPin: myPin);
 
       case 1:
-        return StoryPage(
-          user: widget.user,
-        );
+        return StoryPage(user: widget.user);
 
       case 2:
-        return BJoGroupsPage(
-          token: widget.token,
-          myPin: myPin,
-        );
+        return BJoGroupsPage(token: widget.token, myPin: myPin);
 
       case 3:
-        return BJoBerandaPage(
-          user: widget.user,
-        );
+        return BJoBerandaPage(user: widget.user);
 
       default:
-        return ChatsPage(
-          token: widget.token,
-          myPin: myPin,
-        );
+        return ChatsPage(token: widget.token, myPin: myPin);
     }
   }
 
@@ -1099,12 +1080,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         backgroundColor: m8Blue,
         foregroundColor: m8White,
         elevation: 0,
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
             tooltip: "Profil B'Jo",
@@ -1112,18 +1088,14 @@ class _BJoMainShellState extends State<BJoMainShell> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => BJoProfilePage(
-                    user: widget.user,
-                  ),
+                  builder: (_) => BJoProfilePage(user: widget.user),
                 ),
               );
             },
           ),
         ],
       ),
-      body: M8DenimBackground(
-        child: page(),
-      ),
+      body: M8DenimBackground(child: page()),
       bottomNavigationBar: NavigationBar(
         backgroundColor: m8Blue,
         indicatorColor: m8BlueDark,
@@ -1136,47 +1108,23 @@ class _BJoMainShellState extends State<BJoMainShell> {
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(
-              Icons.chat_bubble_outline,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.chat_bubble,
-              color: m8White,
-            ),
+            icon: Icon(Icons.chat_bubble_outline, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.chat_bubble, color: m8White),
             label: 'Chat',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.auto_awesome_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.auto_awesome,
-              color: m8White,
-            ),
+            icon: Icon(Icons.auto_awesome_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.auto_awesome, color: m8White),
             label: 'Story',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.groups_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.groups,
-              color: m8White,
-            ),
+            icon: Icon(Icons.groups_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.groups, color: m8White),
             label: 'Grup',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.dashboard_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.dashboard,
-              color: m8White,
-            ),
+            icon: Icon(Icons.dashboard_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.dashboard, color: m8White),
             label: 'Beranda',
           ),
         ],
@@ -1192,10 +1140,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
 class BJoBerandaPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
-  const BJoBerandaPage({
-    super.key,
-    required this.user,
-  });
+  const BJoBerandaPage({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -1213,10 +1158,7 @@ class BJoBerandaPage extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           'Selamat datang, ${user['name']?.toString() ?? "Pengguna"}',
-          style: const TextStyle(
-            color: m8BlueLight,
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: m8BlueLight, fontSize: 14),
         ),
         const SizedBox(height: 24),
         _BJoBerandaCard(
@@ -1224,11 +1166,7 @@ class BJoBerandaPage extends StatelessWidget {
           'Agenda',
           'Atur jadwal dan kegiatan',
         ),
-        _BJoBerandaCard(
-          Icons.menu_book_rounded,
-          'Jurnal',
-          'Catatan pribadi',
-        ),
+        _BJoBerandaCard(Icons.menu_book_rounded, 'Jurnal', 'Catatan pribadi'),
         _BJoBerandaCard(
           Icons.trending_up_rounded,
           'Saham',
@@ -1250,9 +1188,7 @@ class BJoBerandaPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: m8BlueDark,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: m8BlueLight.withValues(alpha: 0.45),
-            ),
+            border: Border.all(color: m8BlueLight.withValues(alpha: 0.45)),
           ),
           child: const Row(
             children: [
@@ -1277,18 +1213,12 @@ class BJoBerandaPage extends StatelessWidget {
                     SizedBox(height: 5),
                     Text(
                       'Analitik • Private Vault • Smart Alert',
-                      style: TextStyle(
-                        color: m8BlueLight,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: m8BlueLight, fontSize: 12),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: m8White,
-              ),
+              Icon(Icons.chevron_right_rounded, color: m8White),
             ],
           ),
         ),
@@ -1302,11 +1232,7 @@ class _BJoBerandaCard extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _BJoBerandaCard(
-    this.icon,
-    this.title,
-    this.subtitle,
-  );
+  const _BJoBerandaCard(this.icon, this.title, this.subtitle);
 
   @override
   Widget build(BuildContext context) {
@@ -1315,9 +1241,7 @@ class _BJoBerandaCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: m8White,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: m8Blue.withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: m8Blue.withValues(alpha: 0.35)),
       ),
       child: ListTile(
         leading: Container(
@@ -1327,10 +1251,7 @@ class _BJoBerandaCard extends StatelessWidget {
             color: m8BlueDark,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(
-            icon,
-            color: m8White,
-          ),
+          child: Icon(icon, color: m8White),
         ),
         title: Text(
           title,
@@ -1341,15 +1262,9 @@ class _BJoBerandaCard extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            color: m8TextMuted,
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: m8TextMuted, fontSize: 12),
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: m8Blue,
-        ),
+        trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
       ),
     );
   }
@@ -1366,11 +1281,7 @@ class BJoGroupsPage extends StatefulWidget {
   final String token;
   final String myPin;
 
-  const BJoGroupsPage({
-    super.key,
-    required this.token,
-    required this.myPin,
-  });
+  const BJoGroupsPage({super.key, required this.token, required this.myPin});
 
   @override
   State<BJoGroupsPage> createState() => _BJoGroupsPageState();
@@ -1398,9 +1309,7 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
         Uri.parse(
           '$apiBase/api/groups?m8_pin=${Uri.encodeComponent(widget.myPin)}',
         ),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
+        headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
       if (response.statusCode != 200) {
@@ -1411,9 +1320,7 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
       final list = data['groups'];
 
       if (list is List) {
-        groups = list
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
+        groups = list.map((e) => Map<String, dynamic>.from(e)).toList();
       } else {
         groups = [];
       }
@@ -1421,11 +1328,9 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
       debugPrint('BJoGroupsPage error: $e');
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memuat grup: $e'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat grup: $e')));
       }
     } finally {
       if (mounted) {
@@ -1452,11 +1357,7 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: m8White,
-        ),
-      );
+      return const Center(child: CircularProgressIndicator(color: m8White));
     }
 
     if (groups.isEmpty) {
@@ -1466,11 +1367,7 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(24, 80, 24, 40),
           children: const [
-            Icon(
-              Icons.groups_rounded,
-              size: 78,
-              color: m8White,
-            ),
+            Icon(Icons.groups_rounded, size: 78, color: m8White),
             SizedBox(height: 20),
             Text(
               "Belum ada grup",
@@ -1485,10 +1382,7 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
             Text(
               "Grup B'Jo yang kamu ikuti akan muncul di sini.",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: m8BlueLight,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: m8BlueLight, fontSize: 14),
             ),
           ],
         ),
@@ -1504,28 +1398,22 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
         itemBuilder: (context, index) {
           final group = groups[index];
 
-          final name =
-              group['name']?.toString().trim().isNotEmpty == true
-                  ? group['name'].toString()
-                  : "Grup B'Jo";
+          final name = group['name']?.toString().trim().isNotEmpty == true
+              ? group['name'].toString()
+              : "Grup B'Jo";
 
-          final description =
-              group['description']?.toString().trim() ?? '';
+          final description = group['description']?.toString().trim() ?? '';
 
-          final memberCount =
-              group['member_count']?.toString() ?? '0';
+          final memberCount = group['member_count']?.toString() ?? '0';
 
-          final photoUrl =
-              group['photo_url']?.toString().trim() ?? '';
+          final photoUrl = group['photo_url']?.toString().trim() ?? '';
 
           return Container(
             margin: const EdgeInsets.only(bottom: 10),
             decoration: BoxDecoration(
               color: m8White,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: m8Blue.withValues(alpha: 0.18),
-              ),
+              border: Border.all(color: m8Blue.withValues(alpha: 0.18)),
             ),
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(
@@ -1539,11 +1427,7 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
                     ? NetworkImage(photoUrl)
                     : null,
                 child: photoUrl.isEmpty
-                    ? const Icon(
-                        Icons.groups_rounded,
-                        color: m8White,
-                        size: 28,
-                      )
+                    ? const Icon(Icons.groups_rounded, color: m8White, size: 28)
                     : null,
               ),
               title: Text(
@@ -1564,16 +1448,10 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
                       : '$memberCount anggota',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: m8TextMuted,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: m8TextMuted, fontSize: 12),
                 ),
               ),
-              trailing: const Icon(
-                Icons.chevron_right_rounded,
-                color: m8Blue,
-              ),
+              trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
               onTap: () => _openGroup(group),
             ),
           );
@@ -1641,73 +1519,73 @@ class _HomePageState extends State<HomePage> {
 
       if (!mounted || calls.isEmpty) return;
 
-    final call = calls.first;
-    final incomingId = call['id']?.toString();
+      final call = calls.first;
+      final incomingId = call['id']?.toString();
 
-    if (incomingId == null || incomingId == _lastIncomingCallId) {
-      return;
-    }
+      if (incomingId == null || incomingId == _lastIncomingCallId) {
+        return;
+      }
 
-    _lastIncomingCallId = incomingId;
+      _lastIncomingCallId = incomingId;
 
-    final callerPin = call['caller_pin']?.toString() ?? '';
-    final callType = call['call_type']?.toString() ?? 'voice';
-    final isVideoCall = callType == 'video';
+      final callerPin = call['caller_pin']?.toString() ?? '';
+      final callType = call['call_type']?.toString() ?? 'voice';
+      final isVideoCall = callType == 'video';
 
-    if (callerPin.isEmpty) return;
+      if (callerPin.isEmpty) return;
 
-    await _startIncomingRingtone();
-    final accepted = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Panggilan masuk'),
-          content: Text('Ada panggilan masuk dari PIN $callerPin.'),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                try {
-                  await _incomingCallService.rejectCall(
-                    incomingCallId: incomingId,
-                    calleePin: pin,
-                  );
-                } finally {
-                  if (dialogContext.mounted) {
-                    Navigator.of(dialogContext).pop(false);
+      await _startIncomingRingtone();
+      final accepted = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Panggilan masuk'),
+            content: Text('Ada panggilan masuk dari PIN $callerPin.'),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  try {
+                    await _incomingCallService.rejectCall(
+                      incomingCallId: incomingId,
+                      calleePin: pin,
+                    );
+                  } finally {
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop(false);
+                    }
                   }
-                }
-              },
-              child: const Text('Tolak'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: const Text('Terima'),
-            ),
-          ],
-        );
-      },
-    );
+                },
+                child: const Text('Tolak'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(true);
+                },
+                child: const Text('Terima'),
+              ),
+            ],
+          );
+        },
+      );
 
-    await _stopIncomingRingtone();
+      await _stopIncomingRingtone();
 
-    if (!mounted || accepted != true) return;
+      if (!mounted || accepted != true) return;
 
-    final callService = M8CallService();
+      final callService = M8CallService();
 
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => VoiceCallPage(
-          myPin: pin,
-          otherPin: callerPin,
-          call: callService,
-          incomingCallId: incomingId,
-          videoCall: isVideoCall,
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => VoiceCallPage(
+            myPin: pin,
+            otherPin: callerPin,
+            call: callService,
+            incomingCallId: incomingId,
+            videoCall: isVideoCall,
+          ),
         ),
-      ),
-    );
+      );
     } catch (e) {
       debugPrint('M8 INCOMING CALL ERROR: $e');
     }
@@ -6249,30 +6127,28 @@ class StoryPage extends StatefulWidget {
 
 class _StoryPageState extends State<StoryPage> {
   bool loading = true;
-  bool uploading = false;
-  List<Map<String, dynamic>> stories = [];
+  bool posting = false;
+  List<Map<String, dynamic>> posts = [];
+
+  String get myPin =>
+      widget.user['m8_pin']?.toString() ?? widget.user['pin']?.toString() ?? '';
 
   @override
   void initState() {
     super.initState();
-    _loadStories();
+    _loadPosts();
   }
 
-  Future<void> _loadStories() async {
+  Future<void> _loadPosts() async {
     try {
-      final pin =
-          widget.user['m8_pin']?.toString() ??
-          widget.user['pin']?.toString() ??
-          '';
-
-      if (pin.isEmpty) {
-        throw Exception('M8 PIN tidak ditemukan.');
+      if (myPin.isEmpty) {
+        throw Exception("B'Jo PIN tidak ditemukan.");
       }
 
       final response = await http
           .get(
             Uri.parse(
-              '$apiBase/api/stories?m8_pin=${Uri.encodeComponent(pin)}',
+              '$apiBase/api/stories?m8_pin=${Uri.encodeComponent(myPin)}',
             ),
           )
           .timeout(const Duration(seconds: 20));
@@ -6280,23 +6156,27 @@ class _StoryPageState extends State<StoryPage> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode != 200 || data['success'] != true) {
-        throw Exception(data['error']?.toString() ?? 'Gagal mengambil Story.');
+        throw Exception(data['error']?.toString() ?? 'Gagal mengambil feed.');
       }
 
       final raw = data['stories'];
 
+      final result = <Map<String, dynamic>>[];
+
       if (raw is List) {
-        stories = raw
-            .whereType<Map>()
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
+        for (final item in raw) {
+          if (item is Map) {
+            result.add(Map<String, dynamic>.from(item));
+          }
+        }
       }
 
-      if (mounted) {
-        setState(() {
-          loading = false;
-        });
-      }
+      if (!mounted) return;
+
+      setState(() {
+        posts = result;
+        loading = false;
+      });
     } catch (e) {
       if (!mounted) return;
 
@@ -6306,226 +6186,184 @@ class _StoryPageState extends State<StoryPage> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Story belum dapat dimuat: $e')));
+      ).showSnackBar(SnackBar(content: Text("Feed belum dapat dimuat: $e")));
     }
   }
 
-  Future<List<Map<String, dynamic>>> _loadStoryContacts() async {
-    final pin =
-        widget.user['m8_pin']?.toString() ??
-        widget.user['pin']?.toString() ??
-        '';
+  Future<void> _openComposer() async {
+    final textController = TextEditingController();
 
-    if (pin.isEmpty) {
-      throw Exception('M8 PIN tidak ditemukan.');
-    }
+    XFile? selectedMedia;
+    String? mediaType;
 
-    final response = await http
-        .get(
-          Uri.parse(
-            '$apiBase/api/chats?m8_pin=${Uri.encodeComponent(pin)}',
-          ),
-        )
-        .timeout(const Duration(seconds: 20));
-
-    if (response.statusCode != 200) {
-      throw Exception('Gagal mengambil daftar teman B''Jo.');
-    }
-
-    final data = jsonDecode(response.body);
-    final raw = data['chats'];
-
-    if (raw is! List) return [];
-
-    final result = <Map<String, dynamic>>[];
-
-    for (final item in raw) {
-      if (item is! Map) continue;
-
-      final other = item['other_user'];
-
-      if (other is Map) {
-        final contact = Map<String, dynamic>.from(other);
-        final contactPin = contact['m8_pin']?.toString().trim() ?? '';
-
-        if (contactPin.isNotEmpty && contactPin != pin) {
-          result.add(contact);
-        }
-      }
-    }
-
-    final seen = <String>{};
-
-    return result.where((contact) {
-      final contactPin = contact['m8_pin']?.toString() ?? '';
-      return seen.add(contactPin);
-    }).toList();
-  }
-
-  Future<List<String>?> _selectStoryViewers() async {
-    final contacts = await _loadStoryContacts();
-
-    if (!mounted) return null;
-
-    if (contacts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Belum ada kontak chat. Story Private hanya bisa dibagikan kepada kontak B''Jo.',
-          ),
-        ),
-      );
-      return null;
-    }
-
-    final selected = <String>{};
-
-    return showModalBottomSheet<List<String>>(
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            Future<void> chooseImage() async {
+              final picker = ImagePicker();
+
+              final file = await picker.pickImage(
+                source: ImageSource.gallery,
+                imageQuality: 90,
+                maxWidth: 1600,
+                maxHeight: 1600,
+              );
+
+              if (file != null) {
+                setSheetState(() {
+                  selectedMedia = file;
+                  mediaType = 'image';
+                });
+              }
+            }
+
+            Future<void> chooseVideo() async {
+              final picker = ImagePicker();
+
+              final file = await picker.pickVideo(source: ImageSource.gallery);
+
+              if (file != null) {
+                setSheetState(() {
+                  selectedMedia = file;
+                  mediaType = 'video';
+                });
+              }
+            }
+
             return SafeArea(
               child: Container(
-                height: MediaQuery.of(context).size.height * 0.72,
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 18,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                ),
                 decoration: const BoxDecoration(
                   color: m8White,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
                 ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 14),
-                    Container(
-                      width: 42,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: m8TextMuted,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Siapa yang dapat melihat?',
-                      style: TextStyle(
-                        color: m8BlueDark,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        'Story ini hanya akan terlihat oleh orang yang kamu pilih.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: m8TextMuted),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        itemCount: contacts.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final contact = contacts[index];
-                          final contactPin =
-                              contact['m8_pin']?.toString() ?? '';
-                          final name =
-                              contact['name']?.toString().trim().isNotEmpty ==
-                                      true
-                                  ? contact['name'].toString()
-                                  : 'Pengguna B''Jo';
-
-                          final checked = selected.contains(contactPin);
-
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: m8BlueDark,
-                              backgroundImage:
-                                  (contact['profile_photo_url']
-                                              ?.toString()
-                                              .isNotEmpty ==
-                                          true)
-                                      ? NetworkImage(
-                                          contact['profile_photo_url']
-                                              .toString(),
-                                        )
-                                      : null,
-                              child:
-                                  contact['profile_photo_url']
-                                              ?.toString()
-                                              .isNotEmpty ==
-                                          true
-                                      ? null
-                                      : const Icon(
-                                          Icons.person_rounded,
-                                          color: m8White,
-                                        ),
-                            ),
-                            title: Text(
-                              name,
-                              style: const TextStyle(
-                                color: m8BlueDark,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            subtitle: Text(
-                              contactPin,
-                              style: const TextStyle(
-                                color: m8TextMuted,
-                                fontSize: 11,
-                              ),
-                            ),
-                            trailing: Checkbox(
-                              value: checked,
-                              onChanged: (value) {
-                                setSheetState(() {
-                                  if (value == true) {
-                                    selected.add(contactPin);
-                                  } else {
-                                    selected.remove(contactPin);
-                                  }
-                                });
-                              },
-                            ),
-                            onTap: () {
-                              setSheetState(() {
-                                if (checked) {
-                                  selected.remove(contactPin);
-                                } else {
-                                  selected.add(contactPin);
-                                }
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: selected.isEmpty
-                              ? null
-                              : () => Navigator.pop(
-                                    sheetContext,
-                                    selected.toList(),
-                                  ),
-                          icon: const Icon(Icons.lock_rounded),
-                          label: Text(
-                            selected.isEmpty
-                                ? 'Pilih penerima'
-                                : 'Bagikan ke ${selected.length} orang',
+                    Row(
+                      children: [
+                        const Text(
+                          "Buat Posting",
+                          style: TextStyle(
+                            color: m8BlueDark,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: textController,
+                      maxLines: 6,
+                      maxLength: 5000,
+                      decoration: InputDecoration(
+                        hintText: "Apa yang ingin kamu bagikan?",
+                        filled: true,
+                        fillColor: m8WhiteSoft,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
+                    ),
+                    if (selectedMedia != null) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: m8WhiteSoft,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              mediaType == 'video'
+                                  ? Icons.videocam_rounded
+                                  : Icons.image_rounded,
+                              color: m8Blue,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                selectedMedia!.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: m8BlueDark,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setSheetState(() {
+                                  selectedMedia = null;
+                                  mediaType = null;
+                                });
+                              },
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: chooseImage,
+                          icon: const Icon(Icons.photo_rounded),
+                          label: const Text("Foto"),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: chooseVideo,
+                          icon: const Icon(Icons.videocam_rounded),
+                          label: const Text("Video"),
+                        ),
+                        const Spacer(),
+                        FilledButton(
+                          onPressed: () async {
+                            final text = textController.text.trim();
+
+                            if (text.isEmpty && selectedMedia == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Tulis sesuatu atau pilih foto/video.",
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            Navigator.pop(sheetContext);
+
+                            await _publishPost(
+                              text: text,
+                              media: selectedMedia,
+                              mediaType: mediaType,
+                            );
+                          },
+                          child: const Text("Posting"),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -6535,261 +6373,494 @@ class _StoryPageState extends State<StoryPage> {
         );
       },
     );
+
+    textController.dispose();
   }
 
-  Future<void> _addStory() async {
-    if (uploading) return;
+  Future<void> _publishPost({
+    required String text,
+    required XFile? media,
+    required String? mediaType,
+  }) async {
+    if (posting) return;
 
     try {
-      final picker = ImagePicker();
-
-      final choice = await showModalBottomSheet<String>(
-        context: context,
-        builder: (context) {
-          return SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.photo_library_rounded),
-                  title: const Text('Foto'),
-                  onTap: () => Navigator.pop(context, 'image'),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.videocam_rounded),
-                  title: const Text('Video'),
-                  onTap: () => Navigator.pop(context, 'video'),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-
-      if (choice == null) return;
-
-      XFile? media;
-
-      if (choice == 'video') {
-        media = await picker.pickVideo(source: ImageSource.gallery);
-      } else {
-        media = await picker.pickImage(
-          source: ImageSource.gallery,
-          imageQuality: 90,
-          maxWidth: 1600,
-          maxHeight: 1600,
-        );
-      }
-
-      if (media == null) return;
-
-      final bytes = await media.readAsBytes();
-
-      if (bytes.isEmpty) {
-        throw Exception('File Story kosong.');
-      }
-
-      if (bytes.length > 25 * 1024 * 1024) {
-        throw Exception('Ukuran Story terlalu besar. Maksimal 25 MB.');
-      }
-
       setState(() {
-        uploading = true;
+        posting = true;
       });
 
-      final extension = media.name.contains('.')
-          ? media.name.split('.').last.toLowerCase()
-          : choice == 'video'
-          ? 'mp4'
-          : 'jpg';
+      String mediaUrl = '';
+      String type = 'text';
 
-      final contentType = choice == 'video'
-          ? switch (extension) {
-              'webm' => 'video/webm',
-              'mov' => 'video/quicktime',
-              _ => 'video/mp4',
-            }
-          : switch (extension) {
-              'png' => 'image/png',
-              'webp' => 'image/webp',
-              _ => 'image/jpeg',
-            };
+      if (media != null && mediaType != null) {
+        final bytes = await media.readAsBytes();
 
-      final uploadResponse = await http
-          .post(
-            Uri.parse('$apiBase/api/upload'),
-            headers: {'Content-Type': contentType},
-            body: bytes,
-          )
-          .timeout(const Duration(seconds: 60));
+        if (bytes.isEmpty) {
+          throw Exception("File media kosong.");
+        }
 
-      final uploadData = jsonDecode(uploadResponse.body);
+        if (bytes.length > 25 * 1024 * 1024) {
+          throw Exception("Ukuran media maksimal 25 MB.");
+        }
 
-      if (uploadResponse.statusCode != 201 || uploadData['success'] != true) {
-        throw Exception(
-          uploadData['error']?.toString() ?? 'Upload Story gagal.',
-        );
+        final extension = media.name.contains('.')
+            ? media.name.split('.').last.toLowerCase()
+            : mediaType == 'video'
+            ? 'mp4'
+            : 'jpg';
+
+        final contentType = mediaType == 'video'
+            ? switch (extension) {
+                'webm' => 'video/webm',
+                'mov' => 'video/quicktime',
+                _ => 'video/mp4',
+              }
+            : switch (extension) {
+                'png' => 'image/png',
+                'webp' => 'image/webp',
+                _ => 'image/jpeg',
+              };
+
+        final uploadResponse = await http
+            .post(
+              Uri.parse('$apiBase/api/upload'),
+              headers: {'Content-Type': contentType},
+              body: bytes,
+            )
+            .timeout(const Duration(seconds: 60));
+
+        final uploadData = jsonDecode(uploadResponse.body);
+
+        if (uploadResponse.statusCode != 201 || uploadData['success'] != true) {
+          throw Exception(
+            uploadData['error']?.toString() ?? "Upload media gagal.",
+          );
+        }
+
+        mediaUrl = uploadData['url']?.toString() ?? '';
+
+        if (mediaUrl.isEmpty) {
+          throw Exception("Server tidak memberikan URL media.");
+        }
+
+        type = mediaType;
       }
 
-      final mediaUrl = uploadData['url']?.toString();
-
-      if (mediaUrl == null || mediaUrl.isEmpty) {
-        throw Exception('Server tidak memberikan URL Story.');
-      }
-
-      final pin =
-          widget.user['m8_pin']?.toString() ??
-          widget.user['pin']?.toString() ??
-          '';
-
-      if (pin.isEmpty) {
-        throw Exception('M8 PIN tidak ditemukan.');
-      }
-
-      final viewerPins = await _selectStoryViewers();
-
-      if (viewerPins == null || viewerPins.isEmpty) {
-        throw Exception(
-          'Pilih minimal satu orang yang boleh melihat Story.',
-        );
-      }
-
-      final createResponse = await http
+      final response = await http
           .post(
             Uri.parse('$apiBase/api/stories'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
-              'm8_pin': pin,
+              'm8_pin': myPin,
               'media_url': mediaUrl,
-              'media_type': choice,
-              'caption': '',
-              'viewer_pins': viewerPins,
+              'media_type': type,
+              'caption': text,
             }),
           )
           .timeout(const Duration(seconds: 20));
 
-      final createData = jsonDecode(createResponse.body);
+      final data = jsonDecode(response.body);
 
-      if (createResponse.statusCode != 201 || createData['success'] != true) {
-        throw Exception(
-          createData['error']?.toString() ?? 'Gagal membuat Story.',
-        );
+      if (response.statusCode != 201 || data['success'] != true) {
+        throw Exception(data['error']?.toString() ?? "Posting gagal.");
       }
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Story berhasil dibagikan selama 24 jam.'),
-        ),
+        const SnackBar(content: Text("Posting berhasil dibagikan.")),
       );
 
-      await _loadStories();
+      await _loadPosts();
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Gagal membuat Story: $e')));
+      ).showSnackBar(SnackBar(content: Text("Gagal membuat posting: $e")));
     } finally {
       if (mounted) {
         setState(() {
-          uploading = false;
+          posting = false;
         });
       }
     }
   }
 
-  void _openStory(int index) {
-    if (index < 0 || index >= stories.length) return;
+  String _timeAgo(dynamic value) {
+    final timestamp = int.tryParse(value?.toString() ?? '');
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => _M8StoryViewer(stories: stories, initialIndex: index),
-      ),
-    );
+    if (timestamp == null) return '';
+
+    final created = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+
+    final difference = DateTime.now().difference(created);
+
+    if (difference.inSeconds < 60) {
+      return "baru saja";
+    }
+
+    if (difference.inMinutes < 60) {
+      return "${difference.inMinutes} m";
+    }
+
+    if (difference.inHours < 24) {
+      return "${difference.inHours} j";
+    }
+
+    if (difference.inDays < 7) {
+      return "${difference.inDays} h";
+    }
+
+    return "${created.day}/${created.month}/${created.year}";
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: m8BlueDark,
-      appBar: AppBar(
-        backgroundColor: m8BlueDark,
+      backgroundColor: m8WhiteSoft,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: m8Blue,
         foregroundColor: m8White,
-        elevation: 0,
-        title: const Text(
-          'M8 Story',
-          style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.3),
-        ),
-        actions: [
-          IconButton(
-            onPressed: uploading ? null : _addStory,
-            icon: uploading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.add_rounded),
+        onPressed: posting ? null : _openComposer,
+        child: posting
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: m8White,
+                ),
+              )
+            : const Icon(Icons.add_rounded),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadPosts,
+        child: loading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 100),
+                itemCount: posts.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return _BJoComposerCard(
+                      user: widget.user,
+                      onTap: posting ? null : _openComposer,
+                    );
+                  }
+
+                  final post = posts[index - 1];
+
+                  return _BJoPostCard(
+                    post: post,
+                    currentPin: myPin,
+                    timeAgo: _timeAgo(post['created_at']),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+class _BJoComposerCard extends StatelessWidget {
+  final Map<String, dynamic> user;
+  final VoidCallback? onTap;
+
+  const _BJoComposerCard({required this.user, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = user['name']?.toString().trim().isNotEmpty == true
+        ? user['name'].toString()
+        : "Pengguna B'Jo";
+
+    final photo = user['profile_photo_url']?.toString() ?? '';
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 23,
+            backgroundColor: m8BlueDark,
+            backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
+            child: photo.isEmpty
+                ? const Icon(Icons.person_rounded, color: m8White)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: m8WhiteSoft,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Text(
+                  "Apa yang ingin kamu bagikan?",
+                  style: TextStyle(color: m8TextMuted, fontSize: 16),
+                ),
+              ),
+            ),
           ),
         ],
       ),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadStories,
-              child: stories.isEmpty
-                  ? ListView(
-                      padding: const EdgeInsets.all(20),
-                      children: [
-                        const SizedBox(height: 80),
-                        const Icon(
-                          Icons.auto_awesome_rounded,
-                          color: m8BlueLight,
-                          size: 64,
-                        ),
-                        const SizedBox(height: 18),
-                        const Text(
-                          'Belum ada Story',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: m8White,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Bagikan foto atau video pertama kamu.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: m8BlueLight),
-                        ),
-                        const SizedBox(height: 24),
-                        FilledButton.icon(
-                          onPressed: uploading ? null : _addStory,
-                          icon: const Icon(Icons.add_rounded),
-                          label: const Text('Buat Story'),
-                        ),
-                      ],
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                      itemCount: stories.length,
-                      itemBuilder: (context, index) {
-                        final story = stories[index];
+    );
+  }
+}
 
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _M8LiveStoryCard(
-                            story: story,
-                            onTap: () => _openStory(index),
-                          ),
-                        );
-                      },
+class _BJoPostCard extends StatelessWidget {
+  final Map<String, dynamic> post;
+  final String currentPin;
+  final String timeAgo;
+
+  const _BJoPostCard({
+    required this.post,
+    required this.currentPin,
+    required this.timeAgo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = post['user_name']?.toString().trim().isNotEmpty == true
+        ? post['user_name'].toString()
+        : "Pengguna B'Jo";
+
+    final pin = post['user_pin']?.toString() ?? '';
+    final type = post['media_type']?.toString() ?? 'text';
+    final text = post['caption']?.toString().trim() ?? '';
+    final mediaUrl = post['media_url']?.toString().trim() ?? '';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 23,
+                backgroundColor: m8BlueDark,
+                child: const Icon(Icons.person_rounded, color: m8White),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: m8BlueDark,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        "@$pin",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: m8TextMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "• $timeAgo",
+                      style: const TextStyle(color: m8TextMuted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.more_horiz_rounded, color: m8TextMuted),
+              ),
+            ],
+          ),
+          if (text.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              text,
+              style: const TextStyle(
+                color: m8BlueDark,
+                fontSize: 16,
+                height: 1.35,
+              ),
             ),
+          ],
+          if (type == 'image' && mediaUrl.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                mediaUrl,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) {
+                  return Container(
+                    height: 180,
+                    color: m8WhiteSoft,
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.broken_image_rounded,
+                      size: 42,
+                      color: m8TextMuted,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+          if (type == 'video' && mediaUrl.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              height: 220,
+              decoration: BoxDecoration(
+                color: m8BlueDark,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: InkWell(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) {
+                      return Dialog(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.videocam_rounded,
+                                size: 54,
+                                color: m8Blue,
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                "Video B'Jo",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                "Video sudah tersimpan di media B'Jo.",
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 14),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("Tutup"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: const Center(
+                  child: Icon(
+                    Icons.play_circle_fill_rounded,
+                    color: m8White,
+                    size: 68,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 6),
+          const Divider(height: 1),
+          Row(
+            children: [
+              Expanded(
+                child: _BJoPostAction(
+                  icon: Icons.favorite_border_rounded,
+                  label: "Suka",
+                  onTap: () {},
+                ),
+              ),
+              Expanded(
+                child: _BJoPostAction(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  label: "Komentar",
+                  onTap: () {},
+                ),
+              ),
+              Expanded(
+                child: _BJoPostAction(
+                  icon: Icons.repeat_rounded,
+                  label: "Bagikan",
+                  onTap: () {},
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BJoPostAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _BJoPostAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 19, color: m8TextMuted),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: const TextStyle(color: m8TextMuted, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -7112,7 +7183,6 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
   }
 }
 
-
 // ============================================================
 // B'JO PROFILE
 // ============================================================
@@ -7120,26 +7190,17 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
 class BJoProfilePage extends StatelessWidget {
   final Map<String, dynamic> user;
 
-  const BJoProfilePage({
-    super.key,
-    required this.user,
-  });
+  const BJoProfilePage({super.key, required this.user});
 
-  String get name =>
-      user['name']?.toString().trim().isNotEmpty == true
-          ? user['name'].toString()
-          : "Pengguna B'Jo";
+  String get name => user['name']?.toString().trim().isNotEmpty == true
+      ? user['name'].toString()
+      : "Pengguna B'Jo";
 
-  String get pin =>
-      user['m8_pin']?.toString() ??
-      user['pin']?.toString() ??
-      '';
+  String get pin => user['m8_pin']?.toString() ?? user['pin']?.toString() ?? '';
 
   void _comingSoon(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$title akan diaktifkan berikutnya.'),
-      ),
+      SnackBar(content: Text('$title akan diaktifkan berikutnya.')),
     );
   }
 
@@ -7155,16 +7216,11 @@ class BJoProfilePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: m8White,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: m8Blue.withValues(alpha: 0.16),
-        ),
+        border: Border.all(color: m8Blue.withValues(alpha: 0.16)),
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 5,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         leading: Container(
           width: 44,
           height: 44,
@@ -7172,10 +7228,7 @@ class BJoProfilePage extends StatelessWidget {
             color: m8BlueDark,
             borderRadius: BorderRadius.circular(13),
           ),
-          child: Icon(
-            icon,
-            color: m8White,
-          ),
+          child: Icon(icon, color: m8White),
         ),
         title: Text(
           title,
@@ -7187,15 +7240,9 @@ class BJoProfilePage extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            color: m8TextMuted,
-            fontSize: 11,
-          ),
+          style: const TextStyle(color: m8TextMuted, fontSize: 11),
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: m8Blue,
-        ),
+        trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
       ),
     );
   }
@@ -7212,9 +7259,7 @@ class BJoProfilePage extends StatelessWidget {
             decoration: BoxDecoration(
               color: m8BlueDark,
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: m8BlueLight.withValues(alpha: 0.35),
-              ),
+              border: Border.all(color: m8BlueLight.withValues(alpha: 0.35)),
             ),
             child: Row(
               children: [
@@ -7222,9 +7267,7 @@ class BJoProfilePage extends StatelessWidget {
                   radius: 32,
                   backgroundColor: m8White,
                   child: Text(
-                    name.isNotEmpty
-                        ? name.substring(0, 1).toUpperCase()
-                        : 'B',
+                    name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'B',
                     style: const TextStyle(
                       color: m8BlueDark,
                       fontSize: 25,
@@ -7341,10 +7384,7 @@ class BJoProfilePage extends StatelessWidget {
             icon: Icons.logout_rounded,
             title: 'Logout semua perangkat',
             subtitle: 'Keluar dari seluruh sesi B’Jo',
-            onTap: () => _comingSoon(
-              context,
-              'Logout semua perangkat',
-            ),
+            onTap: () => _comingSoon(context, 'Logout semua perangkat'),
           ),
         ],
       ),
