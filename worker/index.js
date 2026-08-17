@@ -133,7 +133,8 @@ export default {
       }
 
       // ============================================================
-      // M8 R2 MEDIA GET
+      // ============================================================
+      // M8 R2 MEDIA GET - RANGE SUPPORT FOR VIDEO
       // ============================================================
       if (
         url.pathname.startsWith("/api/media/") &&
@@ -162,24 +163,129 @@ export default {
         if (!object) {
           return json({
             success: false,
-            error: "Foto tidak ditemukan.",
+            error: "Media tidak ditemukan.",
           }, 404);
         }
 
         const headers = new Headers(corsHeaders);
+
         object.writeHttpMetadata(headers);
-        headers.set("etag", object.httpEtag);
+
+        headers.set("ETag", object.httpEtag);
         headers.set(
           "Cache-Control",
           "public, max-age=31536000, immutable"
         );
+        headers.set("Accept-Ranges", "bytes");
+
+        const range = request.headers.get("Range");
+
+        // ==========================================================
+        // RANGE REQUEST
+        // ==========================================================
+        if (range) {
+          const match = range.match(/^bytes=(\d*)-(\d*)$/);
+
+          if (!match) {
+            return new Response("Invalid Range", {
+              status: 416,
+              headers,
+            });
+          }
+
+          const startText = match[1];
+          const endText = match[2];
+
+          const size = object.size;
+
+          let startByte;
+          let endByte;
+
+          if (startText === "") {
+            const suffixLength = Number(endText);
+
+            if (!Number.isFinite(suffixLength) || suffixLength <= 0) {
+              return new Response("Invalid Range", {
+                status: 416,
+                headers,
+              });
+            }
+
+            startByte = Math.max(0, size - suffixLength);
+            endByte = size - 1;
+          } else {
+            startByte = Number(startText);
+
+            if (!Number.isFinite(startByte) || startByte < 0 || startByte >= size) {
+              return new Response("Range Not Satisfiable", {
+                status: 416,
+                headers,
+              });
+            }
+
+            if (endText === "") {
+              endByte = size - 1;
+            } else {
+              endByte = Number(endText);
+
+              if (!Number.isFinite(endByte)) {
+                return new Response("Invalid Range", {
+                  status: 416,
+                  headers,
+                });
+              }
+
+              endByte = Math.min(endByte, size - 1);
+            }
+          }
+
+          if (endByte < startByte) {
+            return new Response("Range Not Satisfiable", {
+              status: 416,
+              headers,
+            });
+          }
+
+          const length = endByte - startByte + 1;
+
+          const rangedObject = await env.MEDIA.get(key, {
+            range: {
+              offset: startByte,
+              length,
+            },
+          });
+
+          if (!rangedObject) {
+            return new Response("Media tidak ditemukan.", {
+              status: 404,
+              headers,
+            });
+          }
+
+          headers.set(
+            "Content-Range",
+            `bytes ${startByte}-${endByte}/${size}`
+          );
+
+          headers.set("Content-Length", String(length));
+
+          return new Response(rangedObject.body, {
+            status: 206,
+            headers,
+          });
+        }
+
+        // ==========================================================
+        // NORMAL FULL MEDIA REQUEST
+        // ==========================================================
+        headers.set("Content-Length", String(object.size));
 
         return new Response(object.body, {
+          status: 200,
           headers,
         });
       }
 
-      // ============================================================
       // M8 STORY FEED - CREATE
       // ============================================================
       if (url.pathname === "/api/stories" && request.method === "POST") {
