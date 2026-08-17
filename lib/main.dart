@@ -4072,10 +4072,10 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                           shrinkWrap: true,
                                           physics:
                                               const NeverScrollableScrollPhysics(),
-                                          crossAxisCount: 4,
-                                          mainAxisSpacing: 14,
-                                          crossAxisSpacing: 8,
-                                          childAspectRatio: 0.78,
+                                          crossAxisCount: 3,
+                                          mainAxisSpacing: 16,
+                                          crossAxisSpacing: 14,
+                                          childAspectRatio: 0.92,
                                           children: [
                                             _AttachmentItem(
                                               icon: Icons.camera_alt_rounded,
