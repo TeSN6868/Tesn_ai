@@ -2357,10 +2357,28 @@ class _ChatsPageState extends State<ChatsPage> {
 
   int selectedTab = 0;
 
+  Timer? _chatListPollTimer;
+  bool _loadingChatsInProgress = false;
+
   @override
   void initState() {
     super.initState();
     loadMessenger();
+
+    _chatListPollTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) {
+        if (mounted && !_loadingChatsInProgress) {
+          loadChats();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _chatListPollTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> loadMessenger() async {
@@ -2374,6 +2392,10 @@ class _ChatsPageState extends State<ChatsPage> {
   }
 
   Future<void> loadChats() async {
+    if (_loadingChatsInProgress) return;
+
+    _loadingChatsInProgress = true;
+
     try {
       final response = await http.get(
         Uri.parse(
@@ -2392,6 +2414,8 @@ class _ChatsPageState extends State<ChatsPage> {
       }
     } catch (e) {
       debugPrint('M8 loadChats error: $e');
+    } finally {
+      _loadingChatsInProgress = false;
     }
   }
 
