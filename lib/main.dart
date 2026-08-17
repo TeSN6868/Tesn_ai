@@ -2693,14 +2693,8 @@ class _ChatsPageState extends State<ChatsPage> {
   Widget buildMessengerTabs() {
     const tabs = ['Semua', 'Pribadi', 'Grup'];
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: m8White,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
       child: Row(
         children: List.generate(tabs.length, (index) {
           final selected = selectedTab == index;
@@ -2718,17 +2712,23 @@ class _ChatsPageState extends State<ChatsPage> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
+                margin: EdgeInsets.only(
+                  right: index == tabs.length - 1 ? 0 : 8,
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: selected ? m8Blue : Colors.transparent,
-                  borderRadius: BorderRadius.circular(18),
+                  color: selected
+                      ? m8Blue
+                      : m8White.withValues(alpha: 0.72),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   tabs[index],
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: selected ? m8White : m8TextMuted,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight:
+                        selected ? FontWeight.w800 : FontWeight.w600,
                     fontSize: 13,
                   ),
                 ),
@@ -2743,25 +2743,243 @@ class _ChatsPageState extends State<ChatsPage> {
   Widget buildEmptyMessenger() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(30),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.forum_outlined, size: 70, color: m8Blue),
-            const SizedBox(height: 20),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: m8Blue.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.chat_bubble_outline_rounded,
+                size: 32,
+                color: m8Blue,
+              ),
+            ),
+            const SizedBox(height: 18),
             const Text(
               'Belum ada percakapan',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
                 color: m8Text,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Mulai percakapan pertama kamu di M8.',
+            const SizedBox(height: 7),
+            const Text(
+              'Mulai percakapan pribadi atau buat grup baru.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: m8TextMuted),
+              style: TextStyle(
+                color: m8TextMuted,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: showNewChatMenu,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Mulai Chat'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumAvatar({
+    required String name,
+    String photoUrl = '',
+    bool group = false,
+  }) {
+
+    return CircleAvatar(
+      radius: 25,
+      backgroundColor: m8Blue.withValues(alpha: 0.12),
+      backgroundImage:
+          photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+      child: photoUrl.isEmpty
+          ? Icon(
+              group
+                  ? Icons.groups_rounded
+                  : Icons.person_rounded,
+              color: m8Blue,
+              size: group ? 25 : 23,
+            )
+          : null,
+    );
+  }
+
+  Widget _buildPrivateChatTile(
+    Map<String, dynamic> chat,
+  ) {
+    final p1 =
+        chat['participant_1_pin']?.toString() ?? '';
+    final p2 =
+        chat['participant_2_pin']?.toString() ?? '';
+
+    final other = p1 == widget.myPin ? p2 : p1;
+
+    final otherUser = chat['other_user'] is Map
+        ? Map<String, dynamic>.from(chat['other_user'])
+        : <String, dynamic>{};
+
+    final name =
+        otherUser['name']?.toString().trim().isNotEmpty == true
+            ? otherUser['name'].toString().trim()
+            : other;
+
+    final photo =
+        otherUser['profile_photo_url']
+                ?.toString()
+                .trim() ??
+            '';
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatRoomPage(
+              token: widget.token,
+              myPin: widget.myPin,
+              chat: chat,
+            ),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 10,
+        ),
+        child: Row(
+          children: [
+            _buildPremiumAvatar(
+              name: name,
+              photoUrl: photo,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: m8Text,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Percakapan pribadi',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: m8TextMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: m8TextMuted,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGroupChatTile(
+    Map<String, dynamic> group,
+  ) {
+    final name =
+        group['name']?.toString().trim().isNotEmpty == true
+            ? group['name'].toString().trim()
+            : 'Grup B’Jo';
+
+    final description =
+        group['description']?.toString().trim() ?? '';
+
+    final count =
+        group['member_count']?.toString() ?? '0';
+
+    final photo =
+        group['photo_url']?.toString().trim() ?? '';
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => M8GroupChatPage(
+              token: widget.token,
+              myPin: widget.myPin,
+              group: group,
+            ),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 10,
+        ),
+        child: Row(
+          children: [
+            _buildPremiumAvatar(
+              name: name,
+              photoUrl: photo,
+              group: true,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: m8Text,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description.isNotEmpty
+                        ? '$count anggota • $description'
+                        : '$count anggota',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: m8TextMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: m8TextMuted,
             ),
           ],
         ),
@@ -2777,86 +2995,10 @@ class _ChatsPageState extends State<ChatsPage> {
     return RefreshIndicator(
       onRefresh: loadChats,
       child: ListView.builder(
-        padding: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.only(top: 4, bottom: 90),
         itemCount: chats.length,
         itemBuilder: (context, index) {
-          final chat = chats[index];
-
-          final p1 = chat['participant_1_pin']?.toString() ?? '';
-
-          final p2 = chat['participant_2_pin']?.toString() ?? '';
-
-          final other = p1 == widget.myPin ? p2 : p1;
-
-          final otherUser = chat['other_user'] is Map
-              ? Map<String, dynamic>.from(chat['other_user'])
-              : <String, dynamic>{};
-
-          final otherName =
-              otherUser['name']?.toString().trim().isNotEmpty == true
-              ? otherUser['name'].toString().trim()
-              : other;
-
-          final photoUrl = otherUser['profile_photo_url']?.toString() ?? '';
-
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-            decoration: BoxDecoration(
-              color: m8White,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                radius: 21,
-                backgroundColor: m8Blue,
-                backgroundImage: photoUrl.isNotEmpty
-                    ? NetworkImage(photoUrl)
-                    : null,
-                child: photoUrl.isEmpty
-                    ? Text(
-                        otherName.isNotEmpty
-                            ? otherName
-                                  .substring(
-                                    0,
-                                    otherName.length > 2 ? 2 : otherName.length,
-                                  )
-                                  .toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: m8White,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null,
-              ),
-              title: Text(
-                otherName,
-                style: const TextStyle(
-                  color: m8Text,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-              subtitle: const Text(
-                'Percakapan M8',
-                style: TextStyle(color: m8TextMuted, fontSize: 11),
-              ),
-              trailing: const Icon(Icons.chevron_right, color: m8Blue),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ChatRoomPage(
-                      token: widget.token,
-                      myPin: widget.myPin,
-                      chat: chat,
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
+          return _buildPrivateChatTile(chats[index]);
         },
       ),
     );
@@ -2864,111 +3006,22 @@ class _ChatsPageState extends State<ChatsPage> {
 
   Widget buildGroupList() {
     if (groupsLoading && groups.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
     if (groups.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(30),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.groups_rounded, size: 72, color: m8Blue),
-              const SizedBox(height: 18),
-              const Text(
-                'Belum ada grup',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: m8Text,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Buat grup M8 untuk mengobrol bersama teman, keluarga, atau tim.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: m8TextMuted, fontSize: 13),
-              ),
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: createGroup,
-                icon: const Icon(Icons.group_add),
-                label: const Text('Buat grup'),
-              ),
-            ],
-          ),
-        ),
-      );
+      return buildEmptyMessenger();
     }
 
     return RefreshIndicator(
       onRefresh: loadGroups,
       child: ListView.builder(
-        padding: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.only(top: 4, bottom: 90),
         itemCount: groups.length,
         itemBuilder: (context, index) {
-          final group = groups[index];
-
-          final name = group['name']?.toString() ?? 'Grup M8';
-
-          final description = group['description']?.toString().trim() ?? '';
-
-          final memberCount = group['member_count']?.toString() ?? '0';
-
-          final photoUrl = group['photo_url']?.toString().trim() ?? '';
-
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-            decoration: BoxDecoration(
-              color: m8White,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: m8Blue.withValues(alpha: 0.12)),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                radius: 23,
-                backgroundColor: m8Blue,
-                backgroundImage: photoUrl.isNotEmpty
-                    ? NetworkImage(photoUrl)
-                    : null,
-                child: photoUrl.isEmpty
-                    ? const Icon(Icons.groups_rounded, color: m8White)
-                    : null,
-              ),
-              title: Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: m8Text,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-              subtitle: Text(
-                description.isNotEmpty
-                    ? '$memberCount anggota • $description'
-                    : '$memberCount anggota',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: m8TextMuted, fontSize: 11),
-              ),
-              trailing: const Icon(Icons.chevron_right, color: m8Blue),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => M8GroupChatPage(
-                      token: widget.token,
-                      myPin: widget.myPin,
-                      group: group,
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
+          return _buildGroupChatTile(groups[index]);
         },
       ),
     );
@@ -2982,151 +3035,51 @@ class _ChatsPageState extends State<ChatsPage> {
     return RefreshIndicator(
       onRefresh: loadMessenger,
       child: ListView(
-        padding: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.only(
+          top: 4,
+          bottom: 90,
+        ),
         children: [
           if (chats.isNotEmpty) ...[
             const Padding(
-              padding: EdgeInsets.fromLTRB(18, 8, 18, 4),
+              padding: EdgeInsets.fromLTRB(
+                18,
+                10,
+                18,
+                4,
+              ),
               child: Text(
-                'Pribadi',
+                'Percakapan',
                 style: TextStyle(
                   color: m8TextMuted,
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  fontSize: 12,
+                  letterSpacing: 0.4,
                 ),
               ),
             ),
-            ...List.generate(chats.length, (index) {
-              final chat = chats[index];
-
-              final p1 = chat['participant_1_pin']?.toString() ?? '';
-
-              final p2 = chat['participant_2_pin']?.toString() ?? '';
-
-              final other = p1 == widget.myPin ? p2 : p1;
-
-              final otherUser = chat['other_user'] is Map
-                  ? Map<String, dynamic>.from(chat['other_user'])
-                  : <String, dynamic>{};
-
-              final name =
-                  otherUser['name']?.toString().trim().isNotEmpty == true
-                  ? otherUser['name'].toString().trim()
-                  : other;
-
-              final photo = otherUser['profile_photo_url']?.toString() ?? '';
-
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                decoration: BoxDecoration(
-                  color: m8White,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: m8Blue,
-                    backgroundImage: photo.isNotEmpty
-                        ? NetworkImage(photo)
-                        : null,
-                    child: photo.isEmpty
-                        ? Text(
-                            name
-                                .substring(0, name.length > 2 ? 2 : name.length)
-                                .toUpperCase(),
-                            style: const TextStyle(
-                              color: m8White,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : null,
-                  ),
-                  title: Text(
-                    name,
-                    style: const TextStyle(
-                      color: m8Text,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'Percakapan M8',
-                    style: TextStyle(color: m8TextMuted, fontSize: 11),
-                  ),
-                  trailing: const Icon(Icons.chevron_right, color: m8Blue),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChatRoomPage(
-                          token: widget.token,
-                          myPin: widget.myPin,
-                          chat: chat,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            }),
+            ...chats.map(_buildPrivateChatTile),
           ],
           if (groups.isNotEmpty) ...[
             const Padding(
-              padding: EdgeInsets.fromLTRB(18, 16, 18, 4),
+              padding: EdgeInsets.fromLTRB(
+                18,
+                18,
+                18,
+                4,
+              ),
               child: Text(
                 'Grup',
                 style: TextStyle(
                   color: m8TextMuted,
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  fontSize: 12,
+                  letterSpacing: 0.4,
                 ),
               ),
             ),
-            ...List.generate(groups.length, (index) {
-              final group = groups[index];
-
-              final name = group['name']?.toString() ?? 'Grup M8';
-
-              final count = group['member_count']?.toString() ?? '0';
-
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                decoration: BoxDecoration(
-                  color: m8White,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: m8Blue,
-                    child: Icon(Icons.groups_rounded, color: m8White),
-                  ),
-                  title: Text(
-                    name,
-                    style: const TextStyle(
-                      color: m8Text,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '$count anggota',
-                    style: const TextStyle(color: m8TextMuted, fontSize: 11),
-                  ),
-                  trailing: const Icon(Icons.chevron_right, color: m8Blue),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => M8GroupChatPage(
-                          token: widget.token,
-                          myPin: widget.myPin,
-                          group: group,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            }),
+            ...groups.map(_buildGroupChatTile),
           ],
-          const SizedBox(height: 90),
         ],
       ),
     );
@@ -3136,24 +3089,14 @@ class _ChatsPageState extends State<ChatsPage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _M8StoryRail(
-          onMyStoryTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => StoryPage(user: {'m8_pin': widget.myPin}),
-              ),
-            );
-          },
-        ),
-
         buildMessengerTabs(),
-
         Expanded(
           child: Stack(
             children: [
               if (loading)
-                const Center(child: CircularProgressIndicator())
+                const Center(
+                  child: CircularProgressIndicator(),
+                )
               else if (selectedTab == 0)
                 buildAllMessenger()
               else if (selectedTab == 1)
@@ -3166,7 +3109,9 @@ class _ChatsPageState extends State<ChatsPage> {
                 bottom: 20,
                 child: FloatingActionButton(
                   onPressed: showNewChatMenu,
-                  child: const Icon(Icons.add_comment_rounded),
+                  child: const Icon(
+                    Icons.add_comment_rounded,
+                  ),
                 ),
               ),
             ],
