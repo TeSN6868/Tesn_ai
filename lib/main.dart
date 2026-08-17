@@ -7053,7 +7053,19 @@ class _BJoPostCardState extends State<_BJoPostCard> {
               CircleAvatar(
                 radius: 23,
                 backgroundColor: m8BlueDark,
-                child: const Icon(Icons.person_rounded, color: m8White),
+                backgroundImage:
+                    post['user_photo_url']?.toString().trim().isNotEmpty == true
+                        ? NetworkImage(
+                            post['user_photo_url'].toString().trim(),
+                          )
+                        : null,
+                child:
+                    post['user_photo_url']?.toString().trim().isNotEmpty == true
+                        ? null
+                        : const Icon(
+                            Icons.person_rounded,
+                            color: m8White,
+                          ),
               ),
               const SizedBox(width: 11),
               Expanded(

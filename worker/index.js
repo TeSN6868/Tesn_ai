@@ -760,6 +760,7 @@ export default {
             s.story_id,
             s.user_pin,
             u.name AS user_name,
+            u.profile_photo_url AS user_photo_url,
             s.media_url,
             s.media_type,
             s.caption,
