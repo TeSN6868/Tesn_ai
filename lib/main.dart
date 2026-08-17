@@ -9720,7 +9720,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  'Terhubung melalui M8 Messenger',
+                  'Terhubung melalui B\'Jo Messenger',
                   style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
@@ -9753,7 +9753,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'M8 PIN',
+                        'B\'Jo PIN',
                         style: TextStyle(
                           fontSize: 12,
                           color: m8TextMuted,
@@ -9774,7 +9774,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Salin M8 PIN',
+                  tooltip: 'Salin B\'Jo PIN',
                   onPressed: pin.isEmpty ? null : () => _copyPin(pin),
                   icon: const Icon(Icons.copy_rounded, color: m8Blue),
                 ),
@@ -9784,7 +9784,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 18),
 
-          _sectionTitle('Profil Saya'),
+          _sectionTitle('Profil B\'Jo'),
 
           _menuItem(
             icon: Icons.person_outline_rounded,
@@ -9796,99 +9796,29 @@ class _ProfilePageState extends State<ProfilePage> {
           _menuItem(
             icon: Icons.photo_camera_outlined,
             title: 'Foto Profil',
-            subtitle: 'Atur foto profil M8 kamu',
-            onTap: () => _comingSoon('Foto profil'),
-          ),
-
-          _menuItem(
-            icon: Icons.info_outline_rounded,
-            title: 'Tentang Saya',
-            subtitle: 'Tambahkan informasi singkat tentang kamu',
-            onTap: () => _comingSoon('Tentang Saya'),
+            subtitle: 'Ganti foto profil B\'Jo',
+            onTap: _changeProfilePhoto,
           ),
 
           const SizedBox(height: 8),
 
-          _sectionTitle('Akun'),
-
-          _menuItem(
-            icon: Icons.security_rounded,
-            title: 'Keamanan',
-            subtitle: 'Kelola keamanan akun M8',
-            onTap: () => _comingSoon('Keamanan'),
-          ),
+          _sectionTitle('B\'Jo PIN'),
 
           _menuItem(
             icon: Icons.pin_outlined,
-            title: 'M8 PIN',
-            subtitle: 'PIN unik untuk terhubung dengan pengguna lain',
-            onTap: () => _comingSoon('M8 PIN'),
-          ),
-
-          _menuItem(
-            icon: Icons.volume_up_outlined,
-            title: 'Nada M8',
-            subtitle: 'Tes nada khas M8 Messenger',
-            onTap: _testHeySound,
+            title: 'B\'Jo PIN',
+            subtitle: pin.isEmpty
+                ? 'PIN belum tersedia'
+                : 'PIN: $pin',
+            onTap: pin.isEmpty ? null : () => _copyPin(pin),
           ),
 
           const SizedBox(height: 8),
-
-          _menuItem(
-            icon: Icons.contacts_outlined,
-            title: 'Kontak & Akun',
-            subtitle: 'Kelola informasi kontak akun M8',
-            onTap: () => _comingSoon('Kontak & Akun'),
-          ),
-
-          _menuItem(
-            icon: Icons.lock_outline_rounded,
-            title: 'Privasi',
-            subtitle: 'Kelola privasi dan visibilitas profil',
-            onTap: () => _comingSoon('Privasi'),
-          ),
-
-          const SizedBox(height: 8),
-
-          _sectionTitle('Preferensi'),
-
-          _menuItem(
-            icon: Icons.notifications_none_rounded,
-            title: 'Notifikasi',
-            subtitle: 'Atur pemberitahuan pesan dan aktivitas M8',
-            onTap: () => _comingSoon('Notifikasi'),
-          ),
-
-          _menuItem(
-            icon: Icons.palette_outlined,
-            title: 'Tampilan',
-            subtitle: 'Atur tampilan dan nuansa M8 Messenger',
-            onTap: () => _comingSoon('Tampilan'),
-          ),
-
-          _menuItem(
-            icon: Icons.language_rounded,
-            title: 'Bahasa',
-            subtitle: 'Pilih bahasa yang digunakan di M8',
-            onTap: () => _comingSoon('Bahasa'),
-          ),
-
-          const SizedBox(height: 8),
-          _sectionTitle('Aplikasi'),
-
-          _menuItem(
-            icon: Icons.info_outline_rounded,
-            title: 'Tentang M8 Messenger',
-            subtitle: 'Messenger dengan identitas M8 PIN',
-            onTap: () => _comingSoon('Tentang M8 Messenger'),
-          ),
-
-          const SizedBox(height: 10),
 
           _menuItem(
             icon: Icons.logout_rounded,
             title: 'Keluar',
-            subtitle: 'Keluar dari akun M8',
+            subtitle: 'Keluar dari akun B\'Jo',
             danger: true,
             onTap: widget.onLogout,
           ),
