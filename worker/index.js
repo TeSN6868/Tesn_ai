@@ -1581,23 +1581,73 @@ export default {
             c.participant_1_pin,
             c.participant_2_pin,
             c.created_at,
+
             CASE
-              WHEN c.participant_1_pin = ? THEN c.participant_2_pin
+              WHEN c.participant_1_pin = ?
+              THEN c.participant_2_pin
               ELSE c.participant_1_pin
             END AS other_pin,
+
             u.id AS other_user_id,
             u.name AS other_user_name,
-            u.profile_photo_url AS other_profile_photo_url
+            u.profile_photo_url AS other_profile_photo_url,
+
+            (
+              SELECT m.message
+              FROM messages m
+              WHERE m.chat_id = c.id
+              ORDER BY m.id DESC
+              LIMIT 1
+            ) AS last_message,
+
+            (
+              SELECT m.timestamp
+              FROM messages m
+              WHERE m.chat_id = c.id
+              ORDER BY m.id DESC
+              LIMIT 1
+            ) AS last_message_time,
+
+            (
+              SELECT COUNT(*)
+              FROM messages m
+              WHERE m.chat_id = c.id
+                AND m.sender_pin != ?
+                AND m.status != 'read'
+            ) AS unread_count
+
           FROM chats c
+
           LEFT JOIN users u
             ON u.m8_pin = CASE
-              WHEN c.participant_1_pin = ? THEN c.participant_2_pin
+              WHEN c.participant_1_pin = ?
+              THEN c.participant_2_pin
               ELSE c.participant_1_pin
             END
-          WHERE c.participant_1_pin = ? OR c.participant_2_pin = ?
-          ORDER BY c.id DESC
+
+          WHERE
+            c.participant_1_pin = ?
+            OR c.participant_2_pin = ?
+
+          ORDER BY
+            COALESCE(
+              (
+                SELECT m.timestamp
+                FROM messages m
+                WHERE m.chat_id = c.id
+                ORDER BY m.id DESC
+                LIMIT 1
+              ),
+              c.created_at
+            ) DESC
         `)
-          .bind(myPin, myPin, myPin, myPin)
+          .bind(
+            myPin,
+            myPin,
+            myPin,
+            myPin,
+            myPin
+          )
           .all();
 
         const chats = (result.results || []).map((chat) => ({
@@ -1605,6 +1655,11 @@ export default {
           participant_1_pin: chat.participant_1_pin,
           participant_2_pin: chat.participant_2_pin,
           created_at: chat.created_at,
+
+          last_message: chat.last_message ?? '',
+          last_message_time: chat.last_message_time,
+          unread_count: Number(chat.unread_count || 0),
+
           other_user: {
             id: chat.other_user_id,
             name: chat.other_user_name,
