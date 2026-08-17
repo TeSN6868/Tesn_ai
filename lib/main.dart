@@ -6277,7 +6277,7 @@ class _StoryPageState extends State<StoryPage> {
                       maxLines: 6,
                       maxLength: 5000,
                       decoration: InputDecoration(
-                        hintText: "Apa yang ingin kamu bagikan?",
+                        hintText: "Bagikan sesuatu yang berarti…",
                         filled: true,
                         fillColor: m8WhiteSoft,
                         border: OutlineInputBorder(
@@ -6288,40 +6288,49 @@ class _StoryPageState extends State<StoryPage> {
                     ),
                     if (selectedMedia != null) ...[
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: m8WhiteSoft,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Stack(
                           children: [
-                            Icon(
-                              mediaType == 'video'
-                                  ? Icons.videocam_rounded
-                                  : Icons.image_rounded,
-                              color: m8Blue,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                selectedMedia!.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: m8BlueDark,
-                                  fontWeight: FontWeight.w600,
+                            if (mediaType == 'image')
+                              Image.file(
+                                File(selectedMedia!.path),
+                                width: double.infinity,
+                                height: 220,
+                                fit: BoxFit.cover,
+                              )
+                            else
+                              Container(
+                                width: double.infinity,
+                                height: 220,
+                                color: m8BlueDark,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.play_circle_fill_rounded,
+                                    color: m8White,
+                                    size: 64,
+                                  ),
                                 ),
                               ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                setSheetState(() {
-                                  selectedMedia = null;
-                                  mediaType = null;
-                                });
-                              },
-                              icon: const Icon(Icons.close_rounded),
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Material(
+                                color: Colors.black54,
+                                shape: const CircleBorder(),
+                                child: IconButton(
+                                  onPressed: () {
+                                    setSheetState(() {
+                                      selectedMedia = null;
+                                      mediaType = null;
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                    color: m8White,
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
