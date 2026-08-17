@@ -1173,7 +1173,10 @@ class _BJoMainShellState extends State<BJoMainShell> {
           ),
         ],
       ),
-      body: M8DenimBackground(child: page()),
+      body: Container(
+        color: m8WhiteSoft,
+        child: page(),
+      ),
       bottomNavigationBar: NavigationBar(
         backgroundColor: m8Blue,
         indicatorColor: m8BlueDark,
