@@ -5747,6 +5747,233 @@ class _StoryPageState extends State<StoryPage> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> _loadStoryContacts() async {
+    final pin =
+        widget.user['m8_pin']?.toString() ??
+        widget.user['pin']?.toString() ??
+        '';
+
+    if (pin.isEmpty) {
+      throw Exception('M8 PIN tidak ditemukan.');
+    }
+
+    final response = await http
+        .get(
+          Uri.parse(
+            '$apiBase/api/chats?m8_pin=${Uri.encodeComponent(pin)}',
+          ),
+        )
+        .timeout(const Duration(seconds: 20));
+
+    if (response.statusCode != 200) {
+      throw Exception('Gagal mengambil daftar teman B''Jo.');
+    }
+
+    final data = jsonDecode(response.body);
+    final raw = data['chats'];
+
+    if (raw is! List) return [];
+
+    final result = <Map<String, dynamic>>[];
+
+    for (final item in raw) {
+      if (item is! Map) continue;
+
+      final other = item['other_user'];
+
+      if (other is Map) {
+        final contact = Map<String, dynamic>.from(other);
+        final contactPin = contact['m8_pin']?.toString().trim() ?? '';
+
+        if (contactPin.isNotEmpty && contactPin != pin) {
+          result.add(contact);
+        }
+      }
+    }
+
+    final seen = <String>{};
+
+    return result.where((contact) {
+      final contactPin = contact['m8_pin']?.toString() ?? '';
+      return seen.add(contactPin);
+    }).toList();
+  }
+
+  Future<List<String>?> _selectStoryViewers() async {
+    final contacts = await _loadStoryContacts();
+
+    if (!mounted) return null;
+
+    if (contacts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Belum ada kontak chat. Story Private hanya bisa dibagikan kepada kontak B''Jo.',
+          ),
+        ),
+      );
+      return null;
+    }
+
+    final selected = <String>{};
+
+    return showModalBottomSheet<List<String>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.72,
+                decoration: const BoxDecoration(
+                  color: m8White,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 14),
+                    Container(
+                      width: 42,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: m8TextMuted,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Siapa yang dapat melihat?',
+                      style: TextStyle(
+                        color: m8BlueDark,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'Story ini hanya akan terlihat oleh orang yang kamu pilih.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: m8TextMuted),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        itemCount: contacts.length,
+                        separatorBuilder: (_, __) =>
+                            const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final contact = contacts[index];
+                          final contactPin =
+                              contact['m8_pin']?.toString() ?? '';
+                          final name =
+                              contact['name']?.toString().trim().isNotEmpty ==
+                                      true
+                                  ? contact['name'].toString()
+                                  : 'Pengguna B''Jo';
+
+                          final checked = selected.contains(contactPin);
+
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: m8BlueDark,
+                              backgroundImage:
+                                  (contact['profile_photo_url']
+                                              ?.toString()
+                                              .isNotEmpty ==
+                                          true)
+                                      ? NetworkImage(
+                                          contact['profile_photo_url']
+                                              .toString(),
+                                        )
+                                      : null,
+                              child:
+                                  contact['profile_photo_url']
+                                              ?.toString()
+                                              .isNotEmpty ==
+                                          true
+                                      ? null
+                                      : const Icon(
+                                          Icons.person_rounded,
+                                          color: m8White,
+                                        ),
+                            ),
+                            title: Text(
+                              name,
+                              style: const TextStyle(
+                                color: m8BlueDark,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            subtitle: Text(
+                              contactPin,
+                              style: const TextStyle(
+                                color: m8TextMuted,
+                                fontSize: 11,
+                              ),
+                            ),
+                            trailing: Checkbox(
+                              value: checked,
+                              onChanged: (value) {
+                                setSheetState(() {
+                                  if (value == true) {
+                                    selected.add(contactPin);
+                                  } else {
+                                    selected.remove(contactPin);
+                                  }
+                                });
+                              },
+                            ),
+                            onTap: () {
+                              setSheetState(() {
+                                if (checked) {
+                                  selected.remove(contactPin);
+                                } else {
+                                  selected.add(contactPin);
+                                }
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: selected.isEmpty
+                              ? null
+                              : () => Navigator.pop(
+                                    sheetContext,
+                                    selected.toList(),
+                                  ),
+                          icon: const Icon(Icons.lock_rounded),
+                          label: Text(
+                            selected.isEmpty
+                                ? 'Pilih penerima'
+                                : 'Bagikan ke ${selected.length} orang',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _addStory() async {
     if (uploading) return;
 
@@ -5856,6 +6083,14 @@ class _StoryPageState extends State<StoryPage> {
         throw Exception('M8 PIN tidak ditemukan.');
       }
 
+      final viewerPins = await _selectStoryViewers();
+
+      if (viewerPins == null || viewerPins.isEmpty) {
+        throw Exception(
+          'Pilih minimal satu orang yang boleh melihat Story.',
+        );
+      }
+
       final createResponse = await http
           .post(
             Uri.parse('$apiBase/api/stories'),
@@ -5865,6 +6100,7 @@ class _StoryPageState extends State<StoryPage> {
               'media_url': mediaUrl,
               'media_type': choice,
               'caption': '',
+              'viewer_pins': viewerPins,
             }),
           )
           .timeout(const Duration(seconds: 20));

@@ -13,6 +13,16 @@ async function ensureStoryTables(db) {
       view_count INTEGER NOT NULL DEFAULT 0
     )
   `).run();
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS story_viewers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      story_id TEXT NOT NULL,
+      viewer_pin TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      UNIQUE(story_id, viewer_pin)
+    )
+  `).run();
 }
 
 const corsHeaders = {
@@ -189,6 +199,17 @@ export default {
         const mediaType = String(body.media_type || "image").trim().toLowerCase();
         const caption = String(body.caption || "").trim();
 
+        const rawViewers = Array.isArray(body.viewer_pins)
+          ? body.viewer_pins
+          : [];
+
+        const viewerPins = [...new Set(
+          rawViewers
+            .map((pin) => String(pin || "").trim())
+            .filter(Boolean)
+            .filter((pin) => pin !== userPin)
+        )];
+
         if (!userPin || !mediaUrl) {
           return json({
             success: false,
@@ -240,6 +261,20 @@ export default {
           throw new Error("Gagal menyimpan Story M8.");
         }
 
+        if (viewerPins.length > 0) {
+          for (const viewerPin of viewerPins) {
+            await env.DB.prepare(`
+              INSERT OR IGNORE INTO story_viewers
+                (story_id, viewer_pin, created_at)
+              VALUES (?, ?, ?)
+            `).bind(
+              storyId,
+              viewerPin,
+              now
+            ).run();
+          }
+        }
+
         return json({
           success: true,
           message: "Story M8 berhasil dibuat.",
@@ -254,6 +289,8 @@ export default {
             expires_at: expiresAt,
             is_active: true,
             view_count: 0,
+            privacy: viewerPins.length > 0 ? "private_selected" : "private",
+            viewer_count: viewerPins.length,
           },
         }, 201);
       }
@@ -298,9 +335,17 @@ export default {
           INNER JOIN users u ON u.m8_pin = s.user_pin
           WHERE s.is_active = 1
             AND s.expires_at > ?
-            AND s.user_pin != ?
+            AND (
+              s.user_pin = ?
+              OR EXISTS (
+                SELECT 1
+                FROM story_viewers sv
+                WHERE sv.story_id = s.story_id
+                  AND sv.viewer_pin = ?
+              )
+            )
           ORDER BY s.created_at DESC
-        `).bind(now, myPin).all();
+        `).bind(now, myPin, myPin).all();
 
         return json({
           success: true,
