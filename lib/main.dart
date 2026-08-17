@@ -7116,22 +7116,28 @@ class _BJoPostCardState extends State<_BJoPostCard> {
               onTap: _openMedia,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  mediaUrl,
+                child: SizedBox(
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) {
-                    return Container(
-                      height: 180,
-                      color: m8WhiteSoft,
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.broken_image_rounded,
-                        size: 42,
-                        color: m8TextMuted,
-                      ),
-                    );
-                  },
+                  height: 230,
+                  child: Image.network(
+                    mediaUrl,
+                    width: double.infinity,
+                    height: 230,
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.medium,
+                    errorBuilder: (_, __, ___) {
+                      return Container(
+                        height: 230,
+                        color: m8WhiteSoft,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.broken_image_rounded,
+                          size: 42,
+                          color: m8TextMuted,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -7143,17 +7149,53 @@ class _BJoPostCardState extends State<_BJoPostCard> {
               onTap: _openMedia,
               child: Container(
                 width: double.infinity,
-                height: 220,
+                height: 200,
                 decoration: BoxDecoration(
                   color: m8BlueDark,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Center(
-                  child: Icon(
-                    Icons.play_circle_fill_rounded,
-                    color: m8White,
-                    size: 68,
-                  ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Icon(
+                      Icons.play_circle_fill_rounded,
+                      color: m8White,
+                      size: 64,
+                    ),
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              color: m8White,
+                              size: 14,
+                            ),
+                            SizedBox(width: 3),
+                            Text(
+                              'Putar',
+                              style: TextStyle(
+                                color: m8White,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -7195,13 +7237,6 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                   label: liked ? 'Suka $likeCount' : 'Suka',
                   onTap: _working ? () {} : _toggleLike,
                   active: liked,
-                ),
-              ),
-              Expanded(
-                child: _BJoPostAction(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  label: "Komentar",
-                  onTap: () {},
                 ),
               ),
               Expanded(
