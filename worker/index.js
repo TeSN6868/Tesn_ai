@@ -14,6 +14,18 @@ async function ensureStoryTables(db) {
     )
   `).run();
 
+  try {
+    await db.prepare(
+      `ALTER TABLE stories ADD COLUMN latitude REAL`
+    ).run();
+  } catch (_) {}
+
+  try {
+    await db.prepare(
+      `ALTER TABLE stories ADD COLUMN longitude REAL`
+    ).run();
+  } catch (_) {}
+
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS story_viewers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -323,6 +335,27 @@ export default {
         const caption = String(
           body.caption || body.text || ""
         ).trim();
+        const latitude =
+          body.latitude == null || body.latitude === ""
+            ? null
+            : Number(body.latitude);
+
+        const longitude =
+          body.longitude == null || body.longitude === ""
+            ? null
+            : Number(body.longitude);
+
+        if (
+          (latitude !== null && !Number.isFinite(latitude)) ||
+          (longitude !== null && !Number.isFinite(longitude))
+        ) {
+          return json({
+            success: false,
+            error: "Koordinat lokasi tidak valid.",
+          }, 400);
+        }
+
+
 
         if (!userPin) {
           return json({
@@ -388,18 +421,22 @@ export default {
               media_url,
               media_type,
               caption,
+              latitude,
+              longitude,
               created_at,
               expires_at,
               is_active,
               view_count
             )
-          VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)
         `).bind(
           storyId,
           userPin,
           mediaUrl,
           mediaType,
           caption,
+          latitude,
+          longitude,
           now,
           expiresAt
         ).run();
@@ -418,6 +455,8 @@ export default {
             media_url: mediaUrl,
             media_type: mediaType,
             caption,
+            latitude,
+            longitude,
             created_at: now,
             expires_at: expiresAt,
             is_active: true,
@@ -764,6 +803,8 @@ export default {
             s.media_url,
             s.media_type,
             s.caption,
+            s.latitude,
+            s.longitude,
             s.created_at,
             s.expires_at,
             s.is_active,

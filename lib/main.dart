@@ -5,6 +5,9 @@ import 'dart:math';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' show LatLng;
+
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
@@ -103,6 +106,75 @@ const m8WhiteSoft = Color(0xFFF6F8F9);
 
 const m8Text = Color(0xFF172331);
 const m8TextMuted = Color(0xFF6D7B87);
+
+
+
+class _BJoMapPicker extends StatefulWidget {
+  final LatLng initialLocation;
+  final ValueChanged<LatLng> onSelected;
+
+  const _BJoMapPicker({
+    required this.initialLocation,
+    required this.onSelected,
+  });
+
+  @override
+  State<_BJoMapPicker> createState() => _BJoMapPickerState();
+}
+
+class _BJoMapPickerState extends State<_BJoMapPicker> {
+  late LatLng selectedLocation;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedLocation = widget.initialLocation;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: SizedBox(
+        height: 280,
+        child: FlutterMap(
+          options: MapOptions(
+            initialCenter: selectedLocation,
+            initialZoom: 13,
+            onTap: (_, point) {
+              setState(() {
+                selectedLocation = point;
+              });
+
+              widget.onSelected(point);
+            },
+          ),
+          children: [
+            TileLayer(
+              urlTemplate:
+                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.bjo.messenger',
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: selectedLocation,
+                  width: 50,
+                  height: 50,
+                  child: const Icon(
+                    Icons.location_pin,
+                    color: m8Blue,
+                    size: 46,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class M8DenimTexturePainter extends CustomPainter {
   @override
@@ -6199,6 +6271,7 @@ class _StoryPageState extends State<StoryPage> {
 
     XFile? selectedMedia;
     String? mediaType;
+    LatLng? selectedLocation;
 
     await showModalBottomSheet(
       context: context,
@@ -6234,6 +6307,92 @@ class _StoryPageState extends State<StoryPage> {
                 setSheetState(() {
                   selectedMedia = file;
                   mediaType = 'video';
+                });
+              }
+            }
+
+            Future<void> chooseLocation() async {
+              LatLng pickedLocation =
+                  selectedLocation ??
+                  const LatLng(-6.9175, 107.6191);
+
+              final result = await showModalBottomSheet<LatLng>(
+                context: sheetContext,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (mapContext) {
+                  return StatefulBuilder(
+                    builder: (context, setMapState) {
+                      return SafeArea(
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: const BoxDecoration(
+                            color: m8White,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(26),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    'Pilih Lokasi',
+                                    style: TextStyle(
+                                      color: m8BlueDark,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  IconButton(
+                                    onPressed: () =>
+                                        Navigator.pop(mapContext),
+                                    icon: const Icon(Icons.close_rounded),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Sentuh peta untuk memilih lokasi.',
+                                style: TextStyle(
+                                  color: m8TextMuted,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _BJoMapPicker(
+                                initialLocation: pickedLocation,
+                                onSelected: (point) {
+                                  pickedLocation = point;
+                                  setMapState(() {});
+                                },
+                              ),
+                              const SizedBox(height: 14),
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton.icon(
+                                  onPressed: () => Navigator.pop(
+                                    mapContext,
+                                    pickedLocation,
+                                  ),
+                                  icon: const Icon(Icons.check_rounded),
+                                  label: const Text('Gunakan Lokasi Ini'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+
+              if (result != null) {
+                setSheetState(() {
+                  selectedLocation = result;
                 });
               }
             }
@@ -6336,6 +6495,50 @@ class _StoryPageState extends State<StoryPage> {
                         ),
                       ),
                     ],
+                    if (selectedLocation != null) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: m8WhiteSoft,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_rounded,
+                              color: m8Blue,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Lokasi dipilih: '
+                                '${selectedLocation!.latitude.toStringAsFixed(5)}, '
+                                '${selectedLocation!.longitude.toStringAsFixed(5)}',
+                                style: const TextStyle(
+                                  color: m8BlueDark,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setSheetState(() {
+                                  selectedLocation = null;
+                                });
+                              },
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -6349,6 +6552,12 @@ class _StoryPageState extends State<StoryPage> {
                           onPressed: chooseVideo,
                           icon: const Icon(Icons.videocam_rounded),
                           label: const Text("Video"),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: chooseLocation,
+                          icon: const Icon(Icons.location_on_rounded),
+                          label: const Text("Lokasi"),
                         ),
                         const Spacer(),
                         FilledButton(
@@ -6372,6 +6581,8 @@ class _StoryPageState extends State<StoryPage> {
                               text: text,
                               media: selectedMedia,
                               mediaType: mediaType,
+                              latitude: selectedLocation?.latitude,
+                              longitude: selectedLocation?.longitude,
                             );
                           },
                           child: const Text("Posting"),
@@ -6394,6 +6605,8 @@ class _StoryPageState extends State<StoryPage> {
     required String text,
     required XFile? media,
     required String? mediaType,
+    double? latitude,
+    double? longitude,
   }) async {
     if (posting) return;
 
@@ -6468,6 +6681,8 @@ class _StoryPageState extends State<StoryPage> {
               'media_url': mediaUrl,
               'media_type': type,
               'caption': text,
+              'latitude': latitude,
+              'longitude': longitude,
             }),
           )
           .timeout(const Duration(seconds: 20));
@@ -7029,6 +7244,105 @@ class _BJoPostCardState extends State<_BJoPostCard> {
     }
   }
 
+  Future<void> _openPostLocation(
+    double latitude,
+    double longitude,
+  ) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (mapContext) {
+        return SafeArea(
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.72,
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 18),
+            decoration: const BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(26),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_rounded,
+                      color: m8Blue,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Lokasi Moment',
+                      style: TextStyle(
+                        color: m8BlueDark,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.pop(mapContext),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: FlutterMap(
+                      options: MapOptions(
+                        initialCenter: LatLng(
+                          latitude,
+                          longitude,
+                        ),
+                        initialZoom: 15,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.bjo.messenger',
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: LatLng(
+                                latitude,
+                                longitude,
+                              ),
+                              width: 56,
+                              height: 56,
+                              child: const Icon(
+                                Icons.location_pin,
+                                color: m8Blue,
+                                size: 52,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '${latitude.toStringAsFixed(5)}, '
+                  '${longitude.toStringAsFixed(5)}',
+                  style: const TextStyle(
+                    color: m8TextMuted,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
@@ -7041,6 +7355,22 @@ class _BJoPostCardState extends State<_BJoPostCard> {
     final type = post['media_type']?.toString() ?? 'text';
     final text = post['caption']?.toString().trim() ?? '';
     final mediaUrl = post['media_url']?.toString().trim() ?? '';
+
+    final latitude = double.tryParse(
+      post['latitude']?.toString() ?? '',
+    );
+
+    final longitude = double.tryParse(
+      post['longitude']?.toString() ?? '',
+    );
+
+    final hasLocation =
+        latitude != null &&
+        longitude != null &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180;
 
     if (post['is_active']?.toString() == '0') {
       return const SizedBox.shrink();
@@ -7127,6 +7457,76 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                 color: m8BlueDark,
                 fontSize: 16,
                 height: 1.35,
+              ),
+            ),
+          ],
+
+          if (hasLocation) ...[
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () => _openPostLocation(
+                latitude!,
+                longitude!,
+              ),
+              borderRadius: BorderRadius.circular(15),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: m8WhiteSoft,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: m8Blue.withValues(alpha: 0.18),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: m8Blue.withValues(alpha: 0.10),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.location_on_rounded,
+                        color: m8Blue,
+                        size: 21,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Lokasi Moment',
+                            style: TextStyle(
+                              color: m8BlueDark,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Ketuk untuk melihat di peta',
+                            style: TextStyle(
+                              color: m8TextMuted,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: m8TextMuted,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
