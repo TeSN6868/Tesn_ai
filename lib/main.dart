@@ -2871,6 +2871,55 @@ class _ChatsPageState extends State<ChatsPage> {
                 .trim() ??
             '';
 
+    final lastMessage =
+        chat['last_message']?.toString().trim() ?? '';
+
+    final unreadCount =
+        int.tryParse(chat['unread_count']?.toString() ?? '0') ?? 0;
+
+    final lastMessageTime =
+        chat['last_message_time']?.toString() ?? '';
+
+    String formatChatTime(String value) {
+      if (value.isEmpty) return '';
+
+      final timestamp = int.tryParse(value);
+      if (timestamp == null) return '';
+
+      final date = DateTime.fromMillisecondsSinceEpoch(
+        timestamp,
+      );
+
+      final now = DateTime.now();
+
+      final sameDay =
+          date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day;
+
+      if (sameDay) {
+        final hour = date.hour.toString().padLeft(2, '0');
+        final minute = date.minute.toString().padLeft(2, '0');
+        return '$hour:$minute';
+      }
+
+      final yesterday = now.subtract(const Duration(days: 1));
+
+      final isYesterday =
+          date.year == yesterday.year &&
+          date.month == yesterday.month &&
+          date.day == yesterday.day;
+
+      if (isYesterday) {
+        return 'Kemarin';
+      }
+
+      return '${date.day.toString().padLeft(2, '0')}/'
+          '${date.month.toString().padLeft(2, '0')}';
+    }
+
+    final timeText = formatChatTime(lastMessageTime);
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -2896,34 +2945,105 @@ class _ChatsPageState extends State<ChatsPage> {
               photoUrl: photo,
             ),
             const SizedBox(width: 14),
+
             Expanded(
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: m8Text,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: m8Text,
+                            fontSize: 15,
+                            fontWeight: unreadCount > 0
+                                ? FontWeight.w800
+                                : FontWeight.w700,
+                          ),
+                        ),
+                      ),
+
+                      if (timeText.isNotEmpty)
+                        Text(
+                          timeText,
+                          style: TextStyle(
+                            color: unreadCount > 0
+                                ? m8Blue
+                                : m8TextMuted,
+                            fontSize: 11,
+                            fontWeight: unreadCount > 0
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                    ],
                   ),
+
                   const SizedBox(height: 4),
-                  const Text(
-                    'Percakapan pribadi',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: m8TextMuted,
-                      fontSize: 12,
-                    ),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          lastMessage.isNotEmpty
+                              ? lastMessage
+                              : 'Belum ada pesan',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: unreadCount > 0
+                                ? m8Text
+                                : m8TextMuted,
+                            fontSize: 12,
+                            fontWeight: unreadCount > 0
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+
+                      if (unreadCount > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: m8Blue,
+                            borderRadius:
+                                BorderRadius.circular(10),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            unreadCount > 99
+                                ? '99+'
+                                : '$unreadCount',
+                            style: const TextStyle(
+                              color: m8White,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(width: 8),
+
             const Icon(
               Icons.chevron_right_rounded,
               size: 20,
