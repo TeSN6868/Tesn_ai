@@ -13,6 +13,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'm8_call_service.dart';
 import 'm8_notification_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:video_player/video_player.dart';
 
 final AudioPlayer _m8CallSoundPlayer = AudioPlayer();
 
@@ -6986,29 +6987,149 @@ class _M8StoryViewer extends StatefulWidget {
 class _M8StoryViewerState extends State<_M8StoryViewer> {
   late int index;
 
+  VideoPlayerController? _videoController;
+  bool _videoLoading = false;
+  bool _videoMuted = false;
+
   @override
   void initState() {
     super.initState();
     index = widget.initialIndex;
+    _prepareVideo();
   }
 
-  void _next() {
+  Future<void> _prepareVideo() async {
+    await _disposeVideoController();
+
+    if (!mounted) return;
+
+    final story = widget.stories[index];
+    final type = story['media_type']?.toString() ?? 'image';
+    final url = story['media_url']?.toString().trim() ?? '';
+
+    if (type != 'video' || url.isEmpty) {
+      setState(() {
+        _videoLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _videoLoading = true;
+      _videoMuted = false;
+    });
+
+    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+
+    try {
+      await controller.initialize();
+
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+
+      await controller.setLooping(true);
+      await controller.setVolume(1.0);
+
+      setState(() {
+        _videoController = controller;
+        _videoLoading = false;
+      });
+
+      await controller.play();
+    } catch (e) {
+      debugPrint('BJO STORY VIDEO ERROR: $e');
+
+      await controller.dispose();
+
+      if (!mounted) return;
+
+      setState(() {
+        _videoController = null;
+        _videoLoading = false;
+      });
+    }
+  }
+
+  Future<void> _disposeVideoController() async {
+    final controller = _videoController;
+    _videoController = null;
+
+    if (controller != null) {
+      await controller.dispose();
+    }
+  }
+
+  Future<void> _next() async {
     if (index >= widget.stories.length - 1) {
-      Navigator.pop(context);
+      await _disposeVideoController();
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
       return;
     }
 
     setState(() {
       index++;
     });
+
+    await _prepareVideo();
   }
 
-  void _previous() {
+  Future<void> _previous() async {
     if (index <= 0) return;
 
     setState(() {
       index--;
     });
+
+    await _prepareVideo();
+  }
+
+  Future<void> _toggleVideoPlayback() async {
+    final controller = _videoController;
+
+    if (controller == null || !controller.value.isInitialized) {
+      return;
+    }
+
+    if (controller.value.isPlaying) {
+      await controller.pause();
+    } else {
+      await controller.play();
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _toggleVideoMute() async {
+    final controller = _videoController;
+
+    if (controller == null || !controller.value.isInitialized) {
+      return;
+    }
+
+    final muted = !_videoMuted;
+
+    await controller.setVolume(muted ? 0.0 : 1.0);
+
+    if (mounted) {
+      setState(() {
+        _videoMuted = muted;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    _videoController = null;
+    super.dispose();
   }
 
   @override
@@ -7082,31 +7203,116 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
               )
             else
               Center(
-                child: Column(
+                child: _videoLoading
+                    ? const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 42,
+                            height: 42,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Memuat video...',
+                            style: TextStyle(color: Colors.white, fontSize: 14),
+                          ),
+                        ],
+                      )
+                    : _videoController != null &&
+                          _videoController!.value.isInitialized
+                    ? GestureDetector(
+                        onTap: _toggleVideoPlayback,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            AspectRatio(
+                              aspectRatio: _videoController!.value.aspectRatio,
+                              child: VideoPlayer(_videoController!),
+                            ),
+                            if (!_videoController!.value.isPlaying)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: const Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: Colors.white,
+                                  size: 54,
+                                ),
+                              ),
+                          ],
+                        ),
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: Colors.white,
+                            size: 70,
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Video tidak dapat diputar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            url,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+
+            if (_videoController != null &&
+                _videoController!.value.isInitialized)
+              Positioned(
+                right: 18,
+                bottom: caption.trim().isNotEmpty ? 100 : 24,
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.videocam_rounded,
-                      color: Colors.white,
-                      size: 80,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Video Story',
-                      style: TextStyle(
+                    Material(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        onPressed: _toggleVideoPlayback,
                         color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        icon: Icon(
+                          _videoController!.value.isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      url,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 11,
+                    const SizedBox(width: 8),
+                    Material(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        onPressed: _toggleVideoMute,
+                        color: Colors.white,
+                        icon: Icon(
+                          _videoMuted
+                              ? Icons.volume_off_rounded
+                              : Icons.volume_up_rounded,
+                        ),
                       ),
                     ),
                   ],
