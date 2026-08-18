@@ -1,4 +1,4 @@
-name: Check M8 D1
+name: Check BJo D1
 
 on:
   workflow_dispatch:
@@ -6,39 +6,23 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Install Wrangler
         run: npm install -g wrangler
 
-      - name: List D1
-        run: wrangler d1 list
+      - name: Check D1 user
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Check users table
-        run: wrangler d1 execute m8-database --remote --command "PRAGMA table_info(users);"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Check M8 users
-        run: wrangler d1 execute m8-database --remote --command "SELECT id, name, email, phone, m8_pin, created_at FROM users ORDER BY id;"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-
-      - name: Check database relations
         run: |
-          wrangler d1 execute m8-database --remote --command "SELECT name, sql FROM sqlite_master WHERE type='table' ORDER BY name;"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          npx wrangler d1 execute m8-database --remote --command \
+          "SELECT id, m8_pin, length(password_hash) AS hash_length, substr(password_hash,1,20) AS hash_prefix FROM users WHERE m8_pin='diag0001';"
