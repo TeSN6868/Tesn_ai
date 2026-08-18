@@ -926,8 +926,8 @@ export default {
 
         const result = await env.DB.prepare(
           `INSERT INTO users
-           (m8_pin, name, email, phone, password_hash, created_at)
-           VALUES (?, ?, ?, ?, ?, unixepoch())`
+           (m8_pin, name, email, phone, password_hash, created_at, active)
+           VALUES (?, ?, ?, ?, ?, unixepoch(), 1)`
         )
           .bind(
             m8Pin,
