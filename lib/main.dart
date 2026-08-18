@@ -1168,7 +1168,10 @@ class _BJoMainShellState extends State<BJoMainShell> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => BJoProfilePage(user: widget.user),
+                  builder: (_) => BJoProfilePage(
+                  user: widget.user,
+                  token: widget.token,
+                ),
                 ),
               );
             },
@@ -9077,8 +9080,13 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
 
 class BJoProfilePage extends StatelessWidget {
   final Map<String, dynamic> user;
+  final String token;
 
-  const BJoProfilePage({super.key, required this.user});
+  const BJoProfilePage({
+    super.key,
+    required this.user,
+    required this.token,
+  });
 
   String get name => user['name']?.toString().trim().isNotEmpty == true
       ? user['name'].toString()
@@ -9174,6 +9182,13 @@ class BJoProfilePage extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+  void _openSessions(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BJoSessionsPage(token: token),
+      ),
     );
   }
 
@@ -9313,7 +9328,7 @@ class BJoProfilePage extends StatelessWidget {
             icon: Icons.devices_rounded,
             title: 'Otorisasi perangkat',
             subtitle: 'Kelola perangkat yang dipercaya',
-            onTap: () => _comingSoon(context, 'Otorisasi perangkat'),
+            onTap: () => _openSessions(context),
           ),
 
           _securityItem(
@@ -9321,7 +9336,7 @@ class BJoProfilePage extends StatelessWidget {
             icon: Icons.phonelink_lock_rounded,
             title: 'Sesi aktif',
             subtitle: 'Lihat perangkat yang sedang login',
-            onTap: () => _comingSoon(context, 'Sesi aktif'),
+            onTap: () => _openSessions(context),
           ),
 
           _securityItem(
@@ -9366,6 +9381,419 @@ class BJoProfilePage extends StatelessWidget {
             onTap: () => _comingSoon(context, 'Logout semua perangkat'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+// ============================================================
+// B'JO ACTIVE SESSIONS
+// ============================================================
+
+class BJoSessionsPage extends StatefulWidget {
+  final String token;
+
+  const BJoSessionsPage({
+    super.key,
+    required this.token,
+  });
+
+  @override
+  State<BJoSessionsPage> createState() => _BJoSessionsPageState();
+}
+
+class _BJoSessionsPageState extends State<BJoSessionsPage> {
+  bool loading = true;
+  bool actionLoading = false;
+  List<Map<String, dynamic>> sessions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessions();
+  }
+
+  Future<void> _loadSessions() async {
+    if (!mounted) return;
+
+    setState(() => loading = true);
+
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/api/sessions'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      ).timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(
+          data['error']?.toString() ?? 'Gagal mengambil sesi aktif.',
+        );
+      }
+
+      final list = data['sessions'];
+
+      if (list is List) {
+        sessions = list
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      } else {
+        sessions = [];
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat sesi: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => loading = false);
+      }
+    }
+  }
+
+  IconData _deviceIcon(String platform) {
+    switch (platform.toLowerCase()) {
+      case 'android':
+        return Icons.android_rounded;
+      case 'ios':
+        return Icons.phone_iphone_rounded;
+      default:
+        return Icons.devices_rounded;
+    }
+  }
+
+  String _formatTimestamp(dynamic value) {
+    final timestamp = int.tryParse(value?.toString() ?? '');
+
+    if (timestamp == null || timestamp <= 0) {
+      return 'Waktu tidak diketahui';
+    }
+
+    final date = DateTime.fromMillisecondsSinceEpoch(
+      timestamp * 1000,
+    ).toLocal();
+
+    String two(int n) => n.toString().padLeft(2, '0');
+
+    return '${two(date.day)}/${two(date.month)}/${date.year} '
+        '${two(date.hour)}:${two(date.minute)}';
+  }
+
+  Future<void> _revokeSession(
+    int sessionId,
+    bool current,
+  ) async {
+    if (actionLoading) return;
+
+    if (current) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Gunakan Logout untuk keluar dari perangkat ini.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() => actionLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/sessions/revoke'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'session_id': sessionId,
+        }),
+      ).timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(
+          data['error']?.toString() ?? 'Gagal mencabut sesi.',
+        );
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Perangkat berhasil dikeluarkan.'),
+        ),
+      );
+
+      await _loadSessions();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengeluarkan perangkat: $e'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => actionLoading = false);
+      }
+    }
+  }
+
+  Future<void> _confirmRevoke(
+    int sessionId,
+    String deviceName,
+    bool current,
+  ) async {
+    if (current) {
+      await _revokeSession(sessionId, true);
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          'Keluarkan perangkat?',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: Text(
+          'Perangkat "$deviceName" akan dikeluarkan dari akun B’Jo.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Keluarkan'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _revokeSession(sessionId, false);
+    }
+  }
+
+  Widget _sessionCard(Map<String, dynamic> session) {
+    final id = int.tryParse(
+          session['id']?.toString() ?? '',
+        ) ??
+        0;
+
+    final deviceName =
+        session['device_name']?.toString().trim().isNotEmpty == true
+            ? session['device_name'].toString()
+            : "Perangkat B'Jo";
+
+    final platform =
+        session['platform']?.toString() ?? 'unknown';
+
+    final current = session['current'] == true;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: current
+              ? m8Blue.withValues(alpha: 0.45)
+              : m8Blue.withValues(alpha: 0.14),
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: m8BlueDark,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            _deviceIcon(platform),
+            color: m8White,
+          ),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                deviceName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: m8BlueDark,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            if (current)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: m8Blue.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  'PERANGKAT INI',
+                  style: TextStyle(
+                    color: m8BlueDark,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: Text(
+            'Aktif terakhir: ${_formatTimestamp(session['last_seen_at'])}',
+            style: const TextStyle(
+              color: m8TextMuted,
+              fontSize: 11,
+            ),
+          ),
+        ),
+        trailing: current
+            ? const Icon(
+                Icons.verified_user_rounded,
+                color: m8Blue,
+              )
+            : IconButton(
+                tooltip: 'Keluarkan perangkat',
+                onPressed: actionLoading
+                    ? null
+                    : () => _confirmRevoke(
+                          id,
+                          deviceName,
+                          false,
+                        ),
+                icon: const Icon(
+                  Icons.logout_rounded,
+                  color: m8BlueDark,
+                ),
+              ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return M8DenimBackground(
+      child: RefreshIndicator(
+        onRefresh: _loadSessions,
+        child: loading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: m8White,
+                ),
+              )
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  16,
+                  18,
+                  16,
+                  30,
+                ),
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: m8BlueDark,
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: m8BlueLight.withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.devices_rounded,
+                          color: m8White,
+                          size: 30,
+                        ),
+                        SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Perangkat B’Jo',
+                                style: TextStyle(
+                                  color: m8White,
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Perangkat yang sedang masuk ke akun kamu.',
+                                style: TextStyle(
+                                  color: m8BlueLight,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  const Text(
+                    'SESI AKTIF',
+                    style: TextStyle(
+                      color: m8White,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  if (sessions.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: m8White,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Text(
+                        'Tidak ada sesi aktif.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: m8TextMuted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    )
+                  else
+                    ...sessions.map(_sessionCard),
+                ],
+              ),
       ),
     );
   }

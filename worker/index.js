@@ -2793,8 +2793,168 @@ export default {
       });
     }
 
+    // ============================================================
+    // B'JO SESSIONS
+    // ============================================================
+
+    if (
+      url.pathname === "/api/sessions" &&
+      request.method === "GET"
+    ) {
+      await ensureSessionTables(env);
+
+      const sessionUser = await getSessionUser(request, env);
+
+      if (!sessionUser) {
+        return json({
+          success: false,
+          error: "Sesi tidak valid atau sudah dicabut.",
+        }, 401);
+      }
+
+      const sessions = await env.DB.prepare(`
+        SELECT
+          id,
+          device_name,
+          platform,
+          created_at,
+          last_seen_at,
+          revoked_at
+        FROM sessions
+        WHERE user_id = ?
+          AND revoked_at IS NULL
+        ORDER BY last_seen_at DESC
+      `)
+        .bind(sessionUser.user_id)
+        .all();
+
+      const currentToken = await getBearerToken(request);
+      const currentHash = await hashToken(currentToken);
+
+      const rows = (sessions.results || []).map((item) => ({
+        id: item.id,
+        device_name: item.device_name || "Perangkat B'Jo",
+        platform: item.platform || "unknown",
+        created_at: item.created_at,
+        last_seen_at: item.last_seen_at,
+        current: false,
+      }));
+
+      const currentSession = await env.DB.prepare(`
+        SELECT id
+        FROM sessions
+        WHERE token_hash = ?
+        LIMIT 1
+      `).bind(currentHash).first();
+
+      for (const item of rows) {
+        item.current = currentSession &&
+          Number(item.id) === Number(currentSession.id);
+      }
+
+      return json({
+        success: true,
+        sessions: rows,
+      });
+    }
+
+    // ============================================================
+    // CABUT SESSION
+    // ============================================================
+
+    if (
+      url.pathname === "/api/sessions/revoke" &&
+      request.method === "POST"
+    ) {
+      await ensureSessionTables(env);
+
+      const sessionUser = await getSessionUser(request, env);
+
+      if (!sessionUser) {
+        return json({
+          success: false,
+          error: "Sesi tidak valid atau sudah dicabut.",
+        }, 401);
+      }
+
+      const body = await request.json();
+      const sessionId = Number(body.session_id);
+
+      if (!Number.isInteger(sessionId) || sessionId <= 0) {
+        return json({
+          success: false,
+          error: "ID sesi tidak valid.",
+        }, 400);
+      }
+
+      const target = await env.DB.prepare(`
+        SELECT id
+        FROM sessions
+        WHERE id = ?
+          AND user_id = ?
+          AND revoked_at IS NULL
+        LIMIT 1
+      `)
+        .bind(sessionId, sessionUser.user_id)
+        .first();
+
+      if (!target) {
+        return json({
+          success: false,
+          error: "Sesi tidak ditemukan.",
+        }, 404);
+      }
+
+      await env.DB.prepare(`
+        UPDATE sessions
+        SET revoked_at = unixepoch()
+        WHERE id = ?
+          AND user_id = ?
+      `)
+        .bind(sessionId, sessionUser.user_id)
+        .run();
+
+      return json({
+        success: true,
+        message: "Sesi perangkat berhasil dicabut.",
+      });
+    }
+
+    // ============================================================
+    // LOGOUT SESSION SAAT INI
+    // ============================================================
+
+    if (
+      url.pathname === "/api/sessions/logout" &&
+      request.method === "POST"
+    ) {
+      await ensureSessionTables(env);
+
+      const sessionUser = await getSessionUser(request, env);
+
+      if (!sessionUser) {
+        return json({
+          success: false,
+          error: "Sesi tidak valid atau sudah dicabut.",
+        }, 401);
+      }
+
+      await env.DB.prepare(`
+        UPDATE sessions
+        SET revoked_at = unixepoch()
+        WHERE id = ?
+      `)
+        .bind(sessionUser.session_id)
+        .run();
+
+      return json({
+        success: true,
+        message: "Perangkat berhasil logout.",
+      });
+    }
+
     // LOGIN
-if (url.pathname === "/api/login" && request.method === "POST") {
+    if (url.pathname === "/api/login" && request.method === "POST") {
       const body = await request.json();
 
       const identifier = String(
@@ -2885,7 +3045,25 @@ if (url.pathname === "/api/login" && request.method === "POST") {
         }, 401);
       }
 
+      await ensureSessionTables(env);
+
       const token = await createToken();
+      const tokenHash = await hashToken(token);
+      const deviceName = getDeviceName(request);
+      const platform = getPlatform(request);
+
+      await env.DB.prepare(`
+        INSERT INTO sessions
+          (user_id, token_hash, device_name, platform, created_at, last_seen_at)
+        VALUES (?, ?, ?, ?, unixepoch(), unixepoch())
+      `)
+        .bind(
+          user.id,
+          tokenHash,
+          deviceName,
+          platform
+        )
+        .run();
 
       return json({
         success: true,
@@ -3029,6 +3207,123 @@ async function createToken() {
   return [...bytes]
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+async function hashToken(token) {
+  return sha256(token);
+}
+
+async function ensureSessionTables(env) {
+  if (!env.DB) {
+    throw new Error("Binding D1 DB belum tersedia.");
+  }
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      token_hash TEXT NOT NULL UNIQUE,
+      device_name TEXT,
+      platform TEXT,
+      created_at INTEGER NOT NULL,
+      last_seen_at INTEGER NOT NULL,
+      revoked_at INTEGER
+    )
+  `).run();
+}
+
+async function getBearerToken(request) {
+  const header = request.headers.get("Authorization") || "";
+
+  if (!header.toLowerCase().startsWith("bearer ")) {
+    return "";
+  }
+
+  return header.slice(7).trim();
+}
+
+async function getSessionUser(request, env) {
+  const token = await getBearerToken(request);
+
+  if (!token || !env.DB) {
+    return null;
+  }
+
+  const tokenHash = await hashToken(token);
+
+  const session = await env.DB.prepare(`
+    SELECT
+      s.id AS session_id,
+      s.user_id,
+      s.device_name,
+      s.platform,
+      s.created_at,
+      s.last_seen_at,
+      u.id,
+      u.name,
+      u.email,
+      u.phone,
+      u.m8_pin,
+      u.profile_photo_url
+    FROM sessions s
+    JOIN users u ON u.id = s.user_id
+    WHERE s.token_hash = ?
+      AND s.revoked_at IS NULL
+      AND u.active = 1
+    LIMIT 1
+  `).bind(tokenHash).first();
+
+  if (!session) {
+    return null;
+  }
+
+  await env.DB.prepare(`
+    UPDATE sessions
+    SET last_seen_at = unixepoch()
+    WHERE id = ?
+  `).bind(session.session_id).run();
+
+  return session;
+}
+
+function getDeviceName(request) {
+  const explicit = request.headers.get("X-BJo-Device");
+
+  if (explicit && explicit.trim()) {
+    return explicit.trim().slice(0, 100);
+  }
+
+  const agent = request.headers.get("User-Agent") || "";
+
+  if (/Android/i.test(agent)) {
+    return "Android";
+  }
+
+  if (/iPhone|iPad/i.test(agent)) {
+    return "iPhone/iPad";
+  }
+
+  return "Perangkat B'Jo";
+}
+
+function getPlatform(request) {
+  const explicit = request.headers.get("X-BJo-Platform");
+
+  if (explicit && explicit.trim()) {
+    return explicit.trim().slice(0, 40);
+  }
+
+  const agent = request.headers.get("User-Agent") || "";
+
+  if (/Android/i.test(agent)) {
+    return "android";
+  }
+
+  if (/iPhone|iPad/i.test(agent)) {
+    return "ios";
+  }
+
+  return "unknown";
 }
 
 function json(data, status = 200) {
