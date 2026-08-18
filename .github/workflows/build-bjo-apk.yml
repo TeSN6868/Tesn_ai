@@ -1,0 +1,41 @@
+name: Build BJo APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.9'
+          channel: stable
+          cache: true
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
+      - name: Flutter Pub Get
+        run: flutter pub get
+
+      - name: Build BJo APK
+        run: flutter build apk --release
+
+      - name: Upload BJo APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BJo-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
