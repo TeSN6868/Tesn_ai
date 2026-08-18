@@ -1,0 +1,36 @@
+name: Fix BJo PIN
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-pin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Wrangler
+        run: npm install -g wrangler@4.123.0
+
+      - name: Fix PIN in D1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler d1 execute m8-database --remote --command \
+          "UPDATE users SET m8_pin = 'bejo0001', active = 1 WHERE id = 11;"
+
+      - name: Verify account
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler d1 execute m8-database --remote --command \
+          "SELECT id, m8_pin, name, email, phone, active FROM users WHERE id = 11;"
