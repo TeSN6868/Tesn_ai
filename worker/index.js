@@ -3019,7 +3019,7 @@ export default {
 
       if (identifier) {
         user = await env.DB.prepare(`
-          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url, profile_photo_url
+          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url
           FROM users
           WHERE (email = ? OR phone = ?) AND active = 1
           LIMIT 1
@@ -3028,7 +3028,7 @@ export default {
           .first();
       } else {
         user = await env.DB.prepare(`
-          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url, profile_photo_url
+          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url
           FROM users
           WHERE m8_pin = ? AND active = 1
           LIMIT 1
