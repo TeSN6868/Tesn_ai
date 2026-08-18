@@ -52,4 +52,4 @@ jobs:
         run: |
           echo "===== DIAGNOSTIC USER ====="
           wrangler d1 execute m8-database --remote --command \
-          "SELECT id,m8_pin,name,email,phone,active,length(password_hash) AS hash_length,substr(password_hash,1,30) AS hash_prefix FROM users WHERE m8_pin='diag0001';"
+          "SELECT id,m8_pin,name,email,phone,active,password_hash FROM users WHERE m8_pin='diag0001';"
