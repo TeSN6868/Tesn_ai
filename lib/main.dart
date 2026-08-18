@@ -9192,6 +9192,85 @@ class BJoProfilePage extends StatelessWidget {
     );
   }
 
+  Future<void> _logoutAllDevices(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          'Logout semua perangkat?',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: const Text(
+          'Semua perangkat yang sedang masuk ke akun B’Jo akan dikeluarkan, termasuk perangkat ini.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Logout semua'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/sessions/logout-all'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(
+          data['error']?.toString() ??
+              'Gagal logout semua perangkat.',
+        );
+      }
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Semua perangkat berhasil dikeluarkan.'),
+        ),
+      );
+
+      await Future<void>.delayed(
+        const Duration(milliseconds: 500),
+      );
+
+      if (!context.mounted) return;
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const LoginPage(),
+        ),
+        (_) => false,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Gagal logout semua perangkat: $e',
+          ),
+        ),
+      );
+    }
+  }
+
   void _comingSoon(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$title akan diaktifkan berikutnya.')),
@@ -9378,7 +9457,7 @@ class BJoProfilePage extends StatelessWidget {
             icon: Icons.logout_rounded,
             title: 'Logout semua perangkat',
             subtitle: 'Keluar dari seluruh sesi B’Jo',
-            onTap: () => _comingSoon(context, 'Logout semua perangkat'),
+            onTap: () => _logoutAllDevices(context),
           ),
         ],
       ),

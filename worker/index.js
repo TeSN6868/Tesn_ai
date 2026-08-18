@@ -2921,6 +2921,40 @@ export default {
     }
 
     // ============================================================
+    // LOGOUT SEMUA PERANGKAT
+    // ============================================================
+
+    if (
+      url.pathname === "/api/sessions/logout-all" &&
+      request.method === "POST"
+    ) {
+      await ensureSessionTables(env);
+
+      const sessionUser = await getSessionUser(request, env);
+
+      if (!sessionUser) {
+        return json({
+          success: false,
+          error: "Sesi tidak valid atau sudah dicabut.",
+        }, 401);
+      }
+
+      await env.DB.prepare(`
+        UPDATE sessions
+        SET revoked_at = unixepoch()
+        WHERE user_id = ?
+          AND revoked_at IS NULL
+      `)
+        .bind(sessionUser.user_id)
+        .run();
+
+      return json({
+        success: true,
+        message: "Semua perangkat berhasil dikeluarkan.",
+      });
+    }
+
+    // ============================================================
     // LOGOUT SESSION SAAT INI
     // ============================================================
 
