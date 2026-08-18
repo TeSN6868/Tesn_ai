@@ -396,7 +396,7 @@ class _LoginPageState extends State<LoginPage> {
     final password = passwordController.text;
 
     if (m8Pin.isEmpty || password.isEmpty) {
-      showMessage("B'Jo PIN dan password wajib diisi");
+      showMessage('M8 PIN dan password wajib diisi');
       return;
     }
 
@@ -411,20 +411,11 @@ class _LoginPageState extends State<LoginPage> {
           )
           .timeout(const Duration(seconds: 20));
 
-      print("B'JO LOGIN DEBUG STATUS: ${response.statusCode}");
-      print("B'JO LOGIN DEBUG BODY: ${response.body}");
-      print("B'JO LOGIN DEBUG URL: $apiBase/api/login");
+      print('M8 LOGIN DEBUG STATUS: ${response.statusCode}');
+      print('M8 LOGIN DEBUG BODY: ${response.body}');
+      print('M8 LOGIN DEBUG URL: $apiBase/api/login');
 
-      Map<String, dynamic> data = {};
-
-      try {
-        final decoded = jsonDecode(response.body);
-        if (decoded is Map) {
-          data = Map<String, dynamic>.from(decoded);
-        }
-      } catch (_) {
-        // Respons bukan JSON; ditangani di bawah.
-      }
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (!mounted) return;
 
@@ -445,22 +436,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       } else {
-        final serverError = data['error']?.toString().trim();
-
-        if (serverError != null && serverError.isNotEmpty) {
-          showMessage(serverError);
-        } else if (response.statusCode >= 500) {
-          showMessage("B'Jo sedang mengalami gangguan server. Coba lagi.");
-        } else if (response.statusCode >= 400) {
-          showMessage("B'Jo tidak dapat memproses login (${response.statusCode}).");
-        } else {
-          showMessage("Login B'Jo gagal.");
-        }
+        showMessage(data['error']?.toString() ?? 'Login gagal');
       }
     } catch (e) {
       if (!mounted) return;
 
-      showMessage("Tidak dapat terhubung ke server B'Jo.");
+      showMessage('Error login M8: $e');
     } finally {
       if (mounted) {
         setState(() => loading = false);

@@ -3252,7 +3252,6 @@ async function ensureSessionTables(env) {
     throw new Error("Binding D1 DB belum tersedia.");
   }
 
-  // Buat tabel baru jika database masih kosong.
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3260,31 +3259,12 @@ async function ensureSessionTables(env) {
       token_hash TEXT NOT NULL UNIQUE,
       device_name TEXT,
       platform TEXT,
-      created_at INTEGER NOT NULL DEFAULT 0,
-      last_seen_at INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      last_seen_at INTEGER NOT NULL,
       revoked_at INTEGER
     )
   `).run();
-
-  // Migrasi database lama yang sudah memiliki tabel sessions
-  // tetapi belum memiliki kolom session-management terbaru.
-  const migrations = [
-    "ALTER TABLE sessions ADD COLUMN device_name TEXT",
-    "ALTER TABLE sessions ADD COLUMN platform TEXT",
-    "ALTER TABLE sessions ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0",
-    "ALTER TABLE sessions ADD COLUMN last_seen_at INTEGER NOT NULL DEFAULT 0",
-    "ALTER TABLE sessions ADD COLUMN revoked_at INTEGER"
-  ];
-
-  for (const sql of migrations) {
-    try {
-      await env.DB.prepare(sql).run();
-    } catch (_) {
-      // Kolom sudah ada, lanjutkan migrasi berikutnya.
-    }
-  }
 }
-
 async function getBearerToken(request) {
   const header = request.headers.get("Authorization") || "";
 
