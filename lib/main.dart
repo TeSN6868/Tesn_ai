@@ -830,20 +830,37 @@ class _RegisterPageState extends State<RegisterPage> {
       barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
+          backgroundColor: m8White,
+          surfaceTintColor: Colors.transparent,
           title: const Row(
             children: [
-              Icon(Icons.verified_user_outlined),
+              Icon(
+                Icons.verified_user_outlined,
+                color: m8BlueDark,
+              ),
               SizedBox(width: 10),
-              Expanded(child: Text('PIN M8 Kamu')),
+              Expanded(
+                child: Text(
+                  'PIN B\'Jo Kamu',
+                  style: TextStyle(
+                    color: m8BlueDark,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'PIN M8 dibuat otomatis oleh sistem. '
+                'PIN B\'Jo dibuat otomatis oleh sistem. '
                 'Kamu tidak dapat memilih atau mengubah PIN ini.',
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: m8Text,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 22),
               Container(
@@ -853,9 +870,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   horizontal: 12,
                 ),
                 decoration: BoxDecoration(
+                  color: m8White,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: m8Blue,
                     width: 1.5,
                   ),
                 ),
@@ -863,16 +881,21 @@ class _RegisterPageState extends State<RegisterPage> {
                   pin,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
+                    color: m8BlueDark,
                     fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
                     letterSpacing: 4,
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               const Text(
-                'Simpan PIN ini. PIN akan digunakan sebagai identitas akun M8.',
+                'Simpan PIN ini. PIN akan digunakan sebagai identitas akun B\'Jo.',
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: m8TextMuted,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
