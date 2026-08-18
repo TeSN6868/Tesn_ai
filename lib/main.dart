@@ -805,7 +805,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   String _generateM8Pin() {
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
     const numbers = '0123456789';
     final random = Random.secure();
 
