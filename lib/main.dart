@@ -550,7 +550,7 @@ class _LoginPageState extends State<LoginPage> {
                               hintStyle: const TextStyle(color: m8TextMuted),
                               prefixIcon: const Icon(
                                 Icons.key_rounded,
-                                color: Colors.white,
+                                color: m8BlueDark,
                               ),
                               filled: true,
                               fillColor: m8White,
@@ -592,7 +592,7 @@ class _LoginPageState extends State<LoginPage> {
                               hintStyle: const TextStyle(color: m8TextMuted),
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
-                                color: Colors.white,
+                                color: m8BlueDark,
                               ),
                               suffixIcon: IconButton(
                                 onPressed: () {
@@ -916,8 +916,19 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: m8BlueDark),
-      prefixIcon: Icon(icon, color: m8Text),
+      labelStyle: const TextStyle(
+        color: m8BlueDark,
+        fontWeight: FontWeight.w600,
+      ),
+      floatingLabelStyle: const TextStyle(
+        color: m8BlueDark,
+        fontWeight: FontWeight.w700,
+      ),
+      hintStyle: const TextStyle(
+        color: m8TextMuted,
+        fontWeight: FontWeight.w500,
+      ),
+      prefixIcon: Icon(icon, color: m8BlueDark),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: m8White,
@@ -973,7 +984,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 32),
 
                   TextField(
-                    style: const TextStyle(color: m8White),
+                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
                     controller: nameController,
                     textInputAction: TextInputAction.next,
                     decoration: fieldDecoration('Nama', Icons.person_outline),
@@ -982,7 +993,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 14),
 
                   TextField(
-                    style: const TextStyle(color: m8White),
+                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
                     controller: identifierController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
@@ -995,7 +1006,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 14),
 
                   TextField(
-                    style: const TextStyle(color: m8White),
+                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
                     controller: phoneController,
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.next,
@@ -1008,7 +1019,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 14),
 
                   TextField(
-                    style: const TextStyle(color: m8White),
+                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
                     controller: passwordController,
                     obscureText: obscurePassword,
                     textInputAction: TextInputAction.next,
@@ -1033,7 +1044,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 14),
 
                   TextField(
-                    style: const TextStyle(color: m8White),
+                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
                     controller: confirmPasswordController,
                     obscureText: obscureConfirmPassword,
                     textInputAction: TextInputAction.next,
