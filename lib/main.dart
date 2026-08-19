@@ -9129,102 +9129,119 @@ class BJoProfilePage extends StatelessWidget {
     required this.token,
   });
 
-  String get name => user['name']?.toString().trim().isNotEmpty == true
-      ? user['name'].toString()
-      : "Pengguna B'Jo";
+  String get name {
+    final value = user['name']?.toString().trim();
+    return value == null || value.isEmpty ? "Pengguna B'Jo" : value;
+  }
 
-  String get pin => user['m8_pin']?.toString() ?? user['pin']?.toString() ?? '';
+  String get pin =>
+      user['m8_pin']?.toString() ?? user['pin']?.toString() ?? '';
+
+  String get photoUrl {
+    final candidates = [
+      user['photo_url'],
+      user['avatar_url'],
+      user['profile_photo'],
+      user['photo'],
+      user['avatar'],
+    ];
+
+    for (final value in candidates) {
+      final text = value?.toString().trim() ?? '';
+      if (text.isNotEmpty) return text;
+    }
+
+    return '';
+  }
+
+  String get initial =>
+      name.trim().isEmpty ? 'B' : name.trim().substring(0, 1).toUpperCase();
 
   void _showPin(BuildContext context) {
     if (pin.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("PIN B'Jo belum tersedia."),
-        ),
+        const SnackBar(content: Text("PIN B'Jo belum tersedia.")),
       );
       return;
     }
 
     showDialog<void>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-          ),
-          title: const Row(
-            children: [
-              Icon(Icons.pin_rounded),
-              SizedBox(width: 10),
-              Text(
-                "PIN B'Jo",
-                style: TextStyle(fontWeight: FontWeight.w900),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "PIN ini adalah identitas unik akun B'Jo kamu.",
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: m8Blue.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: SelectableText(
-                  pin,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                "Bagikan PIN hanya kepada orang yang ingin kamu hubungi melalui B'Jo.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: m8TextMuted,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton.icon(
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: pin));
-                if (dialogContext.mounted) {
-                  ScaffoldMessenger.of(dialogContext).showSnackBar(
-                    const SnackBar(
-                      content: Text("PIN B'Jo berhasil disalin."),
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(Icons.copy_rounded),
-              label: const Text("Salin PIN"),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text("Tutup"),
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.pin_rounded, color: m8Blue),
+            SizedBox(width: 10),
+            Text(
+              "PIN B'Jo",
+              style: TextStyle(fontWeight: FontWeight.w900),
             ),
           ],
-        );
-      },
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "PIN ini adalah identitas unik akun B'Jo kamu.",
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 18,
+              ),
+              decoration: BoxDecoration(
+                color: m8Blue.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: SelectableText(
+                pin,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: m8BlueDark,
+                  fontSize: 25,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: pin));
+              if (dialogContext.mounted) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  const SnackBar(content: Text("PIN B'Jo berhasil disalin.")),
+                );
+              }
+            },
+            icon: const Icon(Icons.copy_rounded),
+            label: const Text("Salin"),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text("Tutup"),
+          ),
+        ],
+      ),
     );
   }
+
+  void _openSettings(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const SettingsPage(),
+      ),
+    );
+  }
+
   void _openSessions(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -9233,12 +9250,18 @@ class BJoProfilePage extends StatelessWidget {
     );
   }
 
+  void _comingSoon(BuildContext context, String title) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$title akan diaktifkan berikutnya.')),
+    );
+  }
+
   Future<void> _logoutAllDevices(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(22),
         ),
         title: const Text(
           'Logout semua perangkat?',
@@ -9249,11 +9272,11 @@ class BJoProfilePage extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Batal'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Logout semua'),
           ),
         ],
@@ -9265,17 +9288,14 @@ class BJoProfilePage extends StatelessWidget {
     try {
       final response = await http.post(
         Uri.parse('$apiBase/api/sessions/logout-all'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Authorization': 'Bearer $token'},
       ).timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode != 200 || data['success'] != true) {
         throw Exception(
-          data['error']?.toString() ??
-              'Gagal logout semua perangkat.',
+          data['error']?.toString() ?? 'Gagal logout semua perangkat.',
         );
       }
 
@@ -9287,38 +9307,88 @@ class BJoProfilePage extends StatelessWidget {
         ),
       );
 
-      await Future<void>.delayed(
-        const Duration(milliseconds: 500),
-      );
+      await Future<void>.delayed(const Duration(milliseconds: 500));
 
       if (!context.mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => const LoginPage(),
-        ),
+        MaterialPageRoute(builder: (_) => const LoginPage()),
         (_) => false,
       );
     } catch (e) {
       if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Gagal logout semua perangkat: $e',
-          ),
-        ),
+        SnackBar(content: Text('Gagal logout semua perangkat: $e')),
       );
     }
   }
 
-  void _comingSoon(BuildContext context, String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$title akan diaktifkan berikutnya.')),
+  Widget _avatar() {
+    if (photoUrl.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: Image.network(
+          photoUrl,
+          width: 94,
+          height: 94,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _avatarFallback(),
+        ),
+      );
+    }
+
+    return _avatarFallback();
+  }
+
+  Widget _avatarFallback() {
+    return Container(
+      width: 94,
+      height: 94,
+      decoration: BoxDecoration(
+        color: m8White,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: m8BlueDark,
+          fontSize: 38,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
     );
   }
 
-  Widget _securityItem(
+  Widget _stat(String number, String label, IconData icon) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: m8Blue, size: 20),
+          const SizedBox(height: 5),
+          Text(
+            number,
+            style: const TextStyle(
+              color: m8BlueDark,
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              color: m8TextMuted,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _menuCard(
     BuildContext context, {
     required IconData icon,
     required String title,
@@ -9329,453 +9399,339 @@ class BJoProfilePage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: m8White,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: m8Blue.withValues(alpha: 0.16)),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: m8BlueDark.withValues(alpha: 0.055),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 5,
+        ),
         leading: Container(
-          width: 44,
-          height: 44,
+          width: 45,
+          height: 45,
           decoration: BoxDecoration(
-            color: m8BlueDark,
-            borderRadius: BorderRadius.circular(13),
+            color: m8Blue.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(15),
           ),
-          child: Icon(icon, color: m8White),
+          child: Icon(icon, color: m8Blue),
         ),
         title: Text(
           title,
           style: const TextStyle(
-            color: m8BlueDark,
+            color: m8Text,
             fontWeight: FontWeight.w800,
             fontSize: 14,
           ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(color: m8TextMuted, fontSize: 11),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 3),
+          child: Text(
+            subtitle,
+            style: const TextStyle(
+              color: m8TextMuted,
+              fontSize: 11.5,
+            ),
+          ),
         ),
-        trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: m8TextMuted,
+        ),
       ),
+    );
+  }
+
+  Widget _section(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(3, 8, 3, 10),
+          child: Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              color: m8TextMuted,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.4,
+            ),
+          ),
+        ),
+        ...children,
+        const SizedBox(height: 12),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final initial = name.isNotEmpty
-        ? name.substring(0, 1).toUpperCase()
-        : 'B';
-
-    return M8DenimBackground(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 34),
-        children: [
-          // =====================================================
-          // B'JO IDENTITY CARD
-          // =====================================================
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  m8BlueDark,
-                  m8Blue,
-                  m8BlueDark,
+    return Scaffold(
+      backgroundColor: m8White,
+      body: SafeArea(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            // HEADER IDENTITAS
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 12, 18, 22),
+              decoration: BoxDecoration(
+                color: m8Blue,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(32),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: m8BlueDark.withValues(alpha: 0.16),
+                    blurRadius: 22,
+                    offset: const Offset(0, 10),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: m8BlueLight.withValues(alpha: 0.38),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.18),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // AVATAR
-                    Container(
-                      width: 78,
-                      height: 78,
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: m8White,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.18),
-                            blurRadius: 14,
-                            offset: const Offset(0, 7),
-                          ),
-                        ],
-                      ),
-                      child: CircleAvatar(
-                        backgroundColor: m8BlueLight,
-                        child: Text(
-                          initial,
-                          style: const TextStyle(
-                            color: m8BlueDark,
-                            fontSize: 31,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 3),
-                          Text(
-                            name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: m8White,
-                              fontSize: 22,
-                              height: 1.08,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: m8White.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              pin.isEmpty
-                                  ? "PIN belum tersedia"
-                                  : "B'Jo • $pin",
-                              style: const TextStyle(
-                                color: m8BlueLight,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 22),
-
-                // IDENTITY FOOTER
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Row(
+              child: Column(
+                children: [
+                  Row(
                     children: [
-                      const Icon(
-                        Icons.auto_awesome_rounded,
-                        color: m8BlueLight,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 9),
-                      const Expanded(
-                        child: Text(
-                          "Identitas B'Jo kamu",
-                          style: TextStyle(
-                            color: m8White,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      if (pin.isNotEmpty)
-                        InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () => _showPin(context),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 4,
-                            ),
-                            child: Text(
-                              "Lihat PIN",
-                              style: TextStyle(
-                                color: m8BlueLight,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // =====================================================
-          // QUICK STATS
-          // =====================================================
-          Container(
-            padding: const EdgeInsets.symmetric(
-              vertical: 17,
-              horizontal: 8,
-            ),
-            decoration: BoxDecoration(
-              color: m8White,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: m8Blue.withValues(alpha: 0.12),
-              ),
-            ),
-            child: Row(
-              children: [
-                _profileStat(
-                  Icons.auto_awesome_rounded,
-                  'Moments',
-                  '0',
-                ),
-                _profileDivider(),
-                _profileStat(
-                  Icons.groups_rounded,
-                  'Grup',
-                  '0',
-                ),
-                _profileDivider(),
-                _profileStat(
-                  Icons.people_alt_rounded,
-                  'Kontak',
-                  '0',
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 22),
-
-          // =====================================================
-          // TENTANG
-          // =====================================================
-          const Text(
-            'IDENTITAS',
-            style: TextStyle(
-              color: m8White,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: m8White,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: m8Blue.withValues(alpha: 0.12),
-              ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: m8Blue.withValues(alpha: 0.09),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.person_outline_rounded,
-                    color: m8Blue,
-                  ),
-                ),
-                const SizedBox(width: 13),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Tentang Saya",
+                      const Text(
+                        "Profil",
                         style: TextStyle(
-                          color: m8BlueDark,
-                          fontSize: 14,
+                          color: m8White,
+                          fontSize: 21,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      SizedBox(height: 5),
-                      Text(
-                        "Profil B'Jo kamu belum memiliki informasi tambahan.",
-                        style: TextStyle(
-                          color: m8TextMuted,
-                          fontSize: 12,
-                          height: 1.45,
+                      const Spacer(),
+                      IconButton(
+                        tooltip: 'Pengaturan',
+                        onPressed: () => _openSettings(context),
+                        icon: const Icon(
+                          Icons.settings_outlined,
+                          color: m8White,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  _avatar(),
+                  const SizedBox(height: 12),
+                  Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: m8White,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    pin.isEmpty ? "PIN B'Jo belum tersedia" : "PIN B'Jo • $pin",
+                    style: TextStyle(
+                      color: m8White.withValues(alpha: 0.82),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _comingSoon(context, 'Edit profil'),
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          label: const Text('Edit Profil'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: m8White,
+                            side: BorderSide(
+                              color: m8White.withValues(alpha: 0.45),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () => _comingSoon(context, 'Bagikan profil'),
+                          icon: const Icon(Icons.ios_share_rounded, size: 18),
+                          label: const Text('Bagikan'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: m8White,
+                            foregroundColor: m8Blue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          const SizedBox(height: 22),
-
-          // =====================================================
-          // KEAMANAN
-          // =====================================================
-          const Text(
-            'KEAMANAN',
-            style: TextStyle(
-              color: m8White,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
+            // STATISTIK
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 18, 16, 6),
+              padding: const EdgeInsets.symmetric(vertical: 17),
+              decoration: BoxDecoration(
+                color: m8White,
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: m8BlueDark.withValues(alpha: 0.055),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  _stat('0', 'Moments', Icons.auto_awesome_outlined),
+                  _stat('0', 'Grup', Icons.groups_2_outlined),
+                  _stat('0', 'Kontak', Icons.people_outline_rounded),
+                ],
+              ),
             ),
-          ),
 
-          const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              child: Column(
+                children: [
+                  _section(
+                    'Profil',
+                    [
+                      _menuCard(
+                        context,
+                        icon: Icons.auto_awesome_outlined,
+                        title: 'Moments saya',
+                        subtitle: 'Lihat cerita dan aktivitas yang kamu bagikan',
+                        onTap: () => _comingSoon(context, 'Moments saya'),
+                      ),
+                      _menuCard(
+                        context,
+                        icon: Icons.badge_outlined,
+                        title: 'Tentang saya',
+                        subtitle: 'Tambahkan bio dan informasi singkat tentang kamu',
+                        onTap: () => _comingSoon(context, 'Tentang saya'),
+                      ),
+                    ],
+                  ),
 
-          _securityItem(
-            context,
-            icon: Icons.pin_rounded,
-            title: "PIN B'Jo",
-            subtitle: 'Kelola PIN akun B’Jo',
-            onTap: () => _showPin(context),
-          ),
+                  _section(
+                    'Akun & Keamanan',
+                    [
+                      _menuCard(
+                        context,
+                        icon: Icons.pin_outlined,
+                        title: "PIN B'Jo",
+                        subtitle: 'Identitas unik untuk terhubung dengan pengguna lain',
+                        onTap: () => _showPin(context),
+                      ),
+                      _menuCard(
+                        context,
+                        icon: Icons.devices_outlined,
+                        title: 'Perangkat & sesi',
+                        subtitle: 'Kelola perangkat yang sedang terhubung',
+                        onTap: () => _openSessions(context),
+                      ),
+                      _menuCard(
+                        context,
+                        icon: Icons.verified_user_outlined,
+                        title: 'Keamanan akun',
+                        subtitle: 'Periksa dan kelola keamanan akun B’Jo',
+                        onTap: () => _comingSoon(context, 'Keamanan akun'),
+                      ),
+                    ],
+                  ),
 
-          _securityItem(
-            context,
-            icon: Icons.devices_rounded,
-            title: 'Otorisasi perangkat',
-            subtitle: 'Kelola perangkat yang dipercaya',
-            onTap: () => _openSessions(context),
-          ),
+                  _section(
+                    'Pengaturan',
+                    [
+                      _menuCard(
+                        context,
+                        icon: Icons.settings_outlined,
+                        title: 'Pengaturan B’Jo',
+                        subtitle: 'Notifikasi, chat, privasi, akun, dan lainnya',
+                        onTap: () => _openSettings(context),
+                      ),
+                      _menuCard(
+                        context,
+                        icon: Icons.notifications_none_rounded,
+                        title: 'Notifikasi',
+                        subtitle: 'Kelola suara, getar, dan nada dering',
+                        onTap: () => _openSettings(context),
+                      ),
+                      _menuCard(
+                        context,
+                        icon: Icons.lock_outline_rounded,
+                        title: 'Privasi',
+                        subtitle: 'Kelola keamanan dan privasi akun',
+                        onTap: () => _openSettings(context),
+                      ),
+                    ],
+                  ),
 
-          _securityItem(
-            context,
-            icon: Icons.phonelink_lock_rounded,
-            title: 'Sesi aktif',
-            subtitle: 'Lihat perangkat yang sedang login',
-            onTap: () => _openSessions(context),
-          ),
+                  _section(
+                    'Lainnya',
+                    [
+                      _menuCard(
+                        context,
+                        icon: Icons.help_outline_rounded,
+                        title: 'Bantuan',
+                        subtitle: 'Pusat bantuan dan informasi B’Jo',
+                        onTap: () => _comingSoon(context, 'Bantuan'),
+                      ),
+                      _menuCard(
+                        context,
+                        icon: Icons.info_outline_rounded,
+                        title: 'Tentang B’Jo',
+                        subtitle: 'Versi aplikasi dan informasi produk',
+                        onTap: () => _comingSoon(context, 'Tentang B’Jo'),
+                      ),
+                    ],
+                  ),
 
-          _securityItem(
-            context,
-            icon: Icons.verified_user_rounded,
-            title: 'Verifikasi server',
-            subtitle: 'Periksa status koneksi dan server B’Jo',
-            onTap: () => _comingSoon(context, 'Verifikasi server'),
-          ),
+                  const SizedBox(height: 4),
 
-          _securityItem(
-            context,
-            icon: Icons.lock_rounded,
-            title: 'Kunci aplikasi',
-            subtitle: 'Lindungi aplikasi dengan penguncian',
-            onTap: () => _comingSoon(context, 'Kunci aplikasi'),
-          ),
-
-          _securityItem(
-            context,
-            icon: Icons.lock_person_rounded,
-            title: 'Private Vault',
-            subtitle: 'Ruang pribadi untuk data sensitif',
-            onTap: () => _comingSoon(context, 'Private Vault'),
-          ),
-
-          _securityItem(
-            context,
-            icon: Icons.login_rounded,
-            title: 'Login perangkat baru',
-            subtitle: 'Tambahkan perangkat baru secara aman',
-            onTap: () => _comingSoon(context, 'Login perangkat baru'),
-          ),
-
-          const SizedBox(height: 8),
-
-          _securityItem(
-            context,
-            icon: Icons.logout_rounded,
-            title: 'Logout semua perangkat',
-            subtitle: 'Keluar dari seluruh sesi B’Jo',
-            onTap: () => _logoutAllDevices(context),
-          ),
-        ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _logoutAllDevices(context),
+                      icon: const Icon(Icons.logout_rounded),
+                      label: const Text('Logout semua perangkat'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red.shade700,
+                        side: BorderSide(
+                          color: Colors.red.withValues(alpha: 0.22),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(17),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _profileStat(
-    IconData icon,
-    String label,
-    String value,
-  ) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            color: m8Blue,
-            size: 20,
-          ),
-          const SizedBox(height: 7),
-          Text(
-            value,
-            style: const TextStyle(
-              color: m8BlueDark,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(
-              color: m8TextMuted,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _profileDivider() {
-    return Container(
-      width: 1,
-      height: 42,
-      color: m8Blue.withValues(alpha: 0.10),
     );
   }
 }
-
 
 // ============================================================
 // B'JO ACTIVE SESSIONS
