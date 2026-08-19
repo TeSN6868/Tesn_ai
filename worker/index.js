@@ -3061,11 +3061,11 @@ export default {
           const upgradedHash = await hashPassword(password);
 
           await env.DB.prepare(`
-            UPDATE users
-            SET password_hash = ?
-            WHERE id = ?
-          `)
-            .bind(upgradedHash, user.id)
+        INSERT INTO sessions
+          (user_id, token_hash, device_name, platform, created_at, last_seen_at, expires_at)
+        VALUES (?, ?, ?, ?, unixepoch(), unixepoch(), unixepoch() + 2592000)
+      `)
+        .bind(upgradedHash, user.id)
             .run();
 
           validPassword = true;
@@ -3088,8 +3088,8 @@ export default {
 
       await env.DB.prepare(`
         INSERT INTO sessions
-          (user_id, token_hash, device_name, platform, created_at, last_seen_at)
-        VALUES (?, ?, ?, ?, unixepoch(), unixepoch())
+          (user_id, token_hash, device_name, platform, created_at, last_seen_at, expires_at)
+        VALUES (?, ?, ?, ?, unixepoch(), unixepoch(), unixepoch() + 2592000)
       `)
         .bind(
           user.id,
