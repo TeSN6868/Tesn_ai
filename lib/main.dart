@@ -7393,26 +7393,31 @@ class _StoryPageState extends State<StoryPage> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        OutlinedButton.icon(
+                        IconButton(
+                          tooltip: "Foto",
                           onPressed: chooseImage,
                           icon: const Icon(Icons.photo_rounded),
-                          label: const Text("Foto"),
+                          color: m8Blue,
+                          visualDensity: VisualDensity.compact,
                         ),
-                        const SizedBox(width: 8),
-                        OutlinedButton.icon(
+                        IconButton(
+                          tooltip: "Video",
                           onPressed: chooseVideo,
                           icon: const Icon(Icons.videocam_rounded),
-                          label: const Text("Video"),
+                          color: m8Blue,
+                          visualDensity: VisualDensity.compact,
                         ),
-                        const SizedBox(width: 8),
-                        OutlinedButton.icon(
+                        IconButton(
+                          tooltip: "Lokasi",
                           onPressed: chooseLocation,
                           icon: const Icon(Icons.location_on_rounded),
-                          label: const Text("Lokasi"),
+                          color: m8Blue,
+                          visualDensity: VisualDensity.compact,
                         ),
-                        const Spacer(),
-                        FilledButton(
-                          onPressed: () async {
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () async {
                             final text = textController.text.trim();
 
                             if (text.isEmpty && selectedMedia == null) {
@@ -7436,7 +7441,9 @@ class _StoryPageState extends State<StoryPage> {
                               longitude: selectedLocation?.longitude,
                             );
                           },
-                          child: const Text("Posting"),
+                            icon: const Icon(Icons.send_rounded, size: 18),
+                            label: const Text("Posting"),
+                          ),
                         ),
                       ],
                     ),
