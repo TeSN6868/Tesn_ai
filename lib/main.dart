@@ -9139,6 +9139,7 @@ class BJoProfilePage extends StatelessWidget {
 
   String get photoUrl {
     final candidates = [
+      user['profile_photo_url'],
       user['photo_url'],
       user['avatar_url'],
       user['profile_photo'],
@@ -9152,6 +9153,11 @@ class BJoProfilePage extends StatelessWidget {
     }
 
     return '';
+  }
+
+  String get backgroundUrl {
+    final value = user['profile_background_url'];
+    return value?.toString().trim() ?? '';
   }
 
   String get initial =>
@@ -9486,7 +9492,17 @@ class BJoProfilePage extends StatelessWidget {
                 color: m8Blue,
                 borderRadius: const BorderRadius.vertical(
                   bottom: Radius.circular(32),
-                ),
+                  image: backgroundUrl.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(backgroundUrl),
+                        fit: BoxFit.cover,
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withValues(alpha: 0.35),
+                          BlendMode.darken,
+                        ),
+                      )
+                    : null,
+              ),
                 boxShadow: [
                   BoxShadow(
                     color: m8BlueDark.withValues(alpha: 0.16),
