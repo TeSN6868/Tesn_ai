@@ -2794,6 +2794,97 @@ export default {
     }
 
     // ============================================================
+    // UPDATE PROFILE BACKGROUND
+    // ============================================================
+    if (
+      url.pathname === "/api/profile/background" &&
+      request.method === "POST"
+    ) {
+      const body = await request.json();
+
+      const userId = Number(body.user_id);
+      const backgroundUrl = String(body.background_url || "").trim();
+
+      if (
+        !Number.isInteger(userId) ||
+        userId <= 0 ||
+        !backgroundUrl
+      ) {
+        return json({
+          success: false,
+          error: "User ID dan URL background wajib diisi.",
+        }, 400);
+      }
+
+      if (backgroundUrl.length > 2000) {
+        return json({
+          success: false,
+          error: "URL background terlalu panjang.",
+        }, 400);
+      }
+
+      if (!env.DB) {
+        return json({
+          success: false,
+          error: "Binding D1 DB belum tersedia.",
+        }, 500);
+      }
+
+      const user = await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          email,
+          phone,
+          m8_pin,
+          profile_photo_url,
+          profile_background_url
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+      `).bind(userId).first();
+
+      if (!user) {
+        return json({
+          success: false,
+          error: "Akun M8 tidak ditemukan.",
+        }, 404);
+      }
+
+      const result = await env.DB.prepare(`
+        UPDATE users
+        SET profile_background_url = ?
+        WHERE id = ?
+      `).bind(backgroundUrl, user.id).run();
+
+      if (!result.success) {
+        throw new Error(
+          "Gagal memperbarui background profil akun M8."
+        );
+      }
+
+      const updated = await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          email,
+          phone,
+          m8_pin,
+          profile_photo_url,
+          profile_background_url
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+      `).bind(user.id).first();
+
+      return json({
+        success: true,
+        message: "Background profil M8 berhasil diperbarui.",
+        user: updated,
+      });
+    }
+
+    // ============================================================
     // B'JO SESSIONS
     // ============================================================
 
@@ -3019,7 +3110,7 @@ export default {
 
       if (identifier) {
         user = await env.DB.prepare(`
-          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url
+          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url, profile_background_url
           FROM users
           WHERE (email = ? OR phone = ?) AND active = 1
           LIMIT 1
@@ -3028,7 +3119,7 @@ export default {
           .first();
       } else {
         user = await env.DB.prepare(`
-          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url
+          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url, profile_background_url
           FROM users
           WHERE m8_pin = ? AND active = 1
           LIMIT 1
@@ -3109,6 +3200,7 @@ export default {
           phone: user.phone,
           m8_pin: user.m8_pin,
           profile_photo_url: user.profile_photo_url,
+          profile_background_url: user.profile_background_url,
         },
       });
     }
@@ -3297,7 +3389,8 @@ async function getSessionUser(request, env) {
       u.email,
       u.phone,
       u.m8_pin,
-      u.profile_photo_url
+      u.profile_photo_url,
+      u.profile_background_url
     FROM sessions s
     JOIN users u ON u.id = s.user_id
     WHERE s.token_hash = ?
