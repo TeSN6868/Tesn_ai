@@ -11151,7 +11151,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     border: Border.all(color: m8Blue, width: 2),
                   ),
                   child: GestureDetector(
-                    onTap: _changeProfilePhoto,
+                    onTap: () async {
+                      final changed = await Navigator.of(context).push<bool>(
+                        MaterialPageRoute(
+                          builder: (_) => BJoProfileMediaPage(
+                            user: widget.user,
+                          ),
+                        ),
+                      );
+
+                      if (changed == true && mounted) {
+                        setState(() {});
+                      }
+                    },
                     child: CircleAvatar(
                       radius: 38,
                       backgroundColor: m8White,
@@ -11178,7 +11190,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: _changeProfilePhoto,
+                  onTap: () async {
+                      final changed = await Navigator.of(context).push<bool>(
+                        MaterialPageRoute(
+                          builder: (_) => BJoProfileMediaPage(
+                            user: widget.user,
+                          ),
+                        ),
+                      );
+
+                      if (changed == true && mounted) {
+                        setState(() {});
+                      }
+                    },
                   child: const Text(
                     'Ganti Foto',
                     style: TextStyle(
