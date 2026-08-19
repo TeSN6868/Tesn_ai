@@ -9488,21 +9488,21 @@ class BJoProfilePage extends StatelessWidget {
             // HEADER IDENTITAS
             Container(
               padding: const EdgeInsets.fromLTRB(18, 12, 18, 22),
-              decoration: BoxDecoration(
-                color: m8Blue,
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(32),
+                decoration: BoxDecoration(
+                  color: m8Blue,
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(32),
+                  ),
                   image: backgroundUrl.isNotEmpty
-                    ? DecorationImage(
-                        image: NetworkImage(backgroundUrl),
-                        fit: BoxFit.cover,
-                        colorFilter: ColorFilter.mode(
-                          Colors.black.withValues(alpha: 0.35),
-                          BlendMode.darken,
-                        ),
-                      )
-                    : null,
-              ),
+                      ? DecorationImage(
+                          image: NetworkImage(backgroundUrl),
+                          fit: BoxFit.cover,
+                          colorFilter: ColorFilter.mode(
+                            Colors.black.withValues(alpha: 0.35),
+                            BlendMode.darken,
+                          ),
+                        )
+                      : null,
                 boxShadow: [
                   BoxShadow(
                     color: m8BlueDark.withValues(alpha: 0.16),
