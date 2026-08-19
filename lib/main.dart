@@ -9363,55 +9363,278 @@ class BJoProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initial = name.isNotEmpty
+        ? name.substring(0, 1).toUpperCase()
+        : 'B';
+
     return M8DenimBackground(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 34),
         children: [
-          // HEADER PROFIL
+          // =====================================================
+          // B'JO IDENTITY CARD
+          // =====================================================
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
             decoration: BoxDecoration(
-              color: m8BlueDark,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: m8BlueLight.withValues(alpha: 0.35)),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  m8BlueDark,
+                  m8Blue,
+                  m8BlueDark,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: m8BlueLight.withValues(alpha: 0.38),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // AVATAR
+                    Container(
+                      width: 78,
+                      height: 78,
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: m8White,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.18),
+                            blurRadius: 14,
+                            offset: const Offset(0, 7),
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        backgroundColor: m8BlueLight,
+                        child: Text(
+                          initial,
+                          style: const TextStyle(
+                            color: m8BlueDark,
+                            fontSize: 31,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 16),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 3),
+                          Text(
+                            name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: m8White,
+                              fontSize: 22,
+                              height: 1.08,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: m8White.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              pin.isEmpty
+                                  ? "PIN belum tersedia"
+                                  : "B'Jo • $pin",
+                              style: const TextStyle(
+                                color: m8BlueLight,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 22),
+
+                // IDENTITY FOOTER
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.auto_awesome_rounded,
+                        color: m8BlueLight,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 9),
+                      const Expanded(
+                        child: Text(
+                          "Identitas B'Jo kamu",
+                          style: TextStyle(
+                            color: m8White,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      if (pin.isNotEmpty)
+                        InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => _showPin(context),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              "Lihat PIN",
+                              style: TextStyle(
+                                color: m8BlueLight,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // =====================================================
+          // QUICK STATS
+          // =====================================================
+          Container(
+            padding: const EdgeInsets.symmetric(
+              vertical: 17,
+              horizontal: 8,
+            ),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: m8Blue.withValues(alpha: 0.12),
+              ),
             ),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: m8White,
-                  child: Text(
-                    name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'B',
-                    style: const TextStyle(
-                      color: m8BlueDark,
-                      fontSize: 25,
-                      fontWeight: FontWeight.w900,
-                    ),
+                _profileStat(
+                  Icons.auto_awesome_rounded,
+                  'Moments',
+                  '0',
+                ),
+                _profileDivider(),
+                _profileStat(
+                  Icons.groups_rounded,
+                  'Grup',
+                  '0',
+                ),
+                _profileDivider(),
+                _profileStat(
+                  Icons.people_alt_rounded,
+                  'Kontak',
+                  '0',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 22),
+
+          // =====================================================
+          // TENTANG
+          // =====================================================
+          const Text(
+            'IDENTITAS',
+            style: TextStyle(
+              color: m8White,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: m8Blue.withValues(alpha: 0.12),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: m8Blue.withValues(alpha: 0.09),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.person_outline_rounded,
+                    color: m8Blue,
                   ),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
+                const SizedBox(width: 13),
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: m8White,
-                          fontSize: 20,
+                        "Tentang Saya",
+                        style: TextStyle(
+                          color: m8BlueDark,
+                          fontSize: 14,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      SizedBox(height: 5),
                       Text(
-                        pin.isEmpty
-                            ? "PIN B'Jo belum tersedia"
-                            : "PIN B'Jo • $pin",
-                        style: const TextStyle(
-                          color: m8BlueLight,
+                        "Profil B'Jo kamu belum memiliki informasi tambahan.",
+                        style: TextStyle(
+                          color: m8TextMuted,
                           fontSize: 12,
+                          height: 1.45,
                         ),
                       ),
                     ],
@@ -9421,15 +9644,18 @@ class BJoProfilePage extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 22),
 
+          // =====================================================
+          // KEAMANAN
+          // =====================================================
           const Text(
             'KEAMANAN',
             style: TextStyle(
               color: m8White,
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w900,
-              letterSpacing: 1.2,
+              letterSpacing: 1.5,
             ),
           ),
 
@@ -9502,6 +9728,50 @@ class BJoProfilePage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _profileStat(
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: m8Blue,
+            size: 20,
+          ),
+          const SizedBox(height: 7),
+          Text(
+            value,
+            style: const TextStyle(
+              color: m8BlueDark,
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              color: m8TextMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _profileDivider() {
+    return Container(
+      width: 1,
+      height: 42,
+      color: m8Blue.withValues(alpha: 0.10),
     );
   }
 }
