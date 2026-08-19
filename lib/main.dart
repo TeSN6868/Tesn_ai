@@ -10192,6 +10192,9 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
   String get currentPhotoUrl =>
       widget.user['profile_photo_url']?.toString().trim() ?? '';
 
+    String get currentBackgroundUrl =>
+        widget.user['profile_background_url']?.toString().trim() ?? '';
+
   Future<void> _pickProfileImage(ImageSource source) async {
     try {
       final image = await _picker.pickImage(
@@ -10321,11 +10324,16 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                 image: FileImage(File(_backgroundImage!.path)),
                 fit: BoxFit.cover,
               )
-            : null,
+: currentBackgroundUrl.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(currentBackgroundUrl),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
       ),
       child: Stack(
         children: [
-          if (_backgroundImage == null)
+          if (_backgroundImage == null && currentBackgroundUrl.isEmpty)
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
