@@ -10328,8 +10328,10 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
 
 
 // ============================================================
-// B'JO FOTO & BACKGROUND PROFIL
 // ============================================================
+// B'JO FOTO & BACKGROUND PROFIL — REBUILD
+// ============================================================
+
 class BJoProfileMediaPage extends StatefulWidget {
   final Map<String, dynamic> user;
 
@@ -10353,31 +10355,39 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
   String get currentPhotoUrl =>
       widget.user['profile_photo_url']?.toString().trim() ?? '';
 
-    String get currentBackgroundUrl =>
-        widget.user['profile_background_url']?.toString().trim() ?? '';
+  String get currentBackgroundUrl =>
+      widget.user['profile_background_url']?.toString().trim() ?? '';
 
-  Future<void> _pickProfileImage(ImageSource source) async {
+  String get displayName {
+    final name = widget.user['name']?.toString().trim() ?? '';
+    return name.isEmpty ? "Pengguna B'Jo" : name;
+  }
+
+  String get displayPin =>
+      widget.user['m8_pin']?.toString().trim() ?? '';
+
+  Future<void> _chooseProfileImage(ImageSource source) async {
     try {
-      final image = await _picker.pickImage(
+      final picked = await _picker.pickImage(
         source: source,
-        imageQuality: 90,
-        maxWidth: 1600,
-        maxHeight: 1600,
+        imageQuality: 92,
+        maxWidth: 1800,
+        maxHeight: 1800,
       );
 
-      if (image == null) return;
+      if (picked == null) return;
 
       final cropped = await ImageCropper().cropImage(
-        sourcePath: image.path,
+        sourcePath: picked.path,
         compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 90,
+        compressQuality: 92,
         aspectRatio: const CropAspectRatio(
           ratioX: 1,
           ratioY: 1,
         ),
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'Edit Foto Profil',
+            toolbarTitle: 'Atur Foto Profil',
             toolbarColor: m8BlueDark,
             toolbarWidgetColor: m8White,
             backgroundColor: m8White,
@@ -10386,106 +10396,115 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
             hideBottomControls: false,
           ),
           IOSUiSettings(
-            title: 'Edit Foto Profil',
+            title: 'Atur Foto Profil',
             aspectRatioLockEnabled: true,
             resetAspectRatioEnabled: false,
           ),
         ],
       );
 
-      if (cropped == null) return;
-      if (!mounted) return;
+      if (cropped == null || !mounted) return;
 
       setState(() {
         _profileImage = XFile(cropped.path);
       });
     } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal mengedit foto: $e'),
-        ),
-      );
+      _showError('Gagal memilih foto profil: $e');
     }
   }
 
-  Future<void> _pickBackground(ImageSource source) async {
+  Future<void> _chooseBackground(ImageSource source) async {
     try {
-      final image = await _picker.pickImage(
+      final picked = await _picker.pickImage(
         source: source,
         imageQuality: 88,
-        maxWidth: 1800,
-        maxHeight: 1200,
+        maxWidth: 2200,
+        maxHeight: 1400,
       );
 
-      if (image == null) return;
+      if (picked == null || !mounted) return;
 
       setState(() {
-        _backgroundImage = image;
+        _backgroundImage = picked;
       });
     } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memilih background: $e')),
-      );
+      _showError('Gagal memilih background: $e');
     }
   }
 
-  Future<void> _showImageSource({
-    required String title,
+  void _showError(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _showSourcePicker({
     required bool profile,
   }) async {
     await showModalBottomSheet<void>(
       context: context,
-      showDragHandle: true,
       backgroundColor: m8White,
+      showDragHandle: true,
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  title,
+                  profile ? 'Foto Profil' : 'Background Profil',
                   style: const TextStyle(
                     color: m8BlueDark,
-                    fontSize: 18,
+                    fontSize: 19,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 ListTile(
                   leading: const Icon(
-                    Icons.photo_library_outlined,
+                    Icons.photo_library_rounded,
                     color: m8Blue,
                   ),
-                  title: const Text('Pilih dari Galeri'),
+                  title: const Text(
+                    'Pilih dari Galeri',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(sheetContext);
 
                     if (profile) {
-                      _pickProfileImage(ImageSource.gallery);
+                      _chooseProfileImage(ImageSource.gallery);
                     } else {
-                      _pickBackground(ImageSource.gallery);
+                      _chooseBackground(ImageSource.gallery);
                     }
                   },
                 ),
                 ListTile(
                   leading: const Icon(
-                    Icons.camera_alt_outlined,
+                    Icons.camera_alt_rounded,
                     color: m8Blue,
                   ),
-                  title: const Text('Ambil dari Kamera'),
+                  title: const Text(
+                    'Ambil dari Kamera',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(sheetContext);
 
                     if (profile) {
-                      _pickProfileImage(ImageSource.camera);
+                      _chooseProfileImage(ImageSource.camera);
                     } else {
-                      _pickBackground(ImageSource.camera);
+                      _chooseBackground(ImageSource.camera);
                     }
                   },
                 ),
@@ -10497,112 +10516,176 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     );
   }
 
-  Widget _profilePreview() {
-    ImageProvider? profileImage;
-
+  ImageProvider? get _profileProvider {
     if (_profileImage != null) {
-      profileImage = FileImage(File(_profileImage!.path));
-    } else if (currentPhotoUrl.isNotEmpty) {
-      profileImage = NetworkImage(currentPhotoUrl);
+      return FileImage(File(_profileImage!.path));
     }
 
+    if (currentPhotoUrl.isNotEmpty) {
+      return NetworkImage(currentPhotoUrl);
+    }
+
+    return null;
+  }
+
+  ImageProvider? get _backgroundProvider {
+    if (_backgroundImage != null) {
+      return FileImage(File(_backgroundImage!.path));
+    }
+
+    if (currentBackgroundUrl.isNotEmpty) {
+      return NetworkImage(currentBackgroundUrl);
+    }
+
+    return null;
+  }
+
+  Widget _profileHeader() {
+    final profile = _profileProvider;
+    final background = _backgroundProvider;
+
     return Container(
-      height: 245,
+      height: 330,
+      width: double.infinity,
       decoration: BoxDecoration(
         color: m8BlueDark,
         borderRadius: BorderRadius.circular(28),
-        image: _backgroundImage != null
-            ? DecorationImage(
-                image: FileImage(File(_backgroundImage!.path)),
-                fit: BoxFit.cover,
-              )
-: currentBackgroundUrl.isNotEmpty
-                  ? DecorationImage(
-                      image: NetworkImage(currentBackgroundUrl),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
       ),
+      clipBehavior: Clip.antiAlias,
       child: Stack(
+        fit: StackFit.expand,
         children: [
-          if (_backgroundImage == null && currentBackgroundUrl.isEmpty)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      m8Blue.withValues(alpha: 0.95),
-                      m8BlueDark,
-                    ],
-                  ),
+          if (background != null)
+            Image(
+              image: background,
+              fit: BoxFit.cover,
+            )
+          else
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    m8Blue,
+                    m8BlueDark,
+                  ],
                 ),
               ),
             ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                color: Colors.black.withValues(alpha: 0.16),
+
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.05),
+                  Colors.black.withValues(alpha: 0.48),
+                ],
               ),
             ),
           ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () => _showImageSource(
-                    title: 'Foto Profil',
-                    profile: true,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: m8White,
-                        width: 3,
-                      ),
-                    ),
-                    child: CircleAvatar(
-                      radius: 45,
-                      backgroundColor: m8White,
-                      backgroundImage: profileImage,
-                      child: profileImage == null
-                          ? const Icon(
-                              Icons.person_rounded,
-                              color: m8Blue,
-                              size: 48,
-                            )
-                          : null,
-                    ),
+
+          Positioned(
+            top: 16,
+            right: 16,
+            child: Material(
+              color: Colors.black.withValues(alpha: 0.28),
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => _showSourcePicker(profile: false),
+                child: const Padding(
+                  padding: EdgeInsets.all(11),
+                  child: Icon(
+                    Icons.wallpaper_rounded,
+                    color: m8White,
+                    size: 21,
                   ),
                 ),
-                const SizedBox(height: 12),
+              ),
+            ),
+          ),
+
+          Align(
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () => _showSourcePicker(profile: true),
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: m8White,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.25),
+                              blurRadius: 18,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 58,
+                          backgroundColor: m8White,
+                          backgroundImage: profile,
+                          child: profile == null
+                              ? const Icon(
+                                  Icons.person_rounded,
+                                  color: m8Blue,
+                                  size: 58,
+                                )
+                              : null,
+                        ),
+                      ),
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: m8White,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: m8BlueDark,
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          color: m8BlueDark,
+                          size: 19,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
                 Text(
-                  widget.user['name']?.toString().trim().isNotEmpty == true
-                      ? widget.user['name'].toString()
-                      : "Pengguna B'Jo",
+                  displayName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: m8White,
-                    fontSize: 21,
+                    fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.user['m8_pin']?.toString() ?? '',
-                  style: TextStyle(
-                    color: m8White.withValues(alpha: 0.82),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                if (displayPin.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    displayPin,
+                    style: TextStyle(
+                      color: m8White.withValues(alpha: 0.82),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -10611,7 +10694,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     );
   }
 
-  Widget _actionCard({
+  Widget _optionCard({
     required IconData icon,
     required String title,
     required String subtitle,
@@ -10639,7 +10722,10 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
             color: m8Blue.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(icon, color: m8Blue),
+          child: Icon(
+            icon,
+            color: m8Blue,
+          ),
         ),
         title: Text(
           title,
@@ -10666,13 +10752,56 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     );
   }
 
+  Future<String> _uploadImage(XFile image) async {
+    final bytes = await image.readAsBytes();
+
+    if (bytes.isEmpty) {
+      throw Exception('File gambar kosong.');
+    }
+
+    if (bytes.length > 5 * 1024 * 1024) {
+      throw Exception('Gambar terlalu besar. Maksimal 5 MB.');
+    }
+
+    final extension = image.name.contains('.')
+        ? image.name.split('.').last.toLowerCase()
+        : 'jpg';
+
+    final contentType = switch (extension) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'gif' => 'image/gif',
+      _ => 'image/jpeg',
+    };
+
+    final response = await http.post(
+      Uri.parse('$apiBase/api/upload'),
+      headers: {
+        'Content-Type': contentType,
+      },
+      body: bytes,
+    ).timeout(const Duration(seconds: 30));
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode != 201 || data['success'] != true) {
+      throw Exception(
+        data['error']?.toString() ?? 'Upload gambar gagal.',
+      );
+    }
+
+    final url = data['url']?.toString().trim();
+
+    if (url == null || url.isEmpty) {
+      throw Exception('Server tidak memberikan URL gambar.');
+    }
+
+    return url;
+  }
+
   Future<void> _save() async {
     if (_profileImage == null && _backgroundImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Belum ada perubahan untuk disimpan.'),
-        ),
-      );
+      _showError('Belum ada perubahan untuk disimpan.');
       return;
     }
 
@@ -10681,72 +10810,31 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     });
 
     try {
-      // Foto profil sudah memiliki endpoint resmi.
+      final userId = widget.user['id'];
+
+      if (userId == null) {
+        throw Exception('ID akun B’Jo tidak tersedia.');
+      }
+
       if (_profileImage != null) {
-        final bytes = await _profileImage!.readAsBytes();
+        final photoUrl = await _uploadImage(_profileImage!);
 
-        if (bytes.isEmpty) {
-          throw Exception('Foto profil kosong.');
-        }
-
-        if (bytes.length > 5 * 1024 * 1024) {
-          throw Exception('Foto profil terlalu besar. Maksimal 5 MB.');
-        }
-
-        final extension = _profileImage!.name.contains('.')
-            ? _profileImage!.name.split('.').last.toLowerCase()
-            : 'jpg';
-
-        final contentType = switch (extension) {
-          'png' => 'image/png',
-          'webp' => 'image/webp',
-          'gif' => 'image/gif',
-          _ => 'image/jpeg',
-        };
-
-        final uploadResponse = await http.post(
-          Uri.parse('$apiBase/api/upload'),
-          headers: {'Content-Type': contentType},
-          body: bytes,
-        ).timeout(const Duration(seconds: 30));
-
-        final uploadData = jsonDecode(uploadResponse.body);
-
-        if (uploadResponse.statusCode != 201 ||
-            uploadData['success'] != true) {
-          throw Exception(
-            uploadData['error']?.toString() ??
-                'Gagal mengupload foto profil.',
-          );
-        }
-
-        final photoUrl = uploadData['url']?.toString();
-
-        if (photoUrl == null || photoUrl.isEmpty) {
-          throw Exception('URL foto tidak diterima server.');
-        }
-
-        final userId = widget.user['id'];
-
-        if (userId == null) {
-          throw Exception('ID akun B’Jo tidak tersedia.');
-        }
-
-        final saveResponse = await http.post(
+        final response = await http.post(
           Uri.parse('$apiBase/api/profile/photo'),
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: jsonEncode({
             'user_id': userId,
             'photo_url': photoUrl,
           }),
         ).timeout(const Duration(seconds: 20));
 
-        final saveData = jsonDecode(saveResponse.body);
+        final data = jsonDecode(response.body);
 
-        if (saveResponse.statusCode != 200 ||
-            saveData['success'] != true) {
+        if (response.statusCode != 200 || data['success'] != true) {
           throw Exception(
-            saveData['error']?.toString() ??
+            data['error']?.toString() ??
                 'Gagal menyimpan foto profil.',
           );
         }
@@ -10754,71 +10842,10 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
         widget.user['profile_photo_url'] = photoUrl;
       }
 
-      // ============================================================
-      // SIMPAN BACKGROUND PROFIL
-      // ============================================================
       if (_backgroundImage != null) {
-        final backgroundBytes = await _backgroundImage!.readAsBytes();
+        final backgroundUrl = await _uploadImage(_backgroundImage!);
 
-        if (backgroundBytes.isEmpty) {
-          throw Exception('Background profil kosong.');
-        }
-
-        if (backgroundBytes.length > 5 * 1024 * 1024) {
-          throw Exception(
-            'Background profil terlalu besar. Maksimal 5 MB.',
-          );
-        }
-
-        final backgroundExtension =
-            _backgroundImage!.name.contains('.')
-                ? _backgroundImage!.name.split('.').last.toLowerCase()
-                : 'jpg';
-
-        final backgroundContentType = switch (backgroundExtension) {
-          'png' => 'image/png',
-          'webp' => 'image/webp',
-          'gif' => 'image/gif',
-          _ => 'image/jpeg',
-        };
-
-        final backgroundUploadResponse = await http.post(
-          Uri.parse('$apiBase/api/upload'),
-          headers: {
-            'Content-Type': backgroundContentType,
-          },
-          body: backgroundBytes,
-        ).timeout(const Duration(seconds: 30));
-
-        final backgroundUploadData =
-            jsonDecode(backgroundUploadResponse.body);
-
-        if (backgroundUploadResponse.statusCode != 201 ||
-            backgroundUploadData['success'] != true) {
-          throw Exception(
-            backgroundUploadData['error']?.toString() ??
-                'Gagal mengupload background profil.',
-          );
-        }
-
-        final backgroundUrl =
-            backgroundUploadData['url']?.toString();
-
-        if (backgroundUrl == null || backgroundUrl.isEmpty) {
-          throw Exception(
-            'URL background tidak diterima server.',
-          );
-        }
-
-        final userId = widget.user['id'];
-
-        if (userId == null) {
-          throw Exception(
-            'ID akun B’Jo tidak tersedia.',
-          );
-        }
-
-        final backgroundSaveResponse = await http.post(
+        final response = await http.post(
           Uri.parse('$apiBase/api/profile/background'),
           headers: {
             'Content-Type': 'application/json',
@@ -10829,13 +10856,11 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
           }),
         ).timeout(const Duration(seconds: 20));
 
-        final backgroundSaveData =
-            jsonDecode(backgroundSaveResponse.body);
+        final data = jsonDecode(response.body);
 
-        if (backgroundSaveResponse.statusCode != 200 ||
-            backgroundSaveData['success'] != true) {
+        if (response.statusCode != 200 || data['success'] != true) {
           throw Exception(
-            backgroundSaveData['error']?.toString() ??
+            data['error']?.toString() ??
                 'Gagal menyimpan background profil.',
           );
         }
@@ -10847,13 +10872,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
 
       Navigator.pop(context, true);
     } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal menyimpan profil: $e'),
-        ),
-      );
+      _showError('Gagal menyimpan profil: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -10868,94 +10887,88 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     return Scaffold(
       backgroundColor: m8WhiteSoft,
       appBar: AppBar(
-        title: const Text(
-          'Foto & Background Profil',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
         backgroundColor: m8White,
         foregroundColor: m8BlueDark,
         elevation: 0,
+        title: const Text(
+          'Profil B’Jo',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 30),
-        children: [
-          _profilePreview(),
-          const SizedBox(height: 18),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 30),
+          children: [
+            _profileHeader(),
+            const SizedBox(height: 18),
 
-          const Text(
-            'Foto & Background Profil',
-            style: TextStyle(
-              color: m8BlueDark,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
+            const Text(
+              'PERSONALISASI PROFIL',
+              style: TextStyle(
+                color: m8BlueDark,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.1,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-          _actionCard(
-            icon: Icons.account_circle_outlined,
-            title: 'Foto Profil',
-            subtitle: 'Pilih foto dari galeri atau kamera',
-            onTap: () => _showImageSource(
+            _optionCard(
+              icon: Icons.person_rounded,
               title: 'Foto Profil',
-              profile: true,
+              subtitle: _profileImage == null
+                  ? 'Ganti dan atur foto profil'
+                  : 'Foto baru sudah dipilih',
+              onTap: () => _showSourcePicker(profile: true),
             ),
-          ),
 
-          _actionCard(
-            icon: Icons.wallpaper_outlined,
-            title: 'Background Profil',
-            subtitle: 'Gunakan gambar pilihan kamu sendiri',
-            onTap: () => _showImageSource(
+            _optionCard(
+              icon: Icons.wallpaper_rounded,
               title: 'Background Profil',
-              profile: false,
+              subtitle: _backgroundImage == null
+                  ? 'Ganti gambar latar profil'
+                  : 'Background baru sudah dipilih',
+              onTap: () => _showSourcePicker(profile: false),
             ),
-          ),
 
-          _actionCard(
-            icon: Icons.collections_outlined,
-            title: 'Background Bawaan B’Jo',
-            subtitle: 'Pilihan background yang disediakan B’Jo',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Koleksi background B’Jo akan kita isi berikutnya.',
+            const SizedBox(height: 8),
+
+            SizedBox(
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _uploading ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: m8BlueDark,
+                  foregroundColor: m8White,
+                  disabledBackgroundColor:
+                      m8BlueDark.withValues(alpha: 0.45),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(17),
                   ),
+                  elevation: 0,
                 ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 12),
-
-          SizedBox(
-            height: 52,
-            child: FilledButton.icon(
-              onPressed: _uploading ? null : _save,
-              icon: _uploading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: m8White,
+                child: _uploading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: m8White,
+                        ),
+                      )
+                    : const Text(
+                        'SIMPAN PERUBAHAN',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                    )
-                  : const Icon(Icons.save_rounded),
-              label: Text(
-                _uploading ? 'Menyimpan...' : 'Simpan Perubahan',
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: m8Blue,
-                foregroundColor: m8White,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
