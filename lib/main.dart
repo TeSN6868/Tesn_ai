@@ -9256,6 +9256,124 @@ class BJoProfilePage extends StatelessWidget {
     );
   }
 
+  Future<void> _editName(BuildContext context) async {
+      final controller = TextEditingController(
+        text: user['name']?.toString() ?? '',
+      );
+
+      final newName = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Edit Nama'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              maxLength: 50,
+              style: const TextStyle(
+                color: m8BlueDark,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+              cursorColor: m8Blue,
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(
+                labelText: 'Nama B\'Jo',
+                hintText: 'Masukkan nama kamu',
+                labelStyle: TextStyle(color: m8TextMuted),
+                hintStyle: TextStyle(color: m8TextMuted),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Batal'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final value = controller.text.trim();
+
+                  if (value.length < 2) {
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(
+                      const SnackBar(
+                        content: Text('Nama minimal 2 karakter.'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  Navigator.pop(dialogContext, value);
+                },
+                child: const Text('Simpan'),
+              ),
+            ],
+          );
+        },
+      );
+
+      controller.dispose();
+
+      if (newName == null || newName.trim().isEmpty) return;
+
+      final pin = user['m8_pin']?.toString() ??
+          user['pin']?.toString() ??
+          '';
+
+      if (pin.isEmpty) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("PIN B'Jo tidak tersedia."),
+          ),
+        );
+        return;
+      }
+
+      try {
+        final response = await http.post(
+          Uri.parse('$apiBase/api/profile/name'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'm8_pin': pin,
+            'name': newName.trim(),
+          }),
+        ).timeout(const Duration(seconds: 20));
+
+        final data = jsonDecode(response.body);
+
+        if (response.statusCode != 200 || data['success'] != true) {
+          throw Exception(
+            data['error']?.toString() ?? 'Gagal memperbarui nama.',
+          );
+        }
+
+        final updatedUser = data['user'];
+
+        if (updatedUser is Map) {
+          user['name'] =
+              updatedUser['name']?.toString() ?? newName.trim();
+        } else {
+          user['name'] = newName.trim();
+        }
+
+        if (!context.mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Nama B'Jo berhasil diperbarui."),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Gagal memperbarui nama: $e"),
+          ),
+        );
+      }
+    }
+
   void _comingSoon(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$title akan diaktifkan berikutnya.')),
@@ -9562,7 +9680,7 @@ class BJoProfilePage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: _editName,
+                          onPressed: () => _editName(context),
                           icon: const Icon(Icons.edit_outlined, size: 18),
                           label: const Text('Edit Profil'),
                           style: OutlinedButton.styleFrom(
