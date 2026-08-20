@@ -38,7 +38,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-
       - name: Check chat relationships
         run: |
           echo "===== ALL CHATS ====="
@@ -51,6 +50,38 @@ jobs:
           echo ""
           echo "===== CALLS BY PIN ====="
           wrangler d1 execute m8-database --remote --command "SELECT caller_pin, callee_pin, COUNT(*) AS calls FROM call_sessions GROUP BY caller_pin, callee_pin ORDER BY calls DESC;"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Check orphan data
+        run: |
+          echo "===== CHAT PINS WITHOUT USERS ====="
+          wrangler d1 execute m8-database --remote --command "SELECT c.id, c.participant_1_pin, c.participant_2_pin FROM chats c LEFT JOIN users u1 ON u1.m8_pin = c.participant_1_pin LEFT JOIN users u2 ON u2.m8_pin = c.participant_2_pin WHERE u1.id IS NULL OR u2.id IS NULL ORDER BY c.id;"
+
+          echo ""
+          echo "===== MESSAGES WITH UNKNOWN SENDER ====="
+          wrangler d1 execute m8-database --remote --command "SELECT m.id, m.chat_id, m.sender_pin FROM messages m LEFT JOIN users u ON u.m8_pin = m.sender_pin WHERE u.id IS NULL ORDER BY m.id;"
+
+          echo ""
+          echo "===== CALLS WITH UNKNOWN USER ====="
+          wrangler d1 execute m8-database --remote --command "SELECT cs.id, cs.caller_pin, cs.callee_pin FROM call_sessions cs LEFT JOIN users u1 ON u1.m8_pin = cs.caller_pin LEFT JOIN users u2 ON u2.m8_pin = cs.callee_pin WHERE u1.id IS NULL OR u2.id IS NULL ORDER BY cs.id;"
+
+          echo ""
+          echo "===== CALL SIGNALS WITH UNKNOWN SENDER ====="
+          wrangler d1 execute m8-database --remote --command "SELECT csg.id, csg.sender_pin FROM call_signals csg LEFT JOIN users u ON u.m8_pin = csg.sender_pin WHERE u.id IS NULL ORDER BY csg.id;"
+
+          echo ""
+          echo "===== TYPING STATES WITH UNKNOWN USER ====="
+          wrangler d1 execute m8-database --remote --command "SELECT ts.user_pin FROM typing_states ts LEFT JOIN users u ON u.m8_pin = ts.user_pin WHERE u.id IS NULL ORDER BY ts.user_pin;"
+
+          echo ""
+          echo "===== EMPTY USERS ====="
+          wrangler d1 execute m8-database --remote --command "SELECT u.id, u.name, u.m8_pin, u.role FROM users u WHERE NOT EXISTS (SELECT 1 FROM sessions s WHERE s.user_id = u.id) AND NOT EXISTS (SELECT 1 FROM chats c WHERE c.participant_1_pin = u.m8_pin OR c.participant_2_pin = u.m8_pin) AND NOT EXISTS (SELECT 1 FROM messages m WHERE m.sender_pin = u.m8_pin) AND NOT EXISTS (SELECT 1 FROM call_sessions cs WHERE cs.caller_pin = u.m8_pin OR cs.callee_pin = u.m8_pin) AND NOT EXISTS (SELECT 1 FROM call_signals csg WHERE csg.sender_pin = u.m8_pin) AND NOT EXISTS (SELECT 1 FROM typing_states ts WHERE ts.user_pin = u.m8_pin) ORDER BY u.id;"
+
+          echo ""
+          echo "===== ORPHAN COUNTS ====="
+          wrangler d1 execute m8-database --remote --command "SELECT 'chats' AS data_type, COUNT(*) AS orphan_count FROM chats c LEFT JOIN users u1 ON u1.m8_pin = c.participant_1_pin LEFT JOIN users u2 ON u2.m8_pin = c.participant_2_pin WHERE u1.id IS NULL OR u2.id IS NULL UNION ALL SELECT 'messages', COUNT(*) FROM messages m LEFT JOIN users u ON u.m8_pin = m.sender_pin WHERE u.id IS NULL UNION ALL SELECT 'call_sessions', COUNT(*) FROM call_sessions cs LEFT JOIN users u1 ON u1.m8_pin = cs.caller_pin LEFT JOIN users u2 ON u2.m8_pin = cs.callee_pin WHERE u1.id IS NULL OR u2.id IS NULL UNION ALL SELECT 'call_signals', COUNT(*) FROM call_signals csg LEFT JOIN users u ON u.m8_pin = csg.sender_pin WHERE u.id IS NULL UNION ALL SELECT 'typing_states', COUNT(*) FROM typing_states ts LEFT JOIN users u ON u.m8_pin = ts.user_pin WHERE u.id IS NULL;"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
