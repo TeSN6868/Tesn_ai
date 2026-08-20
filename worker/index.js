@@ -1593,6 +1593,13 @@ export default {
             u.profile_photo_url AS other_profile_photo_url,
 
             (
+              SELECT MAX(sess.last_seen_at)
+              FROM sessions sess
+              WHERE sess.user_id = u.id
+                AND sess.revoked_at IS NULL
+            ) AS other_last_seen_at,
+
+            (
               SELECT m.message
               FROM messages m
               WHERE m.chat_id = c.id
@@ -1665,6 +1672,7 @@ export default {
             name: chat.other_user_name,
             m8_pin: chat.other_pin,
             profile_photo_url: chat.other_profile_photo_url,
+            last_seen_at: chat.other_last_seen_at,
           },
         }));
 
@@ -3353,6 +3361,7 @@ async function ensureSessionTables(env) {
       platform TEXT,
       created_at INTEGER NOT NULL,
       last_seen_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL,
       revoked_at INTEGER
     )
   `).run();
@@ -3395,6 +3404,7 @@ async function getSessionUser(request, env) {
     JOIN users u ON u.id = s.user_id
     WHERE s.token_hash = ?
       AND s.revoked_at IS NULL
+        AND (s.expires_at IS NULL OR s.expires_at > unixepoch())
       AND u.active = 1
     LIMIT 1
   `).bind(tokenHash).first();
