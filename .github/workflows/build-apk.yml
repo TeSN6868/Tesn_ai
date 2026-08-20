@@ -1,11 +1,7 @@
-name: Build M8 APK Release
+name: Build M8 APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
 
 jobs:
   build:
@@ -15,16 +11,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.9'
           channel: stable
           cache: true
 
@@ -35,14 +24,13 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: dart analyze || true
+        run: flutter analyze
 
-      - name: Build Release APK
+      - name: Build APK
         run: flutter build apk --release
 
-      - name: Upload Release APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: M8-release-apk
+          name: m8-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
