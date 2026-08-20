@@ -9562,7 +9562,7 @@ class BJoProfilePage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => _comingSoon(context, 'Edit profil'),
+                          onPressed: _editName,
                           icon: const Icon(Icons.edit_outlined, size: 18),
                           label: const Text('Edit Profil'),
                           style: OutlinedButton.styleFrom(
