@@ -5877,6 +5877,51 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     }
   }
 
+  bool _isOtherOnline(Map<String, dynamic> otherUser) {
+    final lastSeen = int.tryParse(
+      otherUser["last_seen_at"]?.toString() ?? "",
+    );
+
+    if (lastSeen == null || lastSeen <= 0) return false;
+
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return now - lastSeen <= 90;
+  }
+
+  String _otherPresence(Map<String, dynamic> otherUser) {
+    final lastSeen = int.tryParse(
+      otherUser["last_seen_at"]?.toString() ?? "",
+    );
+
+    if (lastSeen == null || lastSeen <= 0) {
+      return "Offline";
+    }
+
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final seconds = now - lastSeen;
+
+    if (seconds <= 90) {
+      return "Online";
+    }
+
+    if (seconds < 3600) {
+      return "Aktif ${seconds ~/ 60} menit lalu";
+    }
+
+    if (seconds < 86400) {
+      return "Aktif ${seconds ~/ 3600} jam lalu";
+    }
+
+    final date = DateTime.fromMillisecondsSinceEpoch(
+      lastSeen * 1000,
+    ).toLocal();
+
+    String two(int n) => n.toString().padLeft(2, "0");
+
+    return "Aktif ${two(date.day)}/${two(date.month)}/${date.year} "
+        "${two(date.hour)}:${two(date.minute)}";
+  }
+
   @override
   Widget build(BuildContext context) {
     final p1 = widget.chat["participant_1_pin"]?.toString() ?? "";
@@ -5961,9 +6006,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       "M8 PIN: $otherPin",
                       style: const TextStyle(fontSize: 11, color: m8White),
                     ),
-                    const Text(
-                      "Online",
-                      style: TextStyle(fontSize: 10, color: m8WhiteSoft),
+                    Text(
+                      _otherPresence(otherUser),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: _isOtherOnline(otherUser)
+                            ? m8WhiteSoft
+                            : m8WhiteSoft.withValues(alpha: 0.75),
+                      ),
                     ),
                   ],
                 ),
@@ -9642,14 +9692,6 @@ class BJoProfilePage extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      IconButton(
-                        tooltip: 'Pengaturan',
-                        onPressed: () => _openSettings(context),
-                        icon: const Icon(
-                          Icons.settings_outlined,
-                          color: m8White,
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
