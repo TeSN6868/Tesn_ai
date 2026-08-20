@@ -11,6 +11,7 @@ import 'package:latlong2/latlong.dart' show LatLng;
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -10359,21 +10360,52 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     try {
       final image = await _picker.pickImage(
         source: source,
-        imageQuality: 85,
-        maxWidth: 1200,
-        maxHeight: 1200,
+        imageQuality: 90,
+        maxWidth: 1600,
+        maxHeight: 1600,
       );
 
       if (image == null) return;
 
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 90,
+        aspectRatio: const CropAspectRatio(
+          ratioX: 1,
+          ratioY: 1,
+        ),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Edit Foto Profil',
+            toolbarColor: m8BlueDark,
+            toolbarWidgetColor: m8White,
+            backgroundColor: m8White,
+            activeControlsWidgetColor: m8Blue,
+            lockAspectRatio: true,
+            hideBottomControls: false,
+          ),
+          IOSUiSettings(
+            title: 'Edit Foto Profil',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+
+      if (cropped == null) return;
+      if (!mounted) return;
+
       setState(() {
-        _profileImage = image;
+        _profileImage = XFile(cropped.path);
       });
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memilih foto: $e')),
+        SnackBar(
+          content: Text('Gagal mengedit foto: $e'),
+        ),
       );
     }
   }
