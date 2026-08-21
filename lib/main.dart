@@ -8913,7 +8913,7 @@ class BJoProfilePage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const SettingsPage(),
+                              builder: (_) => SettingsPage(),
                             ),
                           );
                         },
