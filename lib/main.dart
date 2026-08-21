@@ -1164,7 +1164,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
       case 0:
         return "B'Jo Home";
       case 1:
-        return "B'Jo Chat";
+        return "B'Jo Moments";
       case 2:
         return "B'Jo Moments";
       case 3:
@@ -1183,18 +1183,17 @@ class _BJoMainShellState extends State<BJoMainShell> {
         );
 
       case 1:
-        return ChatsPage(
-          token: widget.token,
-          myPin: myPin,
-        );
-
-      case 2:
         return StoryPage(
           user: widget.user,
         );
 
-      case 3:
+      case 2:
         return const CallsPage();
+
+      case 3:
+        return TasksPage(
+          user: widget.user,
+        );
 
       default:
         return HomePage(
@@ -1252,52 +1251,27 @@ class _BJoMainShellState extends State<BJoMainShell> {
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(
-              Icons.home_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.home,
-              color: m8White,
-            ),
+            icon: Icon(Icons.home_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.home, color: m8White),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.chat_bubble_outline,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.chat_bubble,
-              color: m8White,
-            ),
-            label: 'Chat',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.auto_awesome_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.auto_awesome,
-              color: m8White,
-            ),
+            icon: Icon(Icons.auto_awesome_motion_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.auto_awesome_motion, color: m8White),
             label: 'Moments',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.call_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.call,
-              color: m8White,
-            ),
-            label: 'Calls',
+            icon: Icon(Icons.call_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.call, color: m8White),
+            label: 'Call',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.check_circle_outline, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.check_circle, color: m8White),
+            label: 'Tugas',
           ),
         ],
-      ),
-    );
+      )
   }
 }
 
