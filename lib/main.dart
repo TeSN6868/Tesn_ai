@@ -1970,6 +1970,7 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
 }
 
 
+
 class HomePage extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
@@ -1985,116 +1986,230 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int selectedIndex = 0;
-
   String get displayName {
     final name = widget.user['name']?.toString().trim();
     return (name == null || name.isEmpty) ? 'M8 User' : name;
   }
 
-  String get username {
-    final value = widget.user['username']?.toString().trim();
-    if (value == null || value.isEmpty) return '@m8user';
-    return value.startsWith('@') ? value : '@$value';
-  }
-
-  Widget _navItem(IconData icon, String label, int index) {
-    final selected = selectedIndex == index;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() => selectedIndex = index);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          margin: const EdgeInsets.symmetric(horizontal: 5),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: selected
-                ? Colors.white.withValues(alpha: 0.22)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: selected ? 25 : 23,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight:
-                      selected ? FontWeight.w900 : FontWeight.w600,
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF1769AA),
+            Color(0xFF5FA4D5),
+            Color(0xFFDCEAF3),
+            Color(0xFFF7F3EA),
+          ],
+          stops: [0.0, 0.30, 0.68, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "B'Jo Home",
+                            style: TextStyle(
+                              color: m8White,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.8,
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            "Your world, connected.",
+                            style: TextStyle(
+                              color: Color(0xFFEAF5FF),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _BJoGlassIconButton(
+                      icon: Icons.search_rounded,
+                      tooltip: 'Search',
+                      onTap: () {},
+                    ),
+                    const SizedBox(width: 8),
+                    _BJoGlassIconButton(
+                      icon: Icons.more_horiz_rounded,
+                      tooltip: 'More',
+                      onTap: () {},
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+            ),
 
-  Widget _action(
-    IconData icon,
-    String title,
-    String subtitle,
-  ) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(17),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.88),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.65),
-          ),
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 22,
-              offset: Offset(0, 10),
-              color: Color(0x18000000),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1769AA).withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF1769AA),
-                size: 25,
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Quick Access',
+                        style: TextStyle(
+                          color: Color(0xFF102A43),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'B\'JO',
+                      style: TextStyle(
+                        color: const Color(0xFF1769AA).withValues(alpha: 0.65),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Color(0xFF102A43),
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
+
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _BJoPremiumAction(
+                        icon: Icons.chat_bubble_rounded,
+                        title: 'Messages',
+                        subtitle: 'Private conversations',
+                        onTap: () {},
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _BJoPremiumAction(
+                        icon: Icons.auto_awesome_rounded,
+                        title: 'Moments',
+                        subtitle: 'Share your world',
+                        onTap: () {},
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                color: Color(0xFF607080),
-                fontSize: 11,
-                height: 1.3,
+
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 2, 20, 24),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _BJoPremiumAction(
+                        icon: Icons.groups_rounded,
+                        title: 'Groups',
+                        subtitle: 'Your communities',
+                        onTap: () {},
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _BJoPremiumAction(
+                        icon: Icons.call_rounded,
+                        title: 'Calls',
+                        subtitle: 'Recent calls',
+                        onTap: () {},
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Recent Activity',
+                        style: TextStyle(
+                          color: Color(0xFF102A43),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'LIVE',
+                      style: TextStyle(
+                        color: const Color(0xFF1769AA).withValues(alpha: 0.72),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: m8White.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: m8White.withValues(alpha: 0.70),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1769AA).withValues(alpha: 0.10),
+                        blurRadius: 28,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _BJoActivityTile(
+                        icon: Icons.chat_bubble_outline_rounded,
+                        title: 'Messages',
+                        subtitle: 'Your conversations will appear here.',
+                      ),
+                      _BJoActivityDivider(),
+                      _BJoActivityTile(
+                        icon: Icons.auto_awesome_outlined,
+                        title: 'Moments',
+                        subtitle: 'New moments from people you follow.',
+                      ),
+                      _BJoActivityDivider(),
+                      _BJoActivityTile(
+                        icon: Icons.groups_outlined,
+                        title: 'Groups',
+                        subtitle: 'Stay updated with your communities.',
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -2102,280 +2217,114 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+class _BJoGlassIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _BJoGlassIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1769AA),
-              Color(0xFF5FA4D5),
-              Color(0xFFDCEAF3),
-              Color(0xFFF7F3EA),
-            ],
-            stops: [0.0, 0.30, 0.68, 1.0],
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: m8White.withValues(alpha: 0.16),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: m8White.withValues(alpha: 0.30),
         ),
-        child: SafeArea(
+      ),
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: onTap,
+        icon: Icon(
+          icon,
+          color: m8White,
+          size: 22,
+        ),
+      ),
+    );
+  }
+}
+
+class _BJoPremiumAction extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _BJoPremiumAction({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: m8White.withValues(alpha: 0.90),
+      borderRadius: BorderRadius.circular(26),
+      elevation: 0,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(26),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 142),
+          padding: const EdgeInsets.fromLTRB(17, 17, 15, 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(
+              color: m8White.withValues(alpha: 0.80),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1769AA).withValues(alpha: 0.08),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
-                      sliver: SliverToBoxAdapter(
-                        child: Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                "B'Jo Home",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 29,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.8,
-                                ),
-                              ),
-                            ),
-                            _topButton(Icons.search_rounded),
-                            const SizedBox(width: 8),
-                            _topButton(Icons.more_horiz_rounded),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                      sliver: SliverToBoxAdapter(
-                        child: Text(
-                          'Welcome back, $displayName',
-                          style: const TextStyle(
-                            color: Color(0xFFEAF5FF),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      sliver: SliverToBoxAdapter(
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(28),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.30),
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x18000000),
-                                blurRadius: 28,
-                                offset: Offset(0, 14),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 64,
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white.withValues(alpha: 0.22),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.55),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.person_rounded,
-                                  color: Colors.white,
-                                  size: 31,
-                                ),
-                              ),
-                              const SizedBox(width: 15),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      displayName,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      username,
-                                      style: const TextStyle(
-                                        color: Color(0xFFE8F4FF),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 11,
-                                  vertical: 7,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(
-                                      Icons.circle,
-                                      size: 8,
-                                      color: Color(0xFFDDF8E6),
-                                    ),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      'Online',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-                      sliver: SliverToBoxAdapter(
-                        child: Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                'Your Space',
-                                style: TextStyle(
-                                  color: Color(0xFF102A43),
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              'B’Jo',
-                              style: TextStyle(
-                                color: const Color(0xFF1769AA)
-                                    .withValues(alpha: 0.75),
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
-                      sliver: SliverToBoxAdapter(
-                        child: Row(
-                          children: [
-                            _action(
-                              Icons.chat_bubble_rounded,
-                              'Messages',
-                              'Private conversations',
-                            ),
-                            const SizedBox(width: 12),
-                            _action(
-                              Icons.auto_awesome_rounded,
-                              'Moments',
-                              'Share your world',
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                      sliver: SliverToBoxAdapter(
-                        child: Container(
-                          padding: const EdgeInsets.all(19),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.84),
-                            borderRadius: BorderRadius.circular(26),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x14000000),
-                                blurRadius: 22,
-                                offset: Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.auto_awesome_rounded,
-                                color: Color(0xFF1769AA),
-                                size: 28,
-                              ),
-                              SizedBox(width: 13),
-                              Expanded(
-                                child: Text(
-                                  'A more personal way to connect.',
-                                  style: TextStyle(
-                                    color: Color(0xFF102A43),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1769AA).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  icon,
+                  color: const Color(0xFF1769AA),
+                  size: 25,
                 ),
               ),
-
-              Container(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 7),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1769AA).withValues(alpha: 0.96),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x30000000),
-                      blurRadius: 20,
-                      offset: Offset(0, -5),
-                    ),
-                  ],
+              const Spacer(),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFF102A43),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
                 ),
-                child: Row(
-                  children: [
-                    _navItem(Icons.home_rounded, 'Home', 0),
-                    _navItem(Icons.auto_awesome_rounded, 'Moments', 1),
-                    _navItem(Icons.groups_rounded, 'Groups', 2),
-                    _navItem(Icons.call_rounded, 'Calls', 3),
-                  ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF607080),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -2384,19 +2333,83 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
 
-  Widget _topButton(IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.28),
-        ),
+class _BJoActivityTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _BJoActivityTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(17, 16, 17, 16),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1769AA).withValues(alpha: 0.09),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF1769AA),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF102A43),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF687887),
+                    fontSize: 12,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: Color(0xFF8AA0B2),
+          ),
+        ],
       ),
-      child: IconButton(
-        onPressed: () {},
-        icon: Icon(icon, color: Colors.white),
+    );
+  }
+}
+
+class _BJoActivityDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 76),
+      child: Divider(
+        height: 1,
+        color: const Color(0xFF1769AA).withValues(alpha: 0.08),
       ),
     );
   }
