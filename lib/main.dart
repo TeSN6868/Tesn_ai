@@ -1969,543 +1969,136 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
   }
 }
 
+
 class HomePage extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
 
-  const HomePage({super.key, required this.token, required this.user});
+  const HomePage({
+    super.key,
+    required this.token,
+    required this.user,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int currentIndex = 0;
+  int selectedIndex = 0;
 
-  final M8CallService _incomingCallService = M8CallService();
-  final AudioPlayer _incomingRingtonePlayer = AudioPlayer();
-
-  Future<void> _startIncomingRingtone() async {
-    try {
-      await _incomingRingtonePlayer.stop();
-
-      final prefs = await SharedPreferences.getInstance();
-      final selected = prefs.getString('m8_selected_ringtone') ?? "B'Jo Tone 01";
-
-      const ringtoneAssets = <String, String>{
-        "B'Jo Tone 01": 'sounds/m8_ringtone_02.wav',
-        "B'Jo Tone 02": 'sounds/m8_ringtone_03.wav',
-        "B'Jo Tone 03": 'sounds/m8_ringtone_04.wav',
-        "B'Jo Tone 04": 'sounds/m8_ringtone_05.wav',
-        "B'Jo Tone 05": 'sounds/m8_ringtone_06.wav',
-      };
-
-      final asset = ringtoneAssets[selected] ?? 'sounds/m8_ringtone_02.wav';
-
-      await _incomingRingtonePlayer.setReleaseMode(ReleaseMode.loop);
-      await _incomingRingtonePlayer.setVolume(1.0);
-      await _incomingRingtonePlayer.play(AssetSource(asset));
-
-      debugPrint("B'Jo RINGTONE: $selected -> $asset");
-    } catch (e) {
-      debugPrint('B\'Jo RINGTONE ERROR: $e');
-    }
+  String get displayName {
+    final name = widget.user['name']?.toString().trim();
+    return (name == null || name.isEmpty) ? 'M8 User' : name;
   }
 
-  Future<void> _stopIncomingRingtone() async {
-    try {
-      await _incomingRingtonePlayer.stop();
-      debugPrint('M8 RINGTONE: STOP');
-    } catch (e) {
-      debugPrint('M8 RINGTONE STOP ERROR: $e');
-    }
+  String get username {
+    final value = widget.user['username']?.toString().trim();
+    if (value == null || value.isEmpty) return '@m8user';
+    return value.startsWith('@') ? value : '@$value';
   }
 
-  Timer? _incomingCallTimer;
-  String? _lastIncomingCallId;
+  Widget _navItem(IconData icon, String label, int index) {
+    final selected = selectedIndex == index;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _incomingCallTimer = Timer.periodic(
-      const Duration(seconds: 2),
-      (_) => _checkIncomingCalls(),
-    );
-
-    _checkIncomingCalls();
-  }
-
-  Future<void> _checkIncomingCalls() async {
-    try {
-      final calls = await _incomingCallService.getIncomingCalls(pin);
-
-      if (!mounted || calls.isEmpty) return;
-
-      final call = calls.first;
-      final incomingId = call['id']?.toString();
-
-      if (incomingId == null || incomingId == _lastIncomingCallId) {
-        return;
-      }
-
-      _lastIncomingCallId = incomingId;
-
-      final callerPin = call['caller_pin']?.toString() ?? '';
-      final callType = call['call_type']?.toString() ?? 'voice';
-      final isVideoCall = callType == 'video';
-
-      if (callerPin.isEmpty) return;
-
-      await _startIncomingRingtone();
-      final accepted = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text('Panggilan masuk'),
-            content: Text('Ada panggilan masuk dari PIN $callerPin.'),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  try {
-                    await _incomingCallService.rejectCall(
-                      incomingCallId: incomingId,
-                      calleePin: pin,
-                    );
-                  } finally {
-                    if (dialogContext.mounted) {
-                      Navigator.of(dialogContext).pop(false);
-                    }
-                  }
-                },
-                child: const Text('Tolak'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop(true);
-                },
-                child: const Text('Terima'),
-              ),
-            ],
-          );
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() => selectedIndex = index);
         },
-      );
-
-      await _stopIncomingRingtone();
-
-      if (!mounted || accepted != true) return;
-
-      final callService = M8CallService();
-
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => VoiceCallPage(
-            myPin: pin,
-            otherPin: callerPin,
-            call: callService,
-            incomingCallId: incomingId,
-            videoCall: isVideoCall,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint('M8 INCOMING CALL ERROR: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    _incomingCallTimer?.cancel();
-    _incomingRingtonePlayer.stop();
-    _incomingRingtonePlayer.dispose();
-    super.dispose();
-  }
-
-  String get name => widget.user['name']?.toString() ?? 'M8 User';
-
-  String get pin => widget.user['m8_pin']?.toString() ?? '';
-
-  void logout() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (_) => false,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final pages = [
-      ChatsPage(token: widget.token, myPin: pin),
-      const CallsPage(),
-      BJoProfilePage(
-        user: widget.user,
-        token: widget.token,
-      ),
-    ];
-
-    return Scaffold(
-      backgroundColor: m8WhiteSoft,
-      appBar: AppBar(
-        backgroundColor: m8Blue,
-        foregroundColor: m8White,
-        title: Text(
-          currentIndex == 0
-              ? 'M8 Messenger'
-              : currentIndex == 1
-              ? 'Panggilan'
-              : 'Profil',
-        ),
-        actions: [
-          if (currentIndex == 0) ...[
-            IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
-              onSelected: (value) {
-                switch (value) {
-                  case 'profile':
-                    setState(() {
-                      currentIndex = 2;
-                    });
-                    break;
-
-                  case 'contacts':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Kontak M8 segera hadir.')),
-                    );
-                    break;
-
-                  case 'settings':
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsPage()),
-                    );
-                    break;
-
-                  case 'notifications':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Notifikasi M8 segera hadir.'),
-                      ),
-                    );
-                    break;
-
-                  case 'appearance':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Tampilan M8 segera hadir.'),
-                      ),
-                    );
-                    break;
-
-                  case 'privacy':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Privasi M8 segera hadir.')),
-                    );
-                    break;
-
-                  case 'help':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Bantuan M8 segera hadir.')),
-                    );
-                    break;
-
-                  case 'logout':
-                    logout();
-                    break;
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem<String>(
-                  value: 'profile',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.person_outline),
-                      SizedBox(width: 12),
-                      Text('Profil Saya'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'contacts',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.people_outline),
-                      SizedBox(width: 12),
-                      Text('Kontak'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'settings',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.settings_outlined),
-                      SizedBox(width: 12),
-                      Text('Pengaturan'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'notifications',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.notifications_none),
-                      SizedBox(width: 12),
-                      Text('Notifikasi'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'appearance',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.palette_outlined),
-                      SizedBox(width: 12),
-                      Text('Tampilan'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'privacy',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.lock_outline),
-                      SizedBox(width: 12),
-                      Text('Privasi'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'help',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.help_outline),
-                      SizedBox(width: 12),
-                      Text('Bantuan'),
-                    ],
-                  ),
-                ),
-                PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  value: 'logout',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.logout),
-                      SizedBox(width: 12),
-                      Text('Keluar'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-      body: M8DenimBackground(child: pages[currentIndex]),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: m8Blue,
-        indicatorColor: m8Blue,
-        surfaceTintColor: Colors.transparent,
-        labelTextStyle: const WidgetStatePropertyAll<TextStyle?>(
-          TextStyle(color: m8WhiteSoft, fontWeight: FontWeight.w600),
-        ),
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        destinations: <Widget>[
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Chat',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.call_outlined),
-            selectedIcon: Icon(Icons.call),
-            label: 'Panggilan',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ============================================================
-// SETTINGS
-// ============================================================
-
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
-
-  @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  final AudioPlayer _heyPlayer = AudioPlayer();
-  final AudioPlayer _ringtonePlayer = AudioPlayer();
-
-  bool soundEnabled = true;
-  bool vibrationEnabled = true;
-
-  String selectedRingtone = "B'Jo Tone 01";
-
-  static const List<Map<String, String>> ringtonePacks = [
-    {'name': "B'Jo Tone 01", 'asset': 'sounds/m8_ringtone_02.wav'},
-    {'name': "B'Jo Tone 02", 'asset': 'sounds/m8_ringtone_03.wav'},
-    {'name': "B'Jo Tone 03", 'asset': 'sounds/m8_ringtone_04.wav'},
-    {'name': "B'Jo Tone 04", 'asset': 'sounds/m8_ringtone_05.wav'},
-    {'name': "B'Jo Tone 05", 'asset': 'sounds/m8_ringtone_06.wav'},
-  ];
-
-  Future<void> _loadRingtonePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString('m8_selected_ringtone');
-
-    if (!mounted) return;
-
-    if (saved != null && ringtonePacks.any((pack) => pack['name'] == saved)) {
-      setState(() {
-        selectedRingtone = saved;
-      });
-    }
-  }
-
-  Future<void> _selectRingtone(String name) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString('m8_selected_ringtone', name);
-
-    if (!mounted) return;
-
-    setState(() {
-      selectedRingtone = name;
-    });
-  }
-
-  Future<void> _previewRingtone(String asset) async {
-    if (!soundEnabled) return;
-
-    try {
-      await _ringtonePlayer.stop();
-      await _ringtonePlayer.setVolume(1.0);
-      await _ringtonePlayer.play(AssetSource(asset));
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Nada dering gagal diputar: $e')));
-    }
-  }
-
-  Future<void> _testHeySound() async {
-    debugPrint("B'Jo AUDIO TEST: mulai");
-
-    try {
-      await _heyPlayer.stop();
-
-      debugPrint("B'Jo AUDIO TEST: player stopped");
-
-      await _heyPlayer.setVolume(1.0);
-
-      debugPrint("B'Jo AUDIO TEST: volume=1.0");
-
-      await _heyPlayer.play(
-        AssetSource('sounds/m8_hey.wav'),
-      );
-
-      debugPrint("B'Jo AUDIO TEST: play() berhasil dipanggil");
-
-      _heyPlayer.onPlayerStateChanged.listen((state) {
-        debugPrint("B'Jo AUDIO TEST STATE: $state");
-      });
-    } catch (e, stack) {
-      debugPrint("B'Jo AUDIO TEST ERROR: $e");
-      debugPrint("B'Jo AUDIO TEST STACK: $stack");
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Nada Hi! gagal diputar: $e'),
-        ),
-      );
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadRingtonePreference();
-  }
-
-  @override
-  void dispose() {
-    _heyPlayer.dispose();
-    _ringtonePlayer.dispose();
-    super.dispose();
-  }
-
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 10),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: m8Blue,
-          fontSize: 19,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-
-  Widget _settingsCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    VoidCallback? onTap,
-    Widget? trailing,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 0,
-      color: m8White,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-        leading: Container(
-          width: 42,
-          height: 42,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          margin: const EdgeInsets.symmetric(horizontal: 5),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: m8WhiteSoft,
+            color: selected
+                ? Colors.white.withValues(alpha: 0.22)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(18),
           ),
-          child: Icon(icon, color: m8Blue),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(color: m8Text, fontWeight: FontWeight.w700),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: Text(
-            subtitle,
-            style: const TextStyle(color: m8TextMuted, fontSize: 12.5),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: Colors.white,
+                size: selected ? 25 : 23,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight:
+                      selected ? FontWeight.w900 : FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
-        trailing:
-            trailing ??
-            const Icon(Icons.chevron_right_rounded, color: m8TextMuted),
-        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _action(
+    IconData icon,
+    String title,
+    String subtitle,
+  ) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(17),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.88),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.65),
+          ),
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 22,
+              offset: Offset(0, 10),
+              color: Color(0x18000000),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1769AA).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFF1769AA),
+                size: 25,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF102A43),
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Color(0xFF607080),
+                fontSize: 11,
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2513,294 +2106,301 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: m8WhiteSoft,
-      appBar: AppBar(
-        title: const Text(
-          'Pengaturan',
-          style: TextStyle(fontWeight: FontWeight.w800),
-        ),
-        backgroundColor: m8Blue,
-        foregroundColor: m8White,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-        children: [
-          _sectionTitle('Notifikasi'),
-
-          Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            elevation: 0,
-            color: m8White,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                SwitchListTile(
-                  value: soundEnabled,
-                  activeThumbColor: m8Blue,
-                  title: const Text(
-                    'Suara pesan masuk',
-                    style: TextStyle(
-                      color: m8Text,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'Putar nada saat pesan baru diterima',
-                    style: TextStyle(color: m8TextMuted),
-                  ),
-                  secondary: const Icon(
-                    Icons.volume_up_outlined,
-                    color: m8Blue,
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      soundEnabled = value;
-                    });
-                  },
-                ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  value: vibrationEnabled,
-                  activeThumbColor: m8Blue,
-                  title: const Text(
-                    'Getar',
-                    style: TextStyle(
-                      color: m8Text,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'Getarkan perangkat saat pesan baru diterima',
-                    style: TextStyle(color: m8TextMuted),
-                  ),
-                  secondary: const Icon(
-                    Icons.vibration_outlined,
-                    color: m8Blue,
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      vibrationEnabled = value;
-                    });
-                  },
-                ),
-              ],
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1769AA),
+              Color(0xFF5FA4D5),
+              Color(0xFFDCEAF3),
+              Color(0xFFF7F3EA),
+            ],
+            stops: [0.0, 0.30, 0.68, 1.0],
           ),
-
-          const SizedBox(height: 18),
-
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.music_note_rounded, color: m8Blue),
-            title: const Text(
-              "Nada Dering B'Jo",
-              style: TextStyle(color: m8Text, fontWeight: FontWeight.w700),
-            ),
-            subtitle: Text(
-              selectedRingtone,
-              style: const TextStyle(color: m8TextMuted),
-            ),
-            trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: m8WhiteSoft,
-                builder: (context) {
-                  return SafeArea(
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        const ListTile(
-                          title: Text(
-                            "Nada Dering B'Jo",
-                            style: TextStyle(
-                              color: m8Blue,
-                              fontSize: 19,
-                              fontWeight: FontWeight.w800,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
+                      sliver: SliverToBoxAdapter(
+                        child: Row(
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                "B'Jo Home",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 29,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.8,
+                                ),
+                              ),
                             ),
+                            _topButton(Icons.search_rounded),
+                            const SizedBox(width: 8),
+                            _topButton(Icons.more_horiz_rounded),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                      sliver: SliverToBoxAdapter(
+                        child: Text(
+                          'Welcome back, $displayName',
+                          style: const TextStyle(
+                            color: Color(0xFFEAF5FF),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        ...ringtonePacks.map((pack) {
-                          final name = pack['name']!;
-                          final asset = pack['asset']!;
-                          final selected = selectedRingtone == name;
+                      ),
+                    ),
 
-                          return ListTile(
-                            leading: Icon(
-                              selected
-                                  ? Icons.radio_button_checked
-                                  : Icons.radio_button_off,
-                              color: selected ? m8Blue : m8Blue,
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverToBoxAdapter(
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(28),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.30),
                             ),
-                            title: Text(
-                              name,
-                              style: const TextStyle(
-                                color: m8Text,
-                                fontWeight: FontWeight.w700,
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x18000000),
+                                blurRadius: 28,
+                                offset: Offset(0, 14),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withValues(alpha: 0.22),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.55),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.person_rounded,
+                                  color: Colors.white,
+                                  size: 31,
+                                ),
+                              ),
+                              const SizedBox(width: 15),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      displayName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      username,
+                                      style: const TextStyle(
+                                        color: Color(0xFFE8F4FF),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 11,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.circle,
+                                      size: 8,
+                                      color: Color(0xFFDDF8E6),
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Online',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+                      sliver: SliverToBoxAdapter(
+                        child: Row(
+                          children: [
+                            const Expanded(
+                              child: Text(
+                                'Your Space',
+                                style: TextStyle(
+                                  color: Color(0xFF102A43),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
                             ),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.play_circle_outline_rounded,
-                                color: m8Blue,
+                            Text(
+                              'B’Jo',
+                              style: TextStyle(
+                                color: const Color(0xFF1769AA)
+                                    .withValues(alpha: 0.75),
+                                fontWeight: FontWeight.w900,
                               ),
-                              onPressed: () => _previewRingtone(asset),
                             ),
-                            onTap: () async {
-                              await _selectRingtone(name);
-                              if (context.mounted) {
-                                Navigator.pop(context);
-                              }
-                            },
-                          );
-                        }),
-                        const SizedBox(height: 18),
-                      ],
+                          ],
+                        ),
+                      ),
                     ),
-                  );
-                },
-              );
-            },
-          ),
 
-          Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            elevation: 0,
-            color: m8White,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                const ListTile(
-                  contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  leading: Icon(
-                    Icons.notifications_active_outlined,
-                    color: m8Blue,
-                  ),
-                  title: Text(
-                    'HI !',
-                    style: TextStyle(
-                      color: m8Text,
-                      fontWeight: FontWeight.w800,
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+                      sliver: SliverToBoxAdapter(
+                        child: Row(
+                          children: [
+                            _action(
+                              Icons.chat_bubble_rounded,
+                              'Messages',
+                              'Private conversations',
+                            ),
+                            const SizedBox(width: 12),
+                            _action(
+                              Icons.auto_awesome_rounded,
+                              'Moments',
+                              'Share your world',
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    'Nada khas pesan M8 Messenger',
-                    style: TextStyle(color: m8TextMuted),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: soundEnabled ? _testHeySound : null,
-                      icon: const Icon(Icons.volume_up_rounded),
-                      label: const Text('Tes Nada Hi!'),
+
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                      sliver: SliverToBoxAdapter(
+                        child: Container(
+                          padding: const EdgeInsets.all(19),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.84),
+                            borderRadius: BorderRadius.circular(26),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x14000000),
+                                blurRadius: 22,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.auto_awesome_rounded,
+                                color: Color(0xFF1769AA),
+                                size: 28,
+                              ),
+                              SizedBox(width: 13),
+                              Expanded(
+                                child: Text(
+                                  'A more personal way to connect.',
+                                  style: TextStyle(
+                                    color: Color(0xFF102A43),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 18),
-
-          _sectionTitle('Chat'),
-
-          _settingsCard(
-            icon: Icons.keyboard_return_rounded,
-            title: 'Pengiriman pesan',
-            subtitle: 'Atur cara pesan dikirim',
-          ),
-
-          _settingsCard(
-            icon: Icons.photo_library_outlined,
-            title: 'Media',
-            subtitle: 'Pengaturan foto dan media chat',
-          ),
-
-          _settingsCard(
-            icon: Icons.done_all_rounded,
-            title: 'Status pesan',
-            subtitle: 'Terkirim, diterima, dan dibaca',
-          ),
-
-          const SizedBox(height: 18),
-
-          _sectionTitle('Privasi & Keamanan'),
-
-          _settingsCard(
-            icon: Icons.lock_outline_rounded,
-            title: 'Keamanan',
-            subtitle: 'Kelola keamanan akun M8',
-          ),
-
-          _settingsCard(
-            icon: Icons.block_outlined,
-            title: 'Kontak diblokir',
-            subtitle: 'Kelola kontak yang diblokir',
-          ),
-
-          const SizedBox(height: 18),
-
-          _sectionTitle('Akun'),
-
-          _settingsCard(
-            icon: Icons.person_outline_rounded,
-            title: 'Profil',
-            subtitle: 'Nama dan informasi akun M8',
-          ),
-
-          _settingsCard(
-            icon: Icons.pin_outlined,
-            title: 'M8 PIN',
-            subtitle: 'PIN unik untuk terhubung dengan pengguna lain',
-          ),
-
-          const SizedBox(height: 18),
-
-          _sectionTitle('Tentang M8'),
-
-          Card(
-            elevation: 0,
-            color: m8White,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const ListTile(
-              contentPadding: EdgeInsets.all(16),
-              leading: Icon(
-                Icons.info_outline_rounded,
-                color: m8Blue,
-                size: 30,
-              ),
-              title: Text(
-                'M8 Messenger',
-                style: TextStyle(color: m8Text, fontWeight: FontWeight.w800),
-              ),
-              subtitle: Padding(
-                padding: EdgeInsets.only(top: 5),
-                child: Text(
-                  'Messenger dengan identitas M8 PIN',
-                  style: TextStyle(color: m8TextMuted),
+                  ],
                 ),
               ),
-            ),
+
+              Container(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1769AA).withValues(alpha: 0.96),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x30000000),
+                      blurRadius: 20,
+                      offset: Offset(0, -5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    _navItem(Icons.home_rounded, 'Home', 0),
+                    _navItem(Icons.auto_awesome_rounded, 'Moments', 1),
+                    _navItem(Icons.groups_rounded, 'Groups', 2),
+                    _navItem(Icons.call_rounded, 'Calls', 3),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _topButton(IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.28),
+        ),
+      ),
+      child: IconButton(
+        onPressed: () {},
+        icon: Icon(icon, color: Colors.white),
       ),
     );
   }
 }
-
-// ============================================================
-// CHATS
-// ============================================================
 
 class ChatsPage extends StatefulWidget {
   final String token;
