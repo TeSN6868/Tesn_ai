@@ -1266,449 +1266,384 @@ class BJoBerandaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = user['name']?.toString().trim();
+    final rawName = user['name']?.toString().trim();
     final displayName =
-        (name == null || name.isEmpty) ? "Pengguna" : name;
+        (rawName == null || rawName.isEmpty) ? "there" : rawName;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
-      children: [
-        // HEADER
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: m8Blue,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: m8Blue.withValues(alpha: 0.18),
-                    blurRadius: 18,
-                    offset: const Offset(0, 7),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Text(
-                  "B'J",
-                  style: TextStyle(
-                    color: m8White,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Selamat datang",
-                    style: TextStyle(
-                      color: m8TextMuted,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: bjoChatNavy,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: m8White,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: m8Blue.withValues(alpha: 0.18),
-                ),
-              ),
-              child: const Icon(
-                Icons.notifications_none_rounded,
-                color: bjoChatNavy,
-                size: 21,
-              ),
-            ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: [0.0, 0.42, 0.72, 1.0],
+          colors: [
+            Color(0xFF075B91),
+            Color(0xFF2F83B5),
+            Color(0xFFBFDCEB),
+            Color(0xFFF9FCFD),
           ],
         ),
-
-        const SizedBox(height: 22),
-
-        // HERO
-        Container(
-          padding: const EdgeInsets.fromLTRB(20, 20, 18, 20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                m8BlueDark,
-                bjoChatNavy,
-              ],
-            ),
-            borderRadius: BorderRadius.circular(26),
-            boxShadow: [
-              BoxShadow(
-                color: m8BlueDark.withValues(alpha: 0.18),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -110,
+            right: -85,
+            child: Container(
+              width: 270,
+              height: 270,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.12),
               ),
-            ],
+            ),
           ),
-          child: Row(
+          Positioned(
+            top: 190,
+            left: -115,
+            child: Container(
+              width: 230,
+              height: 230,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          ListView(
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 34),
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "B'Jo",
-                      style: TextStyle(
-                        color: m8White,
-                        fontSize: 27,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.7,
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(17),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.30),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF043D63).withValues(alpha: 0.16),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 7),
-                    Text(
-                      "Satu ruang untuk komunikasi,\naktivitas, dan kehidupanmu.",
-                      style: TextStyle(
-                        color: m8White.withValues(alpha: 0.76),
-                        fontSize: 12,
-                        height: 1.45,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 11,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: m8White.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: m8White.withValues(alpha: 0.12),
+                    child: const Center(
+                      child: Text(
+                        "B'J",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.7,
                         ),
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.shield_outlined,
-                            color: bjoPearlWhite,
-                            size: 15,
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            "Private by design",
-                            style: TextStyle(
-                              color: bjoPearlWhite,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    width: 45,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.17),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.28),
                       ),
+                    ),
+                    child: const Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+
+              const Text(
+                "How's your day,",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 25,
+                  height: 1.12,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: -0.7,
+                ),
+              ),
+
+              const SizedBox(height: 2),
+
+              Text(
+                "$displayName?",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 31,
+                  height: 1.12,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1.1,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.30),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF043D63).withValues(alpha: 0.13),
+                      blurRadius: 28,
+                      offset: const Offset(0, 14),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 68,
-                height: 68,
-                decoration: BoxDecoration(
-                  color: m8White.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: m8White.withValues(alpha: 0.12),
-                  ),
-                ),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  color: bjoPearlWhite,
-                  size: 30,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        const _BJoHomeSectionTitle(
-          title: "Produktivitas",
-          subtitle: "Atur harimu tanpa keluar dari B'Jo",
-        ),
-
-        const SizedBox(height: 12),
-
-        Row(
-          children: [
-            Expanded(
-              child: _BJoBerandaCard(
-                Icons.calendar_month_rounded,
-                "Agenda",
-                "Jadwal",
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _BJoBerandaCard(
-                Icons.menu_book_rounded,
-                "Jurnal",
-                "Catatan",
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 22),
-
-        const _BJoHomeSectionTitle(
-          title: "Market",
-          subtitle: "Pantau pergerakan finansial",
-        ),
-
-        const SizedBox(height: 12),
-
-        Row(
-          children: [
-            Expanded(
-              child: _BJoBerandaCard(
-                Icons.trending_up_rounded,
-                "Saham",
-                "Pergerakan",
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _BJoBerandaCard(
-                Icons.currency_exchange_rounded,
-                "Kurs",
-                "Nilai tukar",
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 12),
-
-        _BJoWideHomeCard(
-          icon: Icons.account_balance_wallet_rounded,
-          title: "Keuangan",
-          subtitle: "Kelola dan pantau keuangan pribadi",
-        ),
-
-        const SizedBox(height: 24),
-
-        // PREMIUM
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: m8White,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: m8Blue.withValues(alpha: 0.20),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: m8BlueDark.withValues(alpha: 0.06),
-                blurRadius: 18,
-                offset: const Offset(0, 7),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: m8Blue.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: const Icon(
-                  Icons.workspace_premium_rounded,
-                  color: m8BlueDark,
-                  size: 25,
-                ),
-              ),
-              const SizedBox(width: 13),
-              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "B'Jo Premium",
+                    Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.22),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.waves_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            "B'Jo",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.circle,
+                                color: Color(0xFFDDF8EA),
+                                size: 7,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                "Online",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    const Text(
+                      "Stay connected.",
                       style: TextStyle(
-                        color: bjoChatNavy,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    SizedBox(height: 4),
+
+                    const SizedBox(height: 6),
+
                     Text(
-                      "Analitik • Private Vault • Smart Alert",
+                      "Your conversations, your people,\nall in one place.",
                       style: TextStyle(
-                        color: m8TextMuted,
-                        fontSize: 10,
+                        color: Colors.white.withValues(alpha: 0.76),
+                        fontSize: 12,
+                        height: 1.5,
                       ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Container(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.14),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        _BJoQuickPill(
+                          icon: Icons.chat_bubble_outline_rounded,
+                          label: "Messages",
+                        ),
+                        const SizedBox(width: 9),
+                        _BJoQuickPill(
+                          icon: Icons.call_outlined,
+                          label: "Calls",
+                        ),
+                        const SizedBox(width: 9),
+                        _BJoQuickPill(
+                          icon: Icons.people_outline_rounded,
+                          label: "People",
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: m8Blue.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: m8BlueDark,
-                  size: 20,
-                ),
+
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      "Your space",
+                      style: TextStyle(
+                        color: Color(0xFF123B55),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    "B'Jo",
+                    style: TextStyle(
+                      color: const Color(0xFF123B55).withValues(alpha: 0.55),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _BJoHomeGlassCard(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      title: "Chats",
+                      subtitle: "Your conversations",
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _BJoHomeGlassCard(
+                      icon: Icons.people_outline_rounded,
+                      title: "People",
+                      subtitle: "Your connections",
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              _BJoHomeWideGlassCard(
+                icon: Icons.auto_awesome_rounded,
+                title: "Make today yours",
+                subtitle: "A little space for everything that matters.",
               ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _BJoHomeSectionTitle extends StatelessWidget {
-  final String title;
-  final String subtitle;
+class _BJoQuickPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
 
-  const _BJoHomeSectionTitle({
-    required this.title,
-    required this.subtitle,
+  const _BJoQuickPill({
+    required this.icon,
+    required this.label,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: bjoChatNavy,
-            fontSize: 17,
-            fontWeight: FontWeight.w900,
+    return Expanded(
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.13),
           ),
         ),
-        const SizedBox(height: 3),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            color: m8TextMuted,
-            fontSize: 11,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _BJoBerandaCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _BJoBerandaCard(
-    this.icon,
-    this.title,
-    this.subtitle,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 112,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: m8White,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: m8Blue.withValues(alpha: 0.16),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: m8BlueDark.withValues(alpha: 0.045),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: m8Blue.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
               icon,
-              color: m8BlueDark,
-              size: 20,
+              color: Colors.white.withValues(alpha: 0.90),
+              size: 15,
             ),
-          ),
-          const Spacer(),
-          Text(
-            title,
-            style: const TextStyle(
-              color: bjoChatNavy,
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: m8TextMuted,
-              fontSize: 9,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _BJoWideHomeCard extends StatelessWidget {
+class _BJoHomeGlassCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
 
-  const _BJoWideHomeCard({
+  const _BJoHomeGlassCard({
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -1717,34 +1652,114 @@ class _BJoWideHomeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 124,
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: m8White,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(23),
         border: Border.all(
-          color: m8Blue.withValues(alpha: 0.16),
+          color: Colors.white.withValues(alpha: 0.90),
         ),
         boxShadow: [
           BoxShadow(
-            color: m8BlueDark.withValues(alpha: 0.045),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            color: const Color(0xFF326B88).withValues(alpha: 0.10),
+            blurRadius: 22,
+            offset: const Offset(0, 9),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF1677A8),
+                  Color(0xFF74B9D2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 21,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF123B55),
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF66818F),
+              fontSize: 9,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BJoHomeWideGlassCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _BJoHomeWideGlassCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.64),
+        borderRadius: BorderRadius.circular(23),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.84),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF326B88).withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: m8Blue.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(14),
+              color: const Color(0xFF1677A8).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(15),
             ),
-            child: Icon(
-              icon,
-              color: m8BlueDark,
-              size: 22,
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: Color(0xFF126A98),
+              size: 23,
             ),
           ),
           const SizedBox(width: 13),
@@ -1755,7 +1770,7 @@ class _BJoWideHomeCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: bjoChatNavy,
+                    color: Color(0xFF123B55),
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
@@ -1763,27 +1778,35 @@ class _BJoWideHomeCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: m8TextMuted,
+                    color: Color(0xFF66818F),
                     fontSize: 10,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: m8Blue,
-            size: 22,
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.68),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_forward_rounded,
+              color: Color(0xFF126A98),
+              size: 17,
+            ),
           ),
         ],
       ),
     );
   }
 }
-// ============================================================
 
-// ============================================================
 // B'JO GROUPS PAGE
 // ============================================================
 
