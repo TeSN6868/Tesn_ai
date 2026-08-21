@@ -1240,6 +1240,63 @@ class _BJoMainShellState extends State<BJoMainShell> {
         child: page(),
       ),
       
+      bottomNavigationBar: bottomNavigationBar: NavigationBar(
+        backgroundColor: m8Blue,
+        indicatorColor: m8BlueDark,
+        surfaceTintColor: Colors.transparent,
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(
+              Icons.home_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.home,
+              color: m8White,
+            ),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.chat_bubble_outline,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.chat_bubble,
+              color: m8White,
+            ),
+            label: 'Chat',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.auto_awesome_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.auto_awesome,
+              color: m8White,
+            ),
+            label: 'Moments',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.call_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.call,
+              color: m8White,
+            ),
+            label: 'Calls',
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1613,193 +1670,9 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       backgroundColor: m8WhiteSoft,
-      appBar: AppBar(
-        backgroundColor: m8Blue,
-        foregroundColor: m8White,
-        title: Text(
-          currentIndex == 0
-              ? 'M8 Messenger'
-              : currentIndex == 1
-              ? 'Panggilan'
-              : 'Profil',
-        ),
-        actions: [
-          if (currentIndex == 0) ...[
-            IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
-              onSelected: (value) {
-                switch (value) {
-                  case 'profile':
-                    setState(() {
-                      currentIndex = 2;
-                    });
-                    break;
-
-                  case 'contacts':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Kontak M8 segera hadir.')),
-                    );
-                    break;
-
-                  case 'settings':
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsPage()),
-                    );
-                    break;
-
-                  case 'notifications':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Notifikasi M8 segera hadir.'),
-                      ),
-                    );
-                    break;
-
-                  case 'appearance':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Tampilan M8 segera hadir.'),
-                      ),
-                    );
-                    break;
-
-                  case 'privacy':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Privasi M8 segera hadir.')),
-                    );
-                    break;
-
-                  case 'help':
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Bantuan M8 segera hadir.')),
-                    );
-                    break;
-
-                  case 'logout':
-                    logout();
-                    break;
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem<String>(
-                  value: 'profile',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.person_outline),
-                      SizedBox(width: 12),
-                      Text('Profil Saya'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'contacts',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.people_outline),
-                      SizedBox(width: 12),
-                      Text('Kontak'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'settings',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.settings_outlined),
-                      SizedBox(width: 12),
-                      Text('Pengaturan'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'notifications',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.notifications_none),
-                      SizedBox(width: 12),
-                      Text('Notifikasi'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'appearance',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.palette_outlined),
-                      SizedBox(width: 12),
-                      Text('Tampilan'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'privacy',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.lock_outline),
-                      SizedBox(width: 12),
-                      Text('Privasi'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'help',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.help_outline),
-                      SizedBox(width: 12),
-                      Text('Bantuan'),
-                    ],
-                  ),
-                ),
-                PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  value: 'logout',
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.logout),
-                      SizedBox(width: 12),
-                      Text('Keluar'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
+      
       body: M8DenimBackground(child: pages[currentIndex]),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: m8Blue,
-        indicatorColor: m8Blue,
-        surfaceTintColor: Colors.transparent,
-        labelTextStyle: const WidgetStatePropertyAll<TextStyle?>(
-          TextStyle(color: m8WhiteSoft, fontWeight: FontWeight.w600),
-        ),
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        destinations: <Widget>[
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Chat',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.call_outlined),
-            selectedIcon: Icon(Icons.call),
-            label: 'Panggilan',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-      ),
+      
     );
   }
 }
