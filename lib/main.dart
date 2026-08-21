@@ -1166,9 +1166,9 @@ class _BJoMainShellState extends State<BJoMainShell> {
       case 1:
         return "B'Jo Moments";
       case 2:
-        return "B'Jo Moments";
-      case 3:
         return "B'Jo Calls";
+      case 3:
+        return "B'Jo Tugas";
       default:
         return "B'Jo Home";
     }
@@ -10269,6 +10269,159 @@ class _CallButton extends StatelessWidget {
           Text(label, style: const TextStyle(color: m8TextMuted, fontSize: 12)),
         ],
       ),
+    );
+  }
+}
+
+
+// ============================================================
+// B'JO TUGAS
+// ============================================================
+
+class TasksPage extends StatelessWidget {
+  final Map<String, dynamic> user;
+
+  const TasksPage({
+    super.key,
+    required this.user,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <Map<String, dynamic>>[
+      {
+        'title': 'Catatan',
+        'subtitle': 'Simpan ide, informasi, dan hal penting',
+        'icon': Icons.note_alt_outlined,
+      },
+      {
+        'title': 'Agenda',
+        'subtitle': 'Atur jadwal dan kegiatan',
+        'icon': Icons.event_note_outlined,
+      },
+      {
+        'title': 'Tugas',
+        'subtitle': 'Kelola pekerjaan yang harus diselesaikan',
+        'icon': Icons.check_circle_outline,
+      },
+      {
+        'title': 'Pengingat',
+        'subtitle': 'Jangan sampai melewatkan sesuatu',
+        'icon': Icons.notifications_none_rounded,
+      },
+      {
+        'title': 'Target',
+        'subtitle': 'Tetapkan tujuan dan pantau kemajuan',
+        'icon': Icons.flag_outlined,
+      },
+      {
+        'title': 'Jurnal',
+        'subtitle': 'Catat perjalanan dan aktivitas harian',
+        'icon': Icons.menu_book_outlined,
+      },
+      {
+        'title': 'Keuangan',
+        'subtitle': 'Catat pemasukan, pengeluaran, dan saldo',
+        'icon': Icons.account_balance_wallet_outlined,
+      },
+    ];
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
+      children: [
+        Text(
+          'Kelola aktivitasmu',
+          style: const TextStyle(
+            color: Color(0xFF102A43),
+            fontSize: 25,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 5),
+        const Text(
+          'Semua yang kamu butuhkan, dalam satu tempat.',
+          style: TextStyle(
+            color: Color(0xFF71808C),
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        ...items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Material(
+              color: m8White,
+              borderRadius: BorderRadius.circular(18),
+              elevation: 1,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${item['title']} siap digunakan.',
+                      ),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 15,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: m8Blue.withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Icon(
+                          item['icon'] as IconData,
+                          color: m8Blue,
+                          size: 25,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item['title'] as String,
+                              style: const TextStyle(
+                                color: Color(0xFF102A43),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              item['subtitle'] as String,
+                              style: const TextStyle(
+                                color: Color(0xFF71808C),
+                                fontSize: 12,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Color(0xFF9AA7B2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
