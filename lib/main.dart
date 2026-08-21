@@ -2693,37 +2693,51 @@ class _ChatsPageState extends State<ChatsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        buildMessengerTabs(),
-        Expanded(
-          child: Stack(
-            children: [
-              if (loading)
-                const Center(
-                  child: CircularProgressIndicator(),
-                )
-              else if (selectedTab == 0)
-                buildAllMessenger()
-              else if (selectedTab == 1)
-                buildPrivateChats()
-              else
-                buildGroupList(),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            m8Blue,
+            Color(0xFFB9D9EA),
+            m8White,
+          ],
+          stops: [0.0, 0.48, 1.0],
+        ),
+      ),
+      child: Column(
+        children: [
+          buildMessengerTabs(),
+          Expanded(
+            child: Stack(
+              children: [
+                if (loading)
+                  const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                else if (selectedTab == 0)
+                  buildAllMessenger()
+                else if (selectedTab == 1)
+                  buildPrivateChats()
+                else
+                  buildGroupList(),
 
-              Positioned(
-                right: 20,
-                bottom: 20,
-                child: FloatingActionButton(
-                  onPressed: showNewChatMenu,
-                  child: const Icon(
-                    Icons.add_comment_rounded,
+                Positioned(
+                  right: 20,
+                  bottom: 20,
+                  child: FloatingActionButton(
+                    onPressed: showNewChatMenu,
+                    child: const Icon(
+                      Icons.add_comment_rounded,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
