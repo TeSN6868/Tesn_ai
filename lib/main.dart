@@ -1831,6 +1831,55 @@ class _HomePageState extends State<HomePage> {
               ],
 
               const Text(
+                'Fitur B\'Jo',
+                style: TextStyle(
+                  color: m8BlueDark,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              Material(
+                color: m8White.withValues(alpha: 0.96),
+                borderRadius: BorderRadius.circular(20),
+                child: Column(
+                  children: [
+                    _BJoHomeLineAction(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      title: 'Messages',
+                      subtitle: 'Your conversations',
+                      onTap: () => widget.onNavigate(1),
+                    ),
+                    const _BJoHomeDivider(),
+                    _BJoHomeLineAction(
+                      icon: Icons.auto_awesome_outlined,
+                      title: 'Moments',
+                      subtitle: 'What\'s happening around you',
+                      onTap: () => widget.onNavigate(2),
+                    ),
+                    const _BJoHomeDivider(),
+                    _BJoHomeLineAction(
+                      icon: Icons.groups_outlined,
+                      title: 'Groups',
+                      subtitle: 'Communities you belong to',
+                      onTap: () => widget.onNavigate(4),
+                    ),
+                    const _BJoHomeDivider(),
+                    _BJoHomeLineAction(
+                      icon: Icons.call_outlined,
+                      title: 'Calls',
+                      subtitle: 'Your recent calls',
+                      onTap: widget.onCalls,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              const Text(
                 'Pesan Terbaru',
                 style: TextStyle(
                   color: m8BlueDark,
