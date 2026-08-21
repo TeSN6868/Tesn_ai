@@ -1546,7 +1546,18 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: m8WhiteSoft,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            m8Blue,
+            Color(0xFFB9D9EA),
+            m8White,
+          ],
+          stops: [0.0, 0.48, 1.0],
+        ),
+      ),
       child: SafeArea(
         child: Column(
           children: [
