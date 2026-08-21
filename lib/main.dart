@@ -9664,6 +9664,7 @@ class BJoProfilePage extends StatelessWidget {
           ),
         ),
       ],
+        ),
     );
   }
 }
