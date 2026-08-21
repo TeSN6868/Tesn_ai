@@ -1180,8 +1180,10 @@ class _BJoMainShellState extends State<BJoMainShell> {
         return BJoGroupsPage(token: widget.token, myPin: myPin);
 
       case 3:
-        return BJoBerandaPage(user: widget.user);
-
+        return HomePage(
+          token: widget.token,
+          user: widget.user,
+        );
       default:
         return ChatsPage(token: widget.token, myPin: myPin);
     }
