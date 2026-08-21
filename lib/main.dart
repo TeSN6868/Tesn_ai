@@ -9204,7 +9204,15 @@ class BJoProfilePage extends StatelessWidget {
         .toString();
   }
 
-  String get username {
+  String get backgroundUrl {
+      return (user['profile_background_url'] ??
+              user['background_url'] ??
+              '')
+          .toString()
+          .trim();
+    }
+
+    String get username {
     final v = user['username']?.toString().trim();
     if (v != null && v.isNotEmpty) return '@$v';
     return '';
@@ -9218,21 +9226,64 @@ class BJoProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1769AA),
-              Color(0xFF5FA4D5),
-              Color(0xFFDCEAF3),
-              Color(0xFFF7F3EA),
-            ],
-            stops: [0.0, 0.32, 0.68, 1.0],
-          ),
-        ),
-        child: SafeArea(
+      body: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (backgroundUrl.isNotEmpty)
+              Image.network(
+                backgroundUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF1769AA),
+                        Color(0xFF5FA4D5),
+                        Color(0xFFDCEAF3),
+                        Color(0xFFF7F3EA),
+                      ],
+                      stops: [0.0, 0.32, 0.68, 1.0],
+                    ),
+                  ),
+                ),
+              )
+            else
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFF1769AA),
+                      Color(0xFF5FA4D5),
+                      Color(0xFFDCEAF3),
+                      Color(0xFFF7F3EA),
+                    ],
+                    stops: [0.0, 0.32, 0.68, 1.0],
+                  ),
+                ),
+              ),
+            IgnorePointer(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x330B4774),
+                      Color(0x120B4774),
+                      Color(0x66F7F3EA),
+                      Color(0xFFF7F3EA),
+                    ],
+                    stops: [0.0, 0.38, 0.72, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
+
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -9545,7 +9596,28 @@ class BJoProfilePage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: FilledButton.icon(
-                            onPressed: () {},
+                            onPressed: () async {
+                              final changed = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => BJoProfileMediaPage(
+                                    user: user,
+                                  ),
+                                ),
+                              );
+
+                              if (changed == true && context.mounted) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => BJoProfilePage(
+                                        user: user,
+                                        token: token,
+                                      ),
+                                    ),
+                                  );
+                                }
+                            },
                             icon: const Icon(Icons.edit_rounded, size: 19),
                             label: const Text("Edit Profil"),
                             style: FilledButton.styleFrom(
