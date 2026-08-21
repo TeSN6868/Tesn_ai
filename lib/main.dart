@@ -9173,6 +9173,7 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
 // B'JO PROFILE
 // ============================================================
 
+
 class BJoProfilePage extends StatelessWidget {
   final Map<String, dynamic> user;
   final String token;
@@ -9191,787 +9192,441 @@ class BJoProfilePage extends StatelessWidget {
   String get pin =>
       user['m8_pin']?.toString() ?? user['pin']?.toString() ?? '';
 
-  String get photoUrl {
-    final candidates = [
-      user['profile_photo_url'],
-      user['photo_url'],
-      user['avatar_url'],
-      user['profile_photo'],
-      user['photo'],
-      user['avatar'],
-    ];
+  String get photoUrl =>
+      user['profile_photo_url']?.toString() ??
+      user['photo_url']?.toString() ??
+      user['avatar_url']?.toString() ??
+      '';
 
-    for (final value in candidates) {
-      final text = value?.toString().trim() ?? '';
-      if (text.isNotEmpty) return text;
-    }
-
-    return '';
-  }
-
-  String get backgroundUrl {
-    final value = user['profile_background_url'];
-    return value?.toString().trim() ?? '';
-  }
-
-  String get initial =>
-      name.trim().isEmpty ? 'B' : name.trim().substring(0, 1).toUpperCase();
-
-  void _showPin(BuildContext context) {
-    if (pin.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("PIN B'Jo belum tersedia.")),
-      );
-      return;
-    }
-
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        elevation: 0,
+        title: const Text(
+          "Profil B'Jo",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
         ),
-        title: const Row(
-          children: [
-            Icon(Icons.pin_rounded, color: m8Blue),
-            SizedBox(width: 10),
-            Text(
-              "PIN B'Jo",
-              style: TextStyle(fontWeight: FontWeight.w900),
+        actions: [
+          IconButton(
+            tooltip: 'Pengaturan',
+            onPressed: () {},
+            icon: const Icon(Icons.settings_outlined),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        children: [
+          // IDENTITAS
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 26, 20, 24),
+            decoration: BoxDecoration(
+              color: m8Blue,
+              borderRadius: BorderRadius.circular(28),
             ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "PIN ini adalah identitas unik akun B'Jo kamu.",
-              textAlign: TextAlign.center,
+            child: Column(
+              children: [
+                Container(
+                  width: 104,
+                  height: 104,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: m8White,
+                    border: Border.all(
+                      color: m8White.withValues(alpha: 0.9),
+                      width: 4,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: photoUrl.isEmpty
+                        ? const Icon(
+                            Icons.person_rounded,
+                            size: 58,
+                            color: m8Blue,
+                          )
+                        : Image.network(
+                            photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person_rounded,
+                              size: 58,
+                              color: m8Blue,
+                            ),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: m8White,
+                    fontSize: 25,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: m8White.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: m8White.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.fingerprint_rounded,
+                          color: m8White,
+                          size: 17,
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          pin.isEmpty ? "PIN belum tersedia" : pin,
+                          style: const TextStyle(
+                            color: m8White,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text("Edit Profil"),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: m8White,
+                          side: BorderSide(
+                            color: m8White.withValues(alpha: 0.45),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.share_outlined),
+                        label: const Text("Bagikan"),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: m8White,
+                          foregroundColor: m8Blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 18,
-              ),
-              decoration: BoxDecoration(
-                color: m8Blue.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: SelectableText(
-                pin,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: m8BlueDark,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2,
+          ),
+
+          const SizedBox(height: 16),
+
+          // STATISTIK
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              color: m8White,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: const Row(
+              children: [
+                Expanded(
+                  child: _BJoProfileStat(
+                    value: '0',
+                    label: 'Moments',
+                    icon: Icons.auto_awesome_outlined,
+                  ),
+                ),
+                Expanded(
+                  child: _BJoProfileStat(
+                    value: '0',
+                    label: 'Grup',
+                    icon: Icons.groups_2_outlined,
+                  ),
+                ),
+                Expanded(
+                  child: _BJoProfileStat(
+                    value: '0',
+                    label: 'Kontak',
+                    icon: Icons.people_outline_rounded,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 22),
+
+          _BJoProfileTitle(title: 'Profil'),
+
+          _BJoProfileItem(
+            icon: Icons.auto_awesome_outlined,
+            title: 'Moments saya',
+            subtitle: 'Cerita dan aktivitas yang kamu bagikan',
+            onTap: () {},
+          ),
+
+          _BJoProfileItem(
+            icon: Icons.badge_outlined,
+            title: 'Tentang saya',
+            subtitle: 'Bio dan informasi singkat tentang kamu',
+            onTap: () {},
+          ),
+
+          const SizedBox(height: 20),
+
+          _BJoProfileTitle(title: 'Akun & Keamanan'),
+
+          _BJoProfileItem(
+            icon: Icons.fingerprint_rounded,
+            title: "PIN B'Jo",
+            subtitle: 'Identitas unik untuk terhubung',
+            onTap: () {},
+          ),
+
+          _BJoProfileItem(
+            icon: Icons.devices_outlined,
+            title: 'Perangkat & sesi',
+            subtitle: 'Kelola perangkat yang sedang terhubung',
+            onTap: () {},
+          ),
+
+          _BJoProfileItem(
+            icon: Icons.verified_user_outlined,
+            title: 'Keamanan akun',
+            subtitle: 'Periksa keamanan akun B’Jo',
+            onTap: () {},
+          ),
+
+          const SizedBox(height: 20),
+
+          _BJoProfileTitle(title: 'Pengaturan'),
+
+          _BJoProfileItem(
+            icon: Icons.settings_outlined,
+            title: 'Pengaturan B’Jo',
+            subtitle: 'Notifikasi, chat, privasi, dan akun',
+            onTap: () {},
+          ),
+
+          _BJoProfileItem(
+            icon: Icons.notifications_none_rounded,
+            title: 'Notifikasi',
+            subtitle: 'Suara, getar, dan nada dering',
+            onTap: () {},
+          ),
+
+          _BJoProfileItem(
+            icon: Icons.lock_outline_rounded,
+            title: 'Privasi',
+            subtitle: 'Keamanan dan privasi akun',
+            onTap: () {},
+          ),
+
+          const SizedBox(height: 20),
+
+          _BJoProfileTitle(title: 'Lainnya'),
+
+          _BJoProfileItem(
+            icon: Icons.help_outline_rounded,
+            title: 'Bantuan',
+            subtitle: 'Pusat bantuan B’Jo',
+            onTap: () {},
+          ),
+
+          _BJoProfileItem(
+            icon: Icons.info_outline_rounded,
+            title: 'Tentang B’Jo',
+            subtitle: 'Versi aplikasi dan informasi produk',
+            onTap: () {},
+          ),
+
+          const SizedBox(height: 18),
+
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.logout_rounded),
+              label: const Text('Logout semua perangkat'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red.shade700,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(17),
                 ),
               ),
             ),
-          ],
-        ),
-        actions: [
-          TextButton.icon(
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: pin));
-              if (dialogContext.mounted) {
-                ScaffoldMessenger.of(dialogContext).showSnackBar(
-                  const SnackBar(content: Text("PIN B'Jo berhasil disalin.")),
-                );
-              }
-            },
-            icon: const Icon(Icons.copy_rounded),
-            label: const Text("Salin"),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("Tutup"),
           ),
         ],
       ),
     );
   }
+}
 
-  void _openSettings(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const SettingsPage(),
-      ),
+class _BJoProfileStat extends StatelessWidget {
+  final String value;
+  final String label;
+  final IconData icon;
+
+  const _BJoProfileStat({
+    required this.value,
+    required this.label,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          color: m8Blue,
+          size: 22,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: const TextStyle(
+            color: m8Text,
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(
+            color: m8TextMuted,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
+}
 
-  void _openSessions(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BJoSessionsPage(token: token),
-      ),
-    );
-  }
+class _BJoProfileTitle extends StatelessWidget {
+  final String title;
 
-  Future<void> _editName(BuildContext context) async {
-      final controller = TextEditingController(
-        text: user['name']?.toString() ?? '',
-      );
+  const _BJoProfileTitle({
+    required this.title,
+  });
 
-      final newName = await showDialog<String>(
-        context: context,
-        builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text('Edit Nama'),
-            content: TextField(
-              controller: controller,
-              autofocus: true,
-              maxLength: 50,
-              style: const TextStyle(
-                color: m8BlueDark,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-              cursorColor: m8Blue,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Nama B\'Jo',
-                hintText: 'Masukkan nama kamu',
-                labelStyle: TextStyle(color: m8TextMuted),
-                hintStyle: TextStyle(color: m8TextMuted),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Batal'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  final value = controller.text.trim();
-
-                  if (value.length < 2) {
-                    ScaffoldMessenger.of(dialogContext).showSnackBar(
-                      const SnackBar(
-                        content: Text('Nama minimal 2 karakter.'),
-                      ),
-                    );
-                    return;
-                  }
-
-                  Navigator.pop(dialogContext, value);
-                },
-                child: const Text('Simpan'),
-              ),
-            ],
-          );
-        },
-      );
-
-      controller.dispose();
-
-      if (newName == null || newName.trim().isEmpty) return;
-
-      final pin = user['m8_pin']?.toString() ??
-          user['pin']?.toString() ??
-          '';
-
-      if (pin.isEmpty) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("PIN B'Jo tidak tersedia."),
-          ),
-        );
-        return;
-      }
-
-      try {
-        final response = await http.post(
-          Uri.parse('$apiBase/api/profile/name'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'm8_pin': pin,
-            'name': newName.trim(),
-          }),
-        ).timeout(const Duration(seconds: 20));
-
-        final data = jsonDecode(response.body);
-
-        if (response.statusCode != 200 || data['success'] != true) {
-          throw Exception(
-            data['error']?.toString() ?? 'Gagal memperbarui nama.',
-          );
-        }
-
-        final updatedUser = data['user'];
-
-        if (updatedUser is Map) {
-          user['name'] =
-              updatedUser['name']?.toString() ?? newName.trim();
-        } else {
-          user['name'] = newName.trim();
-        }
-
-        if (!context.mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Nama B'Jo berhasil diperbarui."),
-          ),
-        );
-      } catch (e) {
-        if (!context.mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Gagal memperbarui nama: $e"),
-          ),
-        );
-      }
-    }
-
-  void _comingSoon(BuildContext context, String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$title akan diaktifkan berikutnya.')),
-    );
-  }
-
-  Future<void> _logoutAllDevices(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
-        ),
-        title: const Text(
-          'Logout semua perangkat?',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
-        content: const Text(
-          'Semua perangkat yang sedang masuk ke akun B’Jo akan dikeluarkan, termasuk perangkat ini.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Logout semua'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !context.mounted) return;
-
-    try {
-      final response = await http.post(
-        Uri.parse('$apiBase/api/sessions/logout-all'),
-        headers: {'Authorization': 'Bearer $token'},
-      ).timeout(const Duration(seconds: 15));
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode != 200 || data['success'] != true) {
-        throw Exception(
-          data['error']?.toString() ?? 'Gagal logout semua perangkat.',
-        );
-      }
-
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Semua perangkat berhasil dikeluarkan.'),
-        ),
-      );
-
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-
-      if (!context.mounted) return;
-
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-        (_) => false,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal logout semua perangkat: $e')),
-      );
-    }
-  }
-
-  Widget _avatar() {
-    if (photoUrl.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: Image.network(
-          photoUrl,
-          width: 94,
-          height: 94,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _avatarFallback(),
-        ),
-      );
-    }
-
-    return _avatarFallback();
-  }
-
-  Widget _avatarFallback() {
-    return Container(
-      width: 94,
-      height: 94,
-      decoration: BoxDecoration(
-        color: m8White,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      alignment: Alignment.center,
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
       child: Text(
-        initial,
+        title.toUpperCase(),
         style: const TextStyle(
-          color: m8BlueDark,
-          fontSize: 38,
+          color: m8TextMuted,
+          fontSize: 11,
           fontWeight: FontWeight.w900,
+          letterSpacing: 1.2,
         ),
       ),
     );
   }
+}
 
-  Widget _stat(String number, String label, IconData icon) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: m8Blue, size: 20),
-          const SizedBox(height: 5),
-          Text(
-            number,
-            style: const TextStyle(
-              color: m8BlueDark,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          Text(
-            label,
-            style: const TextStyle(
-              color: m8TextMuted,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+class _BJoProfileItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
 
-  Widget _menuCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
+  const _BJoProfileItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: m8White,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: m8BlueDark.withValues(alpha: 0.055),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(18),
       ),
       child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 15,
+          horizontal: 16,
           vertical: 5,
         ),
         leading: Container(
-          width: 45,
-          height: 45,
+          width: 42,
+          height: 42,
           decoration: BoxDecoration(
-            color: m8Blue.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(15),
+            color: m8Blue.withValues(alpha: 0.09),
+            borderRadius: BorderRadius.circular(13),
           ),
-          child: Icon(icon, color: m8Blue),
+          child: Icon(
+            icon,
+            color: m8Blue,
+            size: 21,
+          ),
         ),
         title: Text(
           title,
           style: const TextStyle(
             color: m8Text,
             fontWeight: FontWeight.w800,
-            fontSize: 14,
           ),
         ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: Text(
-            subtitle,
-            style: const TextStyle(
-              color: m8TextMuted,
-              fontSize: 11.5,
-            ),
+        subtitle: Text(
+          subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: m8TextMuted,
+            fontSize: 12,
           ),
         ),
         trailing: const Icon(
           Icons.chevron_right_rounded,
           color: m8TextMuted,
-        ),
-      ),
-    );
-  }
-
-  Widget _section(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(3, 8, 3, 10),
-          child: Text(
-            title.toUpperCase(),
-            style: const TextStyle(
-              color: m8TextMuted,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.4,
-            ),
-          ),
-        ),
-        ...children,
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: m8White,
-      body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            // B'JO PREMIUM IDENTITY HERO
-              Container(
-                padding: const EdgeInsets.fromLTRB(18, 12, 18, 30),
-                decoration: BoxDecoration(
-                  color: m8Blue,
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(40),
-                  ),
-                  image: backgroundUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(backgroundUrl),
-                          fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(
-                            m8Blue.withValues(alpha: 0.52),
-                            BlendMode.srcOver,
-                          ),
-                        )
-                      : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: m8BlueDark.withValues(alpha: 0.14),
-                      blurRadius: 28,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          "Profil",
-                          style: TextStyle(
-                            color: m8White,
-                            fontSize: 21,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: () => _openSettings(context),
-                          icon: const Icon(
-                            Icons.tune_rounded,
-                            color: m8White,
-                          ),
-                          tooltip: "Pengaturan",
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    _avatar(),
-
-                    const SizedBox(height: 14),
-
-                    Text(
-                      name,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: m8White,
-                        fontSize: 25,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    GestureDetector(
-                      onTap: () => _showPin(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: m8White.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color: m8White.withValues(alpha: 0.24),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.fingerprint_rounded,
-                              color: m8White,
-                              size: 17,
-                            ),
-                            const SizedBox(width: 7),
-                            Text(
-                              pin.isEmpty
-                                  ? "PIN belum tersedia"
-                                  : pin,
-                              style: const TextStyle(
-                                color: m8White,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            Icon(
-                              Icons.chevron_right_rounded,
-                              color: m8White.withValues(alpha: 0.65),
-                              size: 17,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _editName(context),
-                            icon: const Icon(
-                              Icons.edit_outlined,
-                              size: 18,
-                            ),
-                            label: const Text("Edit Profil"),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: m8White,
-                              side: BorderSide(
-                                color: m8White.withValues(alpha: 0.50),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width: 10),
-
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: () => _comingSoon(
-                              context,
-                              "Bagikan profil",
-                            ),
-                            icon: const Icon(
-                              Icons.ios_share_rounded,
-                              size: 18,
-                            ),
-                            label: const Text("Bagikan"),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: m8White,
-                              foregroundColor: m8Blue,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // STATISTIK
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 18, 16, 6),
-              padding: const EdgeInsets.symmetric(vertical: 17),
-              decoration: BoxDecoration(
-                color: m8White,
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: [
-                  BoxShadow(
-                    color: m8BlueDark.withValues(alpha: 0.055),
-                    blurRadius: 18,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  _stat('0', 'Moments', Icons.auto_awesome_outlined),
-                  _stat('0', 'Grup', Icons.groups_2_outlined),
-                  _stat('0', 'Kontak', Icons.people_outline_rounded),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-              child: Column(
-                children: [
-                  _section(
-                    'Profil',
-                    [
-                      _menuCard(
-                        context,
-                        icon: Icons.auto_awesome_outlined,
-                        title: 'Moments saya',
-                        subtitle: 'Lihat cerita dan aktivitas yang kamu bagikan',
-                        onTap: () => _comingSoon(context, 'Moments saya'),
-                      ),
-                      _menuCard(
-                        context,
-                        icon: Icons.badge_outlined,
-                        title: 'Tentang saya',
-                        subtitle: 'Tambahkan bio dan informasi singkat tentang kamu',
-                        onTap: () => _comingSoon(context, 'Tentang saya'),
-                      ),
-                    ],
-                  ),
-
-                  _section(
-                    'Akun & Keamanan',
-                    [
-                      _menuCard(
-                        context,
-                        icon: Icons.pin_outlined,
-                        title: "PIN B'Jo",
-                        subtitle: 'Identitas unik untuk terhubung dengan pengguna lain',
-                        onTap: () => _showPin(context),
-                      ),
-                      _menuCard(
-                        context,
-                        icon: Icons.devices_outlined,
-                        title: 'Perangkat & sesi',
-                        subtitle: 'Kelola perangkat yang sedang terhubung',
-                        onTap: () => _openSessions(context),
-                      ),
-                      _menuCard(
-                        context,
-                        icon: Icons.verified_user_outlined,
-                        title: 'Keamanan akun',
-                        subtitle: 'Periksa dan kelola keamanan akun B’Jo',
-                        onTap: () => _comingSoon(context, 'Keamanan akun'),
-                      ),
-                    ],
-                  ),
-
-                  _section(
-                    'Pengaturan',
-                    [
-                      _menuCard(
-                        context,
-                        icon: Icons.settings_outlined,
-                        title: 'Pengaturan B’Jo',
-                        subtitle: 'Notifikasi, chat, privasi, akun, dan lainnya',
-                        onTap: () => _openSettings(context),
-                      ),
-                      _menuCard(
-                        context,
-                        icon: Icons.notifications_none_rounded,
-                        title: 'Notifikasi',
-                        subtitle: 'Kelola suara, getar, dan nada dering',
-                        onTap: () => _openSettings(context),
-                      ),
-                      _menuCard(
-                        context,
-                        icon: Icons.lock_outline_rounded,
-                        title: 'Privasi',
-                        subtitle: 'Kelola keamanan dan privasi akun',
-                        onTap: () => _openSettings(context),
-                      ),
-                    ],
-                  ),
-
-                  _section(
-                    'Lainnya',
-                    [
-                      _menuCard(
-                        context,
-                        icon: Icons.help_outline_rounded,
-                        title: 'Bantuan',
-                        subtitle: 'Pusat bantuan dan informasi B’Jo',
-                        onTap: () => _comingSoon(context, 'Bantuan'),
-                      ),
-                      _menuCard(
-                        context,
-                        icon: Icons.info_outline_rounded,
-                        title: 'Tentang B’Jo',
-                        subtitle: 'Versi aplikasi dan informasi produk',
-                        onTap: () => _comingSoon(context, 'Tentang B’Jo'),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _logoutAllDevices(context),
-                      icon: const Icon(Icons.logout_rounded),
-                      label: const Text('Logout semua perangkat'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red.shade700,
-                        side: BorderSide(
-                          color: Colors.red.withValues(alpha: 0.22),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(17),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -9983,6 +9638,7 @@ class BJoProfilePage extends StatelessWidget {
 // ============================================================
 
 class BJoSessionsPage extends StatefulWidget {
+
   final String token;
 
   const BJoSessionsPage({
