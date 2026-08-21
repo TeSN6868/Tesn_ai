@@ -9654,111 +9654,176 @@ class BJoProfilePage extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            // HEADER IDENTITAS
-            Container(
-              padding: const EdgeInsets.fromLTRB(18, 12, 18, 22),
+            // B'JO PREMIUM IDENTITY HERO
+              Container(
+                padding: const EdgeInsets.fromLTRB(18, 12, 18, 30),
                 decoration: BoxDecoration(
                   color: m8Blue,
                   borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(32),
+                    bottom: Radius.circular(40),
                   ),
                   image: backgroundUrl.isNotEmpty
                       ? DecorationImage(
                           image: NetworkImage(backgroundUrl),
                           fit: BoxFit.cover,
                           colorFilter: ColorFilter.mode(
-                            Colors.black.withValues(alpha: 0.35),
-                            BlendMode.darken,
+                            m8Blue.withValues(alpha: 0.52),
+                            BlendMode.srcOver,
                           ),
                         )
                       : null,
-                boxShadow: [
-                  BoxShadow(
-                    color: m8BlueDark.withValues(alpha: 0.16),
-                    blurRadius: 22,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      const Text(
-                        "Profil",
-                        style: TextStyle(
-                          color: m8White,
-                          fontSize: 21,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  _avatar(),
-                  const SizedBox(height: 12),
-                  Text(
-                    name,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: m8White,
-                      fontSize: 23,
-                      fontWeight: FontWeight.w900,
+                  boxShadow: [
+                    BoxShadow(
+                      color: m8BlueDark.withValues(alpha: 0.14),
+                      blurRadius: 28,
+                      offset: const Offset(0, 12),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    pin.isEmpty ? "PIN B'Jo belum tersedia" : "PIN B'Jo • $pin",
-                    style: TextStyle(
-                      color: m8White.withValues(alpha: 0.82),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _editName(context),
-                          icon: const Icon(Icons.edit_outlined, size: 18),
-                          label: const Text('Edit Profil'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: m8White,
-                            side: BorderSide(
-                              color: m8White.withValues(alpha: 0.45),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Text(
+                          "Profil",
+                          style: TextStyle(
+                            color: m8White,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: () => _comingSoon(context, 'Bagikan profil'),
-                          icon: const Icon(Icons.ios_share_rounded, size: 18),
-                          label: const Text('Bagikan'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: m8White,
-                            foregroundColor: m8Blue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () => _openSettings(context),
+                          icon: const Icon(
+                            Icons.tune_rounded,
+                            color: m8White,
                           ),
+                          tooltip: "Pengaturan",
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                      ],
+                    ),
 
-            // STATISTIK
+                    const SizedBox(height: 14),
+
+                    _avatar(),
+
+                    const SizedBox(height: 14),
+
+                    Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: m8White,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    GestureDetector(
+                      onTap: () => _showPin(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: m8White.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: m8White.withValues(alpha: 0.24),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.fingerprint_rounded,
+                              color: m8White,
+                              size: 17,
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              pin.isEmpty
+                                  ? "PIN belum tersedia"
+                                  : pin,
+                              style: const TextStyle(
+                                color: m8White,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              color: m8White.withValues(alpha: 0.65),
+                              size: 17,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _editName(context),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              size: 18,
+                            ),
+                            label: const Text("Edit Profil"),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: m8White,
+                              side: BorderSide(
+                                color: m8White.withValues(alpha: 0.50),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () => _comingSoon(
+                              context,
+                              "Bagikan profil",
+                            ),
+                            icon: const Icon(
+                              Icons.ios_share_rounded,
+                              size: 18,
+                            ),
+                            label: const Text("Bagikan"),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: m8White,
+                              foregroundColor: m8Blue,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // STATISTIK
             Container(
               margin: const EdgeInsets.fromLTRB(16, 18, 16, 6),
               padding: const EdgeInsets.symmetric(vertical: 17),
