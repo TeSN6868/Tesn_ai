@@ -2138,7 +2138,10 @@ class _HomePageState extends State<HomePage> {
     final pages = [
       ChatsPage(token: widget.token, myPin: pin),
       const CallsPage(),
-      ProfilePage(user: widget.user, onLogout: logout),
+      BJoProfilePage(
+        user: widget.user,
+        token: widget.token,
+      ),
     ];
 
     return Scaffold(
