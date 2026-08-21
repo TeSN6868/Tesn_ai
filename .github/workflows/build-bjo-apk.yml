@@ -1,6 +1,9 @@
 name: Build BJo APK
 
 on:
+  push:
+    branches:
+      - bjo-rescue
   workflow_dispatch:
 
 jobs:
@@ -10,6 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: bjo-rescue
 
       - name: Setup Java
         uses: actions/setup-java@v4
