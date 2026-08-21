@@ -1180,18 +1180,6 @@ class _BJoMainShellState extends State<BJoMainShell> {
         return HomePage(
           token: widget.token,
           user: widget.user,
-          onNavigate: (index) {
-            setState(() {
-              currentIndex = index;
-            });
-          },
-          onCalls: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const CallsPage(),
-              ),
-            );
-          },
         );
 
       case 1:
@@ -1212,18 +1200,6 @@ class _BJoMainShellState extends State<BJoMainShell> {
         return HomePage(
           token: widget.token,
           user: widget.user,
-          onNavigate: (index) {
-            setState(() {
-              currentIndex = index;
-            });
-          },
-          onCalls: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const CallsPage(),
-              ),
-            );
-          },
         );
     }
   }
@@ -1519,158 +1495,374 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
 class HomePage extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
-  final ValueChanged<int> onNavigate;
-  final VoidCallback onCalls;
 
-  const HomePage({
-    super.key,
-    required this.token,
-    required this.user,
-    required this.onNavigate,
-    required this.onCalls,
-  });
+  const HomePage({super.key, required this.token, required this.user});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  String get displayName {
-    final value = widget.user['name']?.toString().trim();
-    return (value == null || value.isEmpty) ? 'there' : value;
+  int currentIndex = 0;
+
+  final M8CallService _incomingCallService = M8CallService();
+  final AudioPlayer _incomingRingtonePlayer = AudioPlayer();
+
+  Future<void> _startIncomingRingtone() async {
+    try {
+      await _incomingRingtonePlayer.stop();
+
+      final prefs = await SharedPreferences.getInstance();
+      final selected = prefs.getString('m8_selected_ringtone') ?? "B'Jo Tone 01";
+
+      const ringtoneAssets = <String, String>{
+        "B'Jo Tone 01": 'sounds/m8_ringtone_02.wav',
+        "B'Jo Tone 02": 'sounds/m8_ringtone_03.wav',
+        "B'Jo Tone 03": 'sounds/m8_ringtone_04.wav',
+        "B'Jo Tone 04": 'sounds/m8_ringtone_05.wav',
+        "B'Jo Tone 05": 'sounds/m8_ringtone_06.wav',
+      };
+
+      final asset = ringtoneAssets[selected] ?? 'sounds/m8_ringtone_02.wav';
+
+      await _incomingRingtonePlayer.setReleaseMode(ReleaseMode.loop);
+      await _incomingRingtonePlayer.setVolume(1.0);
+      await _incomingRingtonePlayer.play(AssetSource(asset));
+
+      debugPrint("B'Jo RINGTONE: $selected -> $asset");
+    } catch (e) {
+      debugPrint('B\'Jo RINGTONE ERROR: $e');
+    }
+  }
+
+  Future<void> _stopIncomingRingtone() async {
+    try {
+      await _incomingRingtonePlayer.stop();
+      debugPrint('M8 RINGTONE: STOP');
+    } catch (e) {
+      debugPrint('M8 RINGTONE STOP ERROR: $e');
+    }
+  }
+
+  Timer? _incomingCallTimer;
+  String? _lastIncomingCallId;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _incomingCallTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => _checkIncomingCalls(),
+    );
+
+    _checkIncomingCalls();
+  }
+
+  Future<void> _checkIncomingCalls() async {
+    try {
+      final calls = await _incomingCallService.getIncomingCalls(pin);
+
+      if (!mounted || calls.isEmpty) return;
+
+      final call = calls.first;
+      final incomingId = call['id']?.toString();
+
+      if (incomingId == null || incomingId == _lastIncomingCallId) {
+        return;
+      }
+
+      _lastIncomingCallId = incomingId;
+
+      final callerPin = call['caller_pin']?.toString() ?? '';
+      final callType = call['call_type']?.toString() ?? 'voice';
+      final isVideoCall = callType == 'video';
+
+      if (callerPin.isEmpty) return;
+
+      await _startIncomingRingtone();
+      final accepted = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Panggilan masuk'),
+            content: Text('Ada panggilan masuk dari PIN $callerPin.'),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  try {
+                    await _incomingCallService.rejectCall(
+                      incomingCallId: incomingId,
+                      calleePin: pin,
+                    );
+                  } finally {
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop(false);
+                    }
+                  }
+                },
+                child: const Text('Tolak'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(true);
+                },
+                child: const Text('Terima'),
+              ),
+            ],
+          );
+        },
+      );
+
+      await _stopIncomingRingtone();
+
+      if (!mounted || accepted != true) return;
+
+      final callService = M8CallService();
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => VoiceCallPage(
+            myPin: pin,
+            otherPin: callerPin,
+            call: callService,
+            incomingCallId: incomingId,
+            videoCall: isVideoCall,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('M8 INCOMING CALL ERROR: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _incomingCallTimer?.cancel();
+    _incomingRingtonePlayer.stop();
+    _incomingRingtonePlayer.dispose();
+    super.dispose();
+  }
+
+  String get name => widget.user['name']?.toString() ?? 'M8 User';
+
+  String get pin => widget.user['m8_pin']?.toString() ?? '';
+
+  void logout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (_) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            m8Blue,
-            Color(0xFFB9D9EA),
-            m8White,
-          ],
-          stops: [0.0, 0.48, 1.0],
-        ),
+    final pages = [
+      ChatsPage(token: widget.token, myPin: pin),
+      const CallsPage(),
+      BJoProfilePage(
+        user: widget.user,
+        token: widget.token,
       ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 22, 24, 40),
-                children: [
-                  Row(
-                    children: [
-                      const Text(
-                        "B'Jo",
-                        style: TextStyle(
-                          color: m8Blue,
-                          fontSize: 27,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -1.2,
-                        ),
+    ];
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: Text(
+          currentIndex == 0
+              ? 'M8 Messenger'
+              : currentIndex == 1
+              ? 'Panggilan'
+              : 'Profil',
+        ),
+        actions: [
+          if (currentIndex == 0) ...[
+            IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) {
+                switch (value) {
+                  case 'profile':
+                    setState(() {
+                      currentIndex = 2;
+                    });
+                    break;
+
+                  case 'contacts':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Kontak M8 segera hadir.')),
+                    );
+                    break;
+
+                  case 'settings':
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsPage()),
+                    );
+                    break;
+
+                  case 'notifications':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Notifikasi M8 segera hadir.'),
                       ),
-                      const Spacer(),
-                      IconButton(
-                        tooltip: 'Notifications',
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.notifications_none_rounded,
-                          color: m8Blue,
-                          size: 25,
-                        ),
+                    );
+                    break;
+
+                  case 'appearance':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tampilan M8 segera hadir.'),
                       ),
+                    );
+                    break;
+
+                  case 'privacy':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Privasi M8 segera hadir.')),
+                    );
+                    break;
+
+                  case 'help':
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Bantuan M8 segera hadir.')),
+                    );
+                    break;
+
+                  case 'logout':
+                    logout();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'profile',
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.person_outline),
+                      SizedBox(width: 12),
+                      Text('Profil Saya'),
                     ],
                   ),
-
-                  const SizedBox(height: 58),
-
-                  const Text(
-                    "Good to see you,",
-                    style: TextStyle(
-                      color: Color(0xFF71808C),
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: -0.2,
-                    ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'contacts',
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.people_outline),
+                      SizedBox(width: 12),
+                      Text('Kontak'),
+                    ],
                   ),
-
-                  const SizedBox(height: 3),
-
-                  Text(
-                    displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF102A43),
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.6,
-                      height: 1.08,
-                    ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'settings',
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.settings_outlined),
+                      SizedBox(width: 12),
+                      Text('Pengaturan'),
+                    ],
                   ),
-
-                  const SizedBox(height: 22),
-
-                  const Text(
-                    "Everything that matters,\nwithin reach.",
-                    style: TextStyle(
-                      color: Color(0xFF102A43),
-                      fontSize: 25,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.9,
-                      height: 1.16,
-                    ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'notifications',
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.notifications_none),
+                      SizedBox(width: 12),
+                      Text('Notifikasi'),
+                    ],
                   ),
-
-                  const SizedBox(height: 12),
-
-                  const Text(
-                    "Connect with people, share moments,\nand stay close to your world.",
-                    style: TextStyle(
-                      color: Color(0xFF71808C),
-                      fontSize: 13,
-                      height: 1.55,
-                    ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'appearance',
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.palette_outlined),
+                      SizedBox(width: 12),
+                      Text('Tampilan'),
+                    ],
                   ),
-
-                  const SizedBox(height: 48),
-
-                  const SizedBox(height: 54),
-
-                  const Text(
-                    "RECENT",
-                    style: TextStyle(
-                      color: m8Blue,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2.0,
-                    ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'privacy',
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.lock_outline),
+                      SizedBox(width: 12),
+                      Text('Privasi'),
+                    ],
                   ),
-
-                  const SizedBox(height: 15),
-
-                  const Text(
-                    "Your latest activity will appear here.",
-                    style: TextStyle(
-                      color: Color(0xFF71808C),
-                      fontSize: 13,
-                      height: 1.5,
-                    ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'help',
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.help_outline),
+                      SizedBox(width: 12),
+                      Text('Bantuan'),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                PopupMenuDivider(),
+                PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.logout),
+                      SizedBox(width: 12),
+                      Text('Keluar'),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
+        ],
+      ),
+      body: M8DenimBackground(child: pages[currentIndex]),
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: m8Blue,
+        indicatorColor: m8Blue,
+        surfaceTintColor: Colors.transparent,
+        labelTextStyle: const WidgetStatePropertyAll<TextStyle?>(
+          TextStyle(color: m8WhiteSoft, fontWeight: FontWeight.w600),
         ),
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        destinations: <Widget>[
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline),
+            selectedIcon: Icon(Icons.chat_bubble),
+            label: 'Chat',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.call_outlined),
+            selectedIcon: Icon(Icons.call),
+            label: 'Panggilan',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profil',
+          ),
+        ],
       ),
     );
   }
 }
+
+// ============================================================
+// SETTINGS
+// ============================================================
 
 class _BJoHomeLineAction extends StatelessWidget {
   final IconData icon;
