@@ -1240,7 +1240,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         child: page(),
       ),
       
-      bottomNavigationBar: bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: NavigationBar(
         backgroundColor: m8Blue,
         indicatorColor: m8BlueDark,
         surfaceTintColor: Colors.transparent,
