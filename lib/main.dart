@@ -10283,7 +10283,12 @@ class _CallButton extends StatelessWidget {
 // B'JO TUGAS / PRODUCTIVITY
 // ============================================================
 
-class TasksPage extends StatefulWidget {
+
+// ============================================================
+// B'JO TUGAS / PRODUCTIVITY
+// ============================================================
+
+class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
   const TasksPage({
@@ -10291,122 +10296,66 @@ class TasksPage extends StatefulWidget {
     required this.user,
   });
 
-  @override
-  State<TasksPage> createState() => _TasksPageState();
-}
-
-class _TasksPageState extends State<TasksPage> {
-  final List<Map<String, dynamic>> _items = [
-    {
-      'title': 'Catatan',
-      'subtitle': 'Ide dan informasi penting',
-      'icon': Icons.note_alt_outlined,
-    },
-    {
-      'title': 'Agenda',
-      'subtitle': 'Jadwal dan kegiatan',
-      'icon': Icons.event_note_outlined,
-    },
-    {
-      'title': 'Tugas',
-      'subtitle': 'Pekerjaan yang harus diselesaikan',
-      'icon': Icons.check_circle_outline,
-    },
-    {
-      'title': 'Pengingat',
-      'subtitle': 'Sesuatu yang tidak boleh terlupa',
-      'icon': Icons.notifications_none_rounded,
-    },
-    {
-      'title': 'Target',
-      'subtitle': 'Tujuan dan pencapaiannya',
-      'icon': Icons.flag_outlined,
-    },
-    {
-      'title': 'Jurnal',
-      'subtitle': 'Catatan perjalanan harian',
-      'icon': Icons.menu_book_outlined,
-    },
-    {
-      'title': 'Keuangan',
-      'subtitle': 'Pemasukan dan pengeluaran',
-      'icon': Icons.account_balance_wallet_outlined,
-    },
-  ];
-
-  void _openFeature(String title) {
-    Widget page;
-
-    switch (title) {
-      case 'Catatan':
-        page = const _SimpleManagerPage(
-          title: 'Catatan',
-          icon: Icons.note_alt_outlined,
-          hint: 'Tulis catatan baru...',
-          emptyText: 'Belum ada catatan.',
-        );
-        break;
-
-      case 'Agenda':
-        page = const _SimpleManagerPage(
-          title: 'Agenda',
-          icon: Icons.event_note_outlined,
-          hint: 'Tambahkan agenda...',
-          emptyText: 'Belum ada agenda.',
-        );
-        break;
-
-      case 'Tugas':
-        page = const _SimpleManagerPage(
-          title: 'Tugas',
-          icon: Icons.check_circle_outline,
-          hint: 'Tambahkan tugas...',
-          emptyText: 'Belum ada tugas.',
-        );
-        break;
-
-      case 'Pengingat':
-        page = const _SimpleManagerPage(
-          title: 'Pengingat',
-          icon: Icons.notifications_none_rounded,
-          hint: 'Tambahkan pengingat...',
-          emptyText: 'Belum ada pengingat.',
-        );
-        break;
-
-      case 'Target':
-        page = const _SimpleManagerPage(
-          title: 'Target',
-          icon: Icons.flag_outlined,
-          hint: 'Tuliskan target...',
-          emptyText: 'Belum ada target.',
-        );
-        break;
-
-      case 'Jurnal':
-        page = const _SimpleManagerPage(
-          title: 'Jurnal',
-          icon: Icons.menu_book_outlined,
-          hint: 'Tulis jurnal hari ini...',
-          emptyText: 'Belum ada jurnal.',
-        );
-        break;
-
-      case 'Keuangan':
-        page = const _FinancePage();
-        break;
-
-      default:
-        return;
+  void _open(BuildContext context, String title, IconData icon) {
+    if (title == 'Keuangan') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const _FinancePage(),
+        ),
+      );
+      return;
     }
 
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => page),
+      MaterialPageRoute(
+        builder: (_) => _SimpleManagerPage(
+          title: title,
+          icon: icon,
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final items = <Map<String, dynamic>>[
+      {
+        'title': 'Catatan',
+        'subtitle': 'Ide dan informasi penting',
+        'icon': Icons.note_alt_outlined,
+      },
+      {
+        'title': 'Agenda',
+        'subtitle': 'Jadwal dan kegiatan',
+        'icon': Icons.event_note_outlined,
+      },
+      {
+        'title': 'Tugas',
+        'subtitle': 'Pekerjaan yang harus diselesaikan',
+        'icon': Icons.check_circle_outline,
+      },
+      {
+        'title': 'Pengingat',
+        'subtitle': 'Sesuatu yang tidak boleh terlupa',
+        'icon': Icons.notifications_none_rounded,
+      },
+      {
+        'title': 'Target',
+        'subtitle': 'Tujuan dan pencapaiannya',
+        'icon': Icons.flag_outlined,
+      },
+      {
+        'title': 'Jurnal',
+        'subtitle': 'Catatan perjalanan harian',
+        'icon': Icons.menu_book_outlined,
+      },
+      {
+        'title': 'Keuangan',
+        'subtitle': 'Pemasukan dan pengeluaran',
+        'icon': Icons.account_balance_wallet_outlined,
+      },
+    ];
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
       children: [
@@ -10428,7 +10377,7 @@ class _TasksPageState extends State<TasksPage> {
         ),
         const SizedBox(height: 20),
 
-        ..._items.map(
+        ...items.map(
           (item) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Material(
@@ -10437,7 +10386,11 @@ class _TasksPageState extends State<TasksPage> {
               elevation: 1,
               child: InkWell(
                 borderRadius: BorderRadius.circular(18),
-                onTap: () => _openFeature(item['title'] as String),
+                onTap: () => _open(
+                  context,
+                  item['title'] as String,
+                  item['icon'] as IconData,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -10461,7 +10414,8 @@ class _TasksPageState extends State<TasksPage> {
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
                           children: [
                             Text(
                               item['title'] as String,
@@ -10498,40 +10452,75 @@ class _TasksPageState extends State<TasksPage> {
   }
 }
 
-
 // ============================================================
-// GENERIC MANAGER
+// CATATAN / AGENDA / TUGAS / PENGINGAT / TARGET / JURNAL
 // ============================================================
 
 class _SimpleManagerPage extends StatefulWidget {
   final String title;
   final IconData icon;
-  final String hint;
-  final String emptyText;
 
   const _SimpleManagerPage({
     required this.title,
     required this.icon,
-    required this.hint,
-    required this.emptyText,
   });
 
   @override
-  State<_SimpleManagerPage> createState() => _SimpleManagerPageState();
+  State<_SimpleManagerPage> createState() =>
+      _SimpleManagerPageState();
 }
 
-class _SimpleManagerPageState extends State<_SimpleManagerPage> {
-  final List<String> entries = [];
-  final TextEditingController controller = TextEditingController();
+class _SimpleManagerPageState
+    extends State<_SimpleManagerPage> {
+  final TextEditingController controller =
+      TextEditingController();
 
-  void addEntry() {
+  List<String> entries = [];
+
+  String get storageKey =>
+      'bjo_productivity_${widget.title.toLowerCase()}';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList(storageKey) ?? [];
+
+    if (!mounted) return;
+
+    setState(() {
+      entries = saved;
+    });
+  }
+
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(storageKey, entries);
+  }
+
+  Future<void> _add() async {
     final text = controller.text.trim();
+
     if (text.isEmpty) return;
 
     setState(() {
       entries.insert(0, text);
       controller.clear();
     });
+
+    await _save();
+  }
+
+  Future<void> _delete(int index) async {
+    setState(() {
+      entries.removeAt(index);
+    });
+
+    await _save();
   }
 
   @override
@@ -10557,10 +10546,14 @@ class _SimpleManagerPageState extends State<_SimpleManagerPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(widget.icon, size: 55, color: m8Blue),
+                        Icon(
+                          widget.icon,
+                          size: 58,
+                          color: m8Blue,
+                        ),
                         const SizedBox(height: 12),
                         Text(
-                          widget.emptyText,
+                          'Belum ada ${widget.title.toLowerCase()}.',
                           style: const TextStyle(
                             color: Color(0xFF71808C),
                           ),
@@ -10573,16 +10566,20 @@ class _SimpleManagerPageState extends State<_SimpleManagerPage> {
                     itemCount: entries.length,
                     itemBuilder: (context, index) {
                       return Card(
+                        margin:
+                            const EdgeInsets.only(bottom: 8),
                         child: ListTile(
-                          leading: Icon(widget.icon, color: m8Blue),
+                          leading: Icon(
+                            widget.icon,
+                            color: m8Blue,
+                          ),
                           title: Text(entries[index]),
                           trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () {
-                              setState(() {
-                                entries.removeAt(index);
-                              });
-                            },
+                            icon: const Icon(
+                              Icons.delete_outline,
+                            ),
+                            onPressed: () =>
+                                _delete(index),
                           ),
                         ),
                       );
@@ -10597,12 +10594,15 @@ class _SimpleManagerPageState extends State<_SimpleManagerPage> {
                   Expanded(
                     child: TextField(
                       controller: controller,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => addEntry(),
+                      textInputAction:
+                          TextInputAction.done,
+                      onSubmitted: (_) => _add(),
                       decoration: InputDecoration(
-                        hintText: widget.hint,
+                        hintText:
+                            'Tambahkan ${widget.title.toLowerCase()}...',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius:
+                              BorderRadius.circular(14),
                         ),
                       ),
                     ),
@@ -10612,7 +10612,7 @@ class _SimpleManagerPageState extends State<_SimpleManagerPage> {
                     mini: true,
                     backgroundColor: m8Blue,
                     foregroundColor: m8White,
-                    onPressed: addEntry,
+                    onPressed: _add,
                     child: const Icon(Icons.add),
                   ),
                 ],
@@ -10625,7 +10625,6 @@ class _SimpleManagerPageState extends State<_SimpleManagerPage> {
   }
 }
 
-
 // ============================================================
 // KEUANGAN
 // ============================================================
@@ -10634,44 +10633,107 @@ class _FinancePage extends StatefulWidget {
   const _FinancePage();
 
   @override
-  State<_FinancePage> createState() => _FinancePageState();
+  State<_FinancePage> createState() =>
+      _FinancePageState();
 }
 
 class _FinancePageState extends State<_FinancePage> {
-  final List<Map<String, dynamic>> transactions = [];
+  List<Map<String, dynamic>> transactions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data =
+        prefs.getString('bjo_finance_transactions');
+
+    if (data == null || data.isEmpty) return;
+
+    try {
+      final decoded = jsonDecode(data);
+
+      if (!mounted) return;
+
+      setState(() {
+        transactions =
+            List<Map<String, dynamic>>.from(
+          (decoded as List).map(
+            (e) => Map<String, dynamic>.from(e),
+          ),
+        );
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'bjo_finance_transactions',
+      jsonEncode(transactions),
+    );
+  }
 
   double get income => transactions
       .where((e) => e['type'] == 'in')
-      .fold(0.0, (a, e) => a + (e['amount'] as double));
+      .fold(
+        0.0,
+        (sum, e) =>
+            sum + (e['amount'] as num).toDouble(),
+      );
 
   double get expense => transactions
       .where((e) => e['type'] == 'out')
-      .fold(0.0, (a, e) => a + (e['amount'] as double));
+      .fold(
+        0.0,
+        (sum, e) =>
+            sum + (e['amount'] as num).toDouble(),
+      );
 
   double get balance => income - expense;
 
-  void addTransaction(bool isIncome) {
-    final amountController = TextEditingController();
-    final noteController = TextEditingController();
+  String rupiah(double value) {
+    return 'Rp ${value.toStringAsFixed(0)}';
+  }
 
-    showDialog(
+  Future<void> _addTransaction(
+    bool isIncome,
+  ) async {
+    final amountController =
+        TextEditingController();
+    final noteController =
+        TextEditingController();
+
+    await showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: Text(isIncome ? 'Tambah pemasukan' : 'Tambah pengeluaran'),
+          title: Text(
+            isIncome
+                ? 'Tambah pemasukan'
+                : 'Tambah pengeluaran',
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: amountController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                keyboardType:
+                    TextInputType.number,
+                decoration:
+                    const InputDecoration(
                   labelText: 'Jumlah',
+                  prefixText: 'Rp ',
                 ),
               ),
+              const SizedBox(height: 10),
               TextField(
                 controller: noteController,
-                decoration: const InputDecoration(
+                decoration:
+                    const InputDecoration(
                   labelText: 'Keterangan',
                 ),
               ),
@@ -10679,27 +10741,44 @@ class _FinancePageState extends State<_FinancePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
+              onPressed: () =>
+                  Navigator.pop(dialogContext),
               child: const Text('Batal'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final amount =
-                    double.tryParse(amountController.text.trim()) ?? 0;
+                    double.tryParse(
+                          amountController.text
+                              .trim(),
+                        ) ??
+                        0;
 
                 if (amount <= 0) return;
 
                 setState(() {
-                  transactions.insert(0, {
-                    'type': isIncome ? 'in' : 'out',
-                    'amount': amount,
-                    'note': noteController.text.trim().isEmpty
-                        ? 'Tanpa keterangan'
-                        : noteController.text.trim(),
-                  });
+                  transactions.insert(
+                    0,
+                    {
+                      'type':
+                          isIncome ? 'in' : 'out',
+                      'amount': amount,
+                      'note': noteController
+                              .text
+                              .trim()
+                              .isEmpty
+                          ? 'Tanpa keterangan'
+                          : noteController.text
+                              .trim(),
+                    },
+                  );
                 });
 
-                Navigator.pop(dialogContext);
+                await _save();
+
+                if (dialogContext.mounted) {
+                  Navigator.pop(dialogContext);
+                }
               },
               child: const Text('Simpan'),
             ),
@@ -10707,6 +10786,19 @@ class _FinancePageState extends State<_FinancePage> {
         );
       },
     );
+
+    amountController.dispose();
+    noteController.dispose();
+  }
+
+  Future<void> _deleteTransaction(
+    int index,
+  ) async {
+    setState(() {
+      transactions.removeAt(index);
+    });
+
+    await _save();
   }
 
   @override
@@ -10728,70 +10820,135 @@ class _FinancePageState extends State<_FinancePage> {
                 children: [
                   const Text(
                     'Saldo',
-                    style: TextStyle(color: Color(0xFF71808C)),
+                    style: TextStyle(
+                      color: Color(0xFF71808C),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Rp ${balance.toStringAsFixed(0)}',
+                    rupiah(balance),
                     style: const TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFF102A43),
                     ),
                   ),
+                  const SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceAround,
+                    children: [
+                      Column(
+                        children: [
+                          const Text('Pemasukan'),
+                          const SizedBox(height: 4),
+                          Text(
+                            rupiah(income),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          const Text('Pengeluaran'),
+                          const SizedBox(height: 4),
+                          Text(
+                            rupiah(expense),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
+
           const SizedBox(height: 12),
+
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => addTransaction(true),
+                  onPressed: () =>
+                      _addTransaction(true),
                   icon: const Icon(Icons.add),
-                  label: const Text('Pemasukan'),
+                  label:
+                      const Text('Pemasukan'),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => addTransaction(false),
-                  icon: const Icon(Icons.remove),
-                  label: const Text('Pengeluaran'),
+                  onPressed: () =>
+                      _addTransaction(false),
+                  icon:
+                      const Icon(Icons.remove),
+                  label:
+                      const Text('Pengeluaran'),
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 18),
+
           if (transactions.isEmpty)
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(30),
-                child: Text('Belum ada transaksi.'),
-              ),
-            ),
-          ...transactions.map(
-            (e) => Card(
-              child: ListTile(
-                leading: Icon(
-                  e['type'] == 'in'
-                      ? Icons.arrow_downward
-                      : Icons.arrow_upward,
-                  color: e['type'] == 'in'
-                      ? Colors.green
-                      : Colors.red,
-                ),
-                title: Text(e['note'] as String),
-                trailing: Text(
-                  'Rp ${(e['amount'] as double).toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
+                child: Text(
+                  'Belum ada transaksi.',
+                  style: TextStyle(
+                    color: Color(0xFF71808C),
                   ),
                 ),
               ),
+            )
+          else
+            ...transactions.asMap().entries.map(
+              (entry) {
+                final index = entry.key;
+                final item = entry.value;
+                final isIn =
+                    item['type'] == 'in';
+
+                return Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          m8Blue.withOpacity(.10),
+                      child: Icon(
+                        isIn
+                            ? Icons.arrow_downward
+                            : Icons.arrow_upward,
+                        color: m8Blue,
+                      ),
+                    ),
+                    title: Text(
+                      rupiah(
+                        (item['amount'] as num)
+                            .toDouble(),
+                      ),
+                    ),
+                    subtitle:
+                        Text(item['note'].toString()),
+                    trailing: IconButton(
+                      icon: const Icon(
+                        Icons.delete_outline,
+                      ),
+                      onPressed: () =>
+                          _deleteTransaction(index),
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
         ],
       ),
     );
