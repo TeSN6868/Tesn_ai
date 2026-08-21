@@ -10947,3 +10947,29 @@ class CallsPage extends StatelessWidget {
     );
   }
 }
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        title: const Text('Pengaturan'),
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+      ),
+      body: const Center(
+        child: Text(
+          'Pengaturan M8',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: m8Text,
+          ),
+        ),
+      ),
+    );
+  }
+}
