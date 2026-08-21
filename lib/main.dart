@@ -1206,7 +1206,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         );
 
       case 3:
-        _gong(canvas, line, fill);
+        return const CallsPage();
 
       default:
         return HomePage(
@@ -3875,7 +3875,7 @@ class M8GamelanWallpaperPainter extends CustomPainter {
             _saron(canvas, line, fill);
             break;
           case 3:
-          _gong(canvas, line, fill);
+            _gong(canvas, line, fill);
             break;
 
         default:
