@@ -1180,6 +1180,18 @@ class _BJoMainShellState extends State<BJoMainShell> {
         return HomePage(
           token: widget.token,
           user: widget.user,
+          onNavigate: (index) {
+            setState(() {
+              currentIndex = index;
+            });
+          },
+          onCalls: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const CallsPage(),
+              ),
+            );
+          },
         );
 
       case 1:
@@ -1203,6 +1215,18 @@ class _BJoMainShellState extends State<BJoMainShell> {
         return HomePage(
           token: widget.token,
           user: widget.user,
+          onNavigate: (index) {
+            setState(() {
+              currentIndex = index;
+            });
+          },
+          onCalls: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const CallsPage(),
+              ),
+            );
+          },
         );
     }
   }
@@ -1498,11 +1522,15 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
 class HomePage extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
+  final ValueChanged<int> onNavigate;
+  final VoidCallback onCalls;
 
   const HomePage({
     super.key,
     required this.token,
     required this.user,
+    required this.onNavigate,
+    required this.onCalls,
   });
 
   @override
@@ -1608,7 +1636,7 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.chat_bubble_outline_rounded,
                     title: "Messages",
                     subtitle: "Your conversations",
-                    onTap: () {},
+                    onTap: () => widget.onNavigate(1),
                   ),
 
                   const _BJoHomeDivider(),
@@ -1617,7 +1645,7 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.auto_awesome_outlined,
                     title: "Moments",
                     subtitle: "What's happening around you",
-                    onTap: () {},
+                    onTap: () => widget.onNavigate(2),
                   ),
 
                   const _BJoHomeDivider(),
@@ -1626,7 +1654,7 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.groups_outlined,
                     title: "Groups",
                     subtitle: "Communities you belong to",
-                    onTap: () {},
+                    onTap: () => widget.onNavigate(3),
                   ),
 
                   const _BJoHomeDivider(),
@@ -1635,7 +1663,7 @@ class _HomePageState extends State<HomePage> {
                     icon: Icons.call_outlined,
                     title: "Calls",
                     subtitle: "Your recent calls",
-                    onTap: () {},
+                    onTap: widget.onCalls,
                   ),
 
                   const SizedBox(height: 54),
@@ -2737,7 +2765,7 @@ class _M8GroupInfoPage extends StatelessWidget {
     final photoUrl = group['photo_url']?.toString().trim() ?? '';
 
     return Scaffold(
-      backgroundColor: m8WhiteSoft,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: m8BlueDark,
         foregroundColor: m8White,
