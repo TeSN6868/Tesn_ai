@@ -1239,63 +1239,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         color: m8WhiteSoft,
         child: page(),
       ),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: m8Blue,
-        indicatorColor: m8BlueDark,
-        surfaceTintColor: Colors.transparent,
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(
-              Icons.home_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.home,
-              color: m8White,
-            ),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.chat_bubble_outline,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.chat_bubble,
-              color: m8White,
-            ),
-            label: 'Chat',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.auto_awesome_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.auto_awesome,
-              color: m8White,
-            ),
-            label: 'Moments',
-          ),
-          NavigationDestination(
-            icon: Icon(
-              Icons.call_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.call,
-              color: m8White,
-            ),
-            label: 'Calls',
-          ),
-        ],
-      ),
+      
     );
   }
 }
