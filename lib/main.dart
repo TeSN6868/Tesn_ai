@@ -1141,7 +1141,11 @@ class BJoMainShell extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
 
-  const BJoMainShell({super.key, required this.token, required this.user});
+  const BJoMainShell({
+    super.key,
+    required this.token,
+    required this.user,
+  });
 
   @override
   State<BJoMainShell> createState() => _BJoMainShellState();
@@ -1151,41 +1155,55 @@ class _BJoMainShellState extends State<BJoMainShell> {
   int currentIndex = 0;
 
   String get myPin =>
-      widget.user['m8_pin']?.toString() ?? widget.user['pin']?.toString() ?? '';
+      widget.user['m8_pin']?.toString() ??
+      widget.user['pin']?.toString() ??
+      '';
 
   String get title {
     switch (currentIndex) {
       case 0:
-        return "B'Jo Chat";
-      case 1:
-        return "B'Jo Moments";
-      case 2:
-        return "B'Jo Grup";
-      case 3:
         return "B'Jo Home";
+      case 1:
+        return "B'Jo Chat";
+      case 2:
+        return "B'Jo Moments";
+      case 3:
+        return "B'Jo Grup";
       default:
-        return "B'Jo";
+        return "B'Jo Home";
     }
   }
 
   Widget page() {
     switch (currentIndex) {
       case 0:
-        return ChatsPage(token: widget.token, myPin: myPin);
-
-      case 1:
-        return StoryPage(user: widget.user);
-
-      case 2:
-        return BJoGroupsPage(token: widget.token, myPin: myPin);
-
-      case 3:
         return HomePage(
           token: widget.token,
           user: widget.user,
         );
+
+      case 1:
+        return ChatsPage(
+          token: widget.token,
+          myPin: myPin,
+        );
+
+      case 2:
+        return StoryPage(
+          user: widget.user,
+        );
+
+      case 3:
+        return BJoGroupsPage(
+          token: widget.token,
+          myPin: myPin,
+        );
+
       default:
-        return ChatsPage(token: widget.token, myPin: myPin);
+        return HomePage(
+          token: widget.token,
+          user: widget.user,
+        );
     }
   }
 
@@ -1197,7 +1215,12 @@ class _BJoMainShellState extends State<BJoMainShell> {
         backgroundColor: m8Blue,
         foregroundColor: m8White,
         elevation: 0,
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         actions: [
           IconButton(
             tooltip: "Profil B'Jo",
@@ -1206,9 +1229,9 @@ class _BJoMainShellState extends State<BJoMainShell> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => BJoProfilePage(
-                  user: widget.user,
-                  token: widget.token,
-                ),
+                    user: widget.user,
+                    token: widget.token,
+                  ),
                 ),
               );
             },
@@ -1231,24 +1254,48 @@ class _BJoMainShellState extends State<BJoMainShell> {
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline, color: m8WhiteSoft),
-            selectedIcon: Icon(Icons.chat_bubble, color: m8White),
+            icon: Icon(
+              Icons.home_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.home,
+              color: m8White,
+            ),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.chat_bubble_outline,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.chat_bubble,
+              color: m8White,
+            ),
             label: 'Chat',
           ),
           NavigationDestination(
-            icon: Icon(Icons.auto_awesome_outlined, color: m8WhiteSoft),
-            selectedIcon: Icon(Icons.auto_awesome, color: m8White),
+            icon: Icon(
+              Icons.auto_awesome_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.auto_awesome,
+              color: m8White,
+            ),
             label: 'Moments',
           ),
           NavigationDestination(
-            icon: Icon(Icons.groups_outlined, color: m8WhiteSoft),
-            selectedIcon: Icon(Icons.groups, color: m8White),
+            icon: Icon(
+              Icons.groups_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.groups,
+              color: m8White,
+            ),
             label: 'Grup',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined, color: m8WhiteSoft),
-            selectedIcon: Icon(Icons.dashboard, color: m8White),
-            label: 'Home',
           ),
         ],
       ),
