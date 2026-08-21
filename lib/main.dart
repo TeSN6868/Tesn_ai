@@ -1168,7 +1168,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
       case 2:
         return "B'Jo Moments";
       case 3:
-        return "B'Jo Grup";
+        return "B'Jo Calls";
       default:
         return "B'Jo Home";
     }
@@ -1206,10 +1206,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         );
 
       case 3:
-        return BJoGroupsPage(
-          token: widget.token,
-          myPin: myPin,
-        );
+        return const CallsPage();
 
       default:
         return HomePage(
@@ -1312,14 +1309,14 @@ class _BJoMainShellState extends State<BJoMainShell> {
           ),
           NavigationDestination(
             icon: Icon(
-              Icons.groups_outlined,
+              Icons.call_outlined,
               color: m8WhiteSoft,
             ),
             selectedIcon: Icon(
-              Icons.groups,
+              Icons.call,
               color: m8White,
             ),
-            label: 'Grup',
+            label: 'Calls',
           ),
         ],
       ),
@@ -1642,40 +1639,6 @@ class _HomePageState extends State<HomePage> {
                   ),
 
                   const SizedBox(height: 48),
-
-                  _BJoHomeLineAction(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    title: "Messages",
-                    subtitle: "Your conversations",
-                    onTap: () => widget.onNavigate(1),
-                  ),
-
-                  const _BJoHomeDivider(),
-
-                  _BJoHomeLineAction(
-                    icon: Icons.auto_awesome_outlined,
-                    title: "Moments",
-                    subtitle: "What's happening around you",
-                    onTap: () => widget.onNavigate(2),
-                  ),
-
-                  const _BJoHomeDivider(),
-
-                  _BJoHomeLineAction(
-                    icon: Icons.groups_outlined,
-                    title: "Groups",
-                    subtitle: "Communities you belong to",
-                    onTap: () => widget.onNavigate(3),
-                  ),
-
-                  const _BJoHomeDivider(),
-
-                  _BJoHomeLineAction(
-                    icon: Icons.call_outlined,
-                    title: "Calls",
-                    subtitle: "Your recent calls",
-                    onTap: widget.onCalls,
-                  ),
 
                   const SizedBox(height: 54),
 
@@ -3912,9 +3875,9 @@ class M8GamelanWallpaperPainter extends CustomPainter {
             _saron(canvas, line, fill);
             break;
           case 3:
-            _bonang(canvas, line, fill);
-            break;
-          default:
+          return const CallsPage();
+
+        default:
             _siter(canvas, line, fill);
             break;
         }
