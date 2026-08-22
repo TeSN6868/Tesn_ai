@@ -1234,11 +1234,30 @@ class _BJoMainShellState extends State<BJoMainShell> {
           ),
         ],
       ),
-      body: Container(
-        color: m8WhiteSoft,
-        child: page(),
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            color: m8Blue,
+            padding: const EdgeInsets.fromLTRB(18, 2, 18, 14),
+            child: Text(
+              'Welcome back, ${widget.user['name']?.toString().trim().isNotEmpty == true ? widget.user['name'].toString().trim() : 'M8 User'} 👋',
+              style: const TextStyle(
+                color: m8White,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              color: currentIndex == 3 ? m8BlueDark : m8WhiteSoft,
+              child: page(),
+            ),
+          ),
+        ],
       ),
-      
+
       bottomNavigationBar: NavigationBar(
         backgroundColor: m8Blue,
         indicatorColor: m8BlueDark,
