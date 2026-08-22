@@ -1355,20 +1355,6 @@ class _BJoMainShellState extends State<BJoMainShell> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Kontak B’Jo',
-            icon: const Icon(Icons.contacts_rounded),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => BJoContactsPage(
-                    token: widget.token,
-                    myPin: myPin,
-                  ),
-                ),
-              );
-            },
-          ),
-          IconButton(
             tooltip: "Profil B'Jo",
             icon: const Icon(Icons.person_rounded),
             onPressed: () {
@@ -1669,7 +1655,7 @@ class _BjoBatikHeaderPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8
-      ..color = Colors.white.withValues(alpha: 0.075);
+      ..color = Colors.white.withValues(alpha: 0.16);
 
     const spacing = 34.0;
 
@@ -1711,7 +1697,7 @@ class _BjoBatikHeaderPainter extends CustomPainter {
 
     final dotPaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.055);
+      ..color = Colors.white.withValues(alpha: 0.11);
 
     for (double x = 10; x < size.width; x += 34) {
       for (double y = 8; y < size.height; y += 34) {
@@ -2143,7 +2129,7 @@ class _ChatsPageState extends State<ChatsPage> {
               labelText: 'M8 PIN tujuan',
               hintText: 'Contoh: TEST0001',
               labelStyle: TextStyle(color: m8BlueDark),
-              hintStyle: TextStyle(color: m8TextMuted),
+              hintStyle: TextStyle(color: bjoChatNavy),
             ),
           ),
           actions: [
@@ -2395,193 +2381,106 @@ class _ChatsPageState extends State<ChatsPage> {
   }
 
   Widget buildMessengerTabs() {
-    const tabs = ['Semua', 'Chat', 'Grup', 'Kontak'];
-
     return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
       child: Row(
         children: [
-          Expanded(
-            child: Row(
-              children: List.generate(tabs.length, (index) {
-                final selected = selectedTab == index;
-
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedTab = index;
-                      });
-
-                      if (index == 2) {
-                        loadGroups();
-                      }
-
-                      if (index == 3) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => BJoContactsPage(
-                              token: widget.token,
-                              myPin: widget.myPin,
-                            ),
-                          ),
-                        ).then((_) {
-                          if (mounted) {
-                            setState(() {
-                              selectedTab = 0;
-                            });
-                          }
-                        });
-                      }
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      margin: EdgeInsets.only(
-                        right: index == tabs.length - 1 ? 0 : 8,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? m8Blue
-                            : m8White.withValues(alpha: 0.72),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        tabs[index],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: selected ? m8White : bjoChatNavy,
-                          fontWeight:
-                              selected ? FontWeight.w800 : FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
+          _buildMessengerAction(
+            icon: Icons.chat_bubble_rounded,
+            label: 'Chat',
+            selected: selectedTab == 1,
+            onTap: () {
+              setState(() {
+                selectedTab = 1;
+              });
+            },
           ),
-          const SizedBox(width: 8),
-          Material(
-            color: m8White.withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => BJoUserSearchPage(
-                      token: widget.token,
-                      myPin: widget.myPin,
-                    ),
+          _buildMessengerAction(
+            icon: Icons.groups_rounded,
+            label: 'Grup',
+            selected: selectedTab == 2,
+            onTap: () {
+              setState(() {
+                selectedTab = 2;
+              });
+              loadGroups();
+            },
+          ),
+          _buildMessengerAction(
+            icon: Icons.person_rounded,
+            label: 'Kontak',
+            selected: selectedTab == 3,
+            onTap: () {
+              setState(() {
+                selectedTab = 3;
+              });
+            },
+          ),
+          _buildMessengerAction(
+            icon: Icons.search_rounded,
+            label: 'Cari',
+            selected: false,
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BJoUserSearchPage(
+                    token: widget.token,
+                    myPin: widget.myPin,
                   ),
-                );
-
-                if (result == true && mounted) {
-                  await loadChats();
-
-                  if (mounted) {
-                    setState(() {
-                      selectedTab = 1;
-                    });
-                  }
-                }
-              },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 13,
-                  vertical: 10,
                 ),
-                child: Icon(
-                  Icons.person_search_rounded,
-                  color: m8Blue,
-                  size: 21,
-                ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget buildEmptyMessenger() {
-    return Center(
+  Widget _buildMessengerAction({
+    required IconData icon,
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: m8Blue.withValues(alpha: 0.10),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.chat_bubble_outline_rounded,
-                size: 32,
-                color: m8Blue,
-              ),
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'Belum ada percakapan',
-              style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.w800,
-                color: m8Text,
-              ),
-            ),
-            const SizedBox(height: 7),
-            const Text(
-              'Mulai percakapan pribadi atau buat grup baru.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: m8TextMuted,
-                fontSize: 13,
-                height: 1.4,
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        child: Material(
+          color: selected
+              ? m8Blue
+              : m8White.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(13),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(13),
+            onTap: onTap,
+            child: SizedBox(
+              height: 58,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 20,
+                    color: selected ? m8White : bjoChatNavy,
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: selected ? m8White : bjoChatNavy,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: showNewChatMenu,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Mulai Chat'),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
-
-  Widget _buildPremiumAvatar({
-    required String name,
-    String photoUrl = '',
-    bool group = false,
-  }) {
-
-    return CircleAvatar(
-      radius: 25,
-      backgroundColor: m8Blue.withValues(alpha: 0.12),
-      backgroundImage:
-          photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
-      child: photoUrl.isEmpty
-          ? Icon(
-              group
-                  ? Icons.groups_rounded
-                  : Icons.person_rounded,
-              color: m8Blue,
-              size: group ? 25 : 23,
-            )
-          : null,
-    );
-  }
-
   Widget _buildPrivateChatTile(
     Map<String, dynamic> chat,
   ) {
@@ -2710,7 +2609,7 @@ class _ChatsPageState extends State<ChatsPage> {
                           style: TextStyle(
                             color: unreadCount > 0
                                 ? m8Blue
-                                : m8TextMuted,
+                                : bjoChatNavy,
                             fontSize: 11,
                             fontWeight: unreadCount > 0
                                 ? FontWeight.w700
@@ -2734,7 +2633,7 @@ class _ChatsPageState extends State<ChatsPage> {
                           style: TextStyle(
                             color: unreadCount > 0
                                 ? m8Text
-                                : m8TextMuted,
+                                : bjoChatNavy,
                             fontSize: 12,
                             fontWeight: unreadCount > 0
                                 ? FontWeight.w600
@@ -2783,7 +2682,7 @@ class _ChatsPageState extends State<ChatsPage> {
             const Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: m8TextMuted,
+              color: bjoChatNavy,
             ),
           ],
         ),
@@ -2857,7 +2756,7 @@ class _ChatsPageState extends State<ChatsPage> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: m8TextMuted,
+                      color: bjoChatNavy,
                       fontSize: 12,
                     ),
                   ),
@@ -2867,7 +2766,7 @@ class _ChatsPageState extends State<ChatsPage> {
             const Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: m8TextMuted,
+              color: bjoChatNavy,
             ),
           ],
         ),
@@ -2939,7 +2838,7 @@ class _ChatsPageState extends State<ChatsPage> {
               child: Text(
                 'Percakapan',
                 style: TextStyle(
-                  color: m8TextMuted,
+                  color: bjoChatNavy,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.4,
@@ -2959,7 +2858,7 @@ class _ChatsPageState extends State<ChatsPage> {
               child: Text(
                 'Grup',
                 style: TextStyle(
-                  color: m8TextMuted,
+                  color: bjoChatNavy,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.4,
