@@ -2293,46 +2293,46 @@ class _ChatsPageState extends State<ChatsPage> {
           Expanded(
             child: Row(
               children: List.generate(tabs.length, (index) {
+                final selected = selectedTab == index;
 
-          final selected = selectedTab == index;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedTab = index;
+                      });
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedTab = index;
-                });
-
-                if (index == 2) {
-                  loadGroups();
-                }
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                margin: EdgeInsets.only(
-                  right: index == tabs.length - 1 ? 0 : 8,
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? m8Blue
-                      : m8White.withValues(alpha: 0.72),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  tabs[index],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: selected ? m8White : m8TextMuted,
-                    fontWeight:
-                        selected ? FontWeight.w800 : FontWeight.w600,
-                    fontSize: 13,
+                      if (index == 2) {
+                        loadGroups();
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      margin: EdgeInsets.only(
+                        right: index == tabs.length - 1 ? 0 : 8,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? m8Blue
+                            : m8White.withValues(alpha: 0.72),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        tabs[index],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: selected ? m8White : m8TextMuted,
+                          fontWeight:
+                              selected ? FontWeight.w800 : FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
             ),
-              );
-            }),
           ),
           const SizedBox(width: 8),
           Material(
@@ -2353,6 +2353,7 @@ class _ChatsPageState extends State<ChatsPage> {
 
                 if (result == true && mounted) {
                   await loadChats();
+
                   if (mounted) {
                     setState(() {
                       selectedTab = 1;
