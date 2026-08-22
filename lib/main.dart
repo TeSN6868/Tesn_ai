@@ -4207,6 +4207,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
     final mine = sender == widget.myPin;
 
     final text = message['message']?.toString() ?? '';
+
     final senderName =
         message['sender_name']?.toString().trim().isNotEmpty == true
             ? message['sender_name'].toString().trim()
@@ -4216,7 +4217,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
         message['sender_photo_url']?.toString().trim() ?? '';
 
     final avatar = CircleAvatar(
-      radius: 18,
+      radius: 11,
       backgroundColor: m8Blue.withValues(alpha: 0.14),
       backgroundImage:
           senderPhoto.isNotEmpty ? NetworkImage(senderPhoto) : null,
@@ -4225,36 +4226,8 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
           : Icon(
               Icons.person_rounded,
               color: m8Blue,
-              size: 20,
+              size: 13,
             ),
-    );
-
-    final senderIdentity = Column(
-      crossAxisAlignment:
-          mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          sender,
-          style: TextStyle(
-            color: m8Blue,
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.3,
-          ),
-        ),
-        const SizedBox(height: 1),
-        Text(
-          senderName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: m8TextMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
 
     final bubble = Container(
@@ -4301,6 +4274,37 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
       ),
     );
 
+    final identity = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment:
+          mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        avatar,
+        const SizedBox(height: 1),
+        Text(
+          sender,
+          style: TextStyle(
+            color: m8Blue,
+            fontSize: 6.5,
+            fontWeight: FontWeight.w800,
+            height: 0.95,
+          ),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          senderName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: m8TextMuted,
+            fontSize: 7.5,
+            fontWeight: FontWeight.w600,
+            height: 0.95,
+          ),
+        ),
+      ],
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
@@ -4313,16 +4317,12 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
         children: mine
             ? [
                 Flexible(child: bubble),
-                const SizedBox(width: 7),
-                avatar,
-                const SizedBox(width: 5),
-                senderIdentity,
+                const SizedBox(width: 4),
+                identity,
               ]
             : [
-                avatar,
-                const SizedBox(width: 5),
-                senderIdentity,
-                const SizedBox(width: 7),
+                identity,
+                const SizedBox(width: 4),
                 Flexible(child: bubble),
               ],
       ),
