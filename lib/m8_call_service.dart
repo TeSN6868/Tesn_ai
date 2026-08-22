@@ -354,8 +354,10 @@ class M8CallService {
 
       print(
         '[M8 WEBRTC] SEND SIGNAL '
-        'type=$type status=${response.statusCode}',
+        'type=$type status=${response.statusCode} '
+        'callId=$currentCallId sender=$currentPin',
       );
+      print('[M8 WEBRTC] SEND RESPONSE: ${response.body}');
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         print(
@@ -504,11 +506,22 @@ class M8CallService {
         ),
       );
 
-      if (response.statusCode != 200) return;
+      print(
+        '[M8 WEBRTC] POLL RESPONSE '
+        'status=${response.statusCode} body=${response.body}',
+      );
+
+      if (response.statusCode != 200) {
+        print('[M8 WEBRTC] POLL HTTP ERROR ${response.statusCode}');
+        return;
+      }
 
       final data = jsonDecode(response.body);
 
-      if (data['success'] != true) return;
+      if (data['success'] != true) {
+        print('[M8 WEBRTC] POLL API ERROR: ${response.body}');
+        return;
+      }
 
       final status = data['status']?.toString();
 
@@ -526,7 +539,15 @@ class M8CallService {
 
       final signals = data['signals'];
 
-      if (signals is! List) return;
+      if (signals is! List) {
+        print('[M8 WEBRTC] POLL SIGNALS BUKAN LIST');
+        return;
+      }
+
+      print(
+        '[M8 WEBRTC] POLL SIGNAL COUNT=${signals.length} '
+        'lastSignalId=$_lastSignalId',
+      );
 
       if (_isEnding) return;
 
@@ -551,7 +572,9 @@ class M8CallService {
           print('[M8 WEBRTC] HANDLE SIGNAL ERROR: $e');
         }
       }
-    } catch (_) {
+    } catch (e, stack) {
+      print('[M8 WEBRTC] POLL ERROR: $e');
+      print('[M8 WEBRTC] POLL STACK: $stack');
       // Polling tetap berjalan selama panggilan aktif.
     }
   }
