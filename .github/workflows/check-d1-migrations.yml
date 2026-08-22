@@ -26,3 +26,11 @@ jobs:
         run: |
           wrangler d1 execute m8-database --remote --config wrangler.toml \
             --command "SELECT * FROM d1_migrations ORDER BY id;"
+
+          echo "=== USERS COLUMNS ==="
+          wrangler d1 execute m8-database --remote --config wrangler.toml \
+            --command "PRAGMA table_info(users);"
+
+          echo "=== SESSIONS COLUMNS ==="
+          wrangler d1 execute m8-database --remote --config wrangler.toml \
+            --command "PRAGMA table_info(sessions);"
