@@ -3222,10 +3222,59 @@ class BJoPublicUserPage extends StatefulWidget {
 
 class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
   bool _startingChat = false;
+  bool _loadingProfile = true;
+  late Map<String, dynamic> _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    _profile = Map<String, dynamic>.from(widget.user);
+    _loadLatestProfile();
+  }
+
+  Future<void> _loadLatestProfile() async {
+    final pin = _profile['m8_pin']?.toString().trim() ?? '';
+
+    if (pin.isEmpty) {
+      if (mounted) {
+        setState(() => _loadingProfile = false);
+      }
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/profile?m8_pin=${Uri.encodeQueryComponent(pin)}',
+        ),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      ).timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 &&
+          data['success'] == true &&
+          data['user'] is Map) {
+        if (!mounted) return;
+
+        setState(() {
+          _profile = Map<String, dynamic>.from(data['user']);
+        });
+      }
+    } catch (e) {
+      debugPrint('Public profile error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _loadingProfile = false);
+      }
+    }
+  }
 
   Future<void> _startChat() async {
     final otherPin =
-        widget.user['m8_pin']?.toString().trim() ?? '';
+        _profile['m8_pin']?.toString().trim() ?? '';
 
     if (otherPin.isEmpty) return;
 
@@ -3283,13 +3332,13 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.user['name']?.toString().trim() ?? '';
-    final pin = widget.user['m8_pin']?.toString().trim() ?? '';
-    final bio = widget.user['bio']?.toString().trim() ?? '';
+    final name = _profile['name']?.toString().trim() ?? '';
+    final pin = _profile['m8_pin']?.toString().trim() ?? '';
+    final bio = _profile['bio']?.toString().trim() ?? '';
     final photo =
-        widget.user['profile_photo_url']?.toString().trim() ?? '';
+        _profile['profile_photo_url']?.toString().trim() ?? '';
     final background =
-        widget.user['profile_background_url']?.toString().trim() ?? '';
+        _profile['profile_background_url']?.toString().trim() ?? '';
 
     return Scaffold(
       backgroundColor: m8WhiteSoft,
@@ -6798,7 +6847,7 @@ class _StoryPageState extends State<StoryPage> {
   List<Map<String, dynamic>> posts = [];
 
   String get myPin =>
-      widget.user['m8_pin']?.toString() ?? widget.user['pin']?.toString() ?? '';
+      _profile['m8_pin']?.toString() ?? widget.user['pin']?.toString() ?? '';
 
   @override
   void initState() {
@@ -10348,6 +10397,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
           Uri.parse('$apiBase/api/profile/name'),
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${widget.token}',
           },
           body: jsonEncode({
             'm8_pin': m8Pin,
@@ -10378,6 +10428,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
           Uri.parse('$apiBase/api/profile/bio'),
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${widget.token}',
           },
           body: jsonEncode({
             'm8_pin': m8Pin,

@@ -2801,8 +2801,16 @@ export default {
     // UPDATE PROFILE BIO
     // ============================================================
     if (url.pathname === "/api/profile/bio" && request.method === "POST") {
-      const body = await request.json();
+      const token = await getBearerToken(request);
 
+      if (!token) {
+        return json({
+          success: false,
+          error: "Sesi login tidak ditemukan.",
+        }, 401);
+      }
+
+      const body = await request.json();
       const m8Pin = String(body.m8_pin || "").trim();
       const bio = String(body.bio || "").trim();
 
@@ -2827,25 +2835,37 @@ export default {
         }, 500);
       }
 
-      const user = await env.DB.prepare(`
-        SELECT id
-        FROM users
-        WHERE m8_pin = ?
-        LIMIT 1
-      `).bind(m8Pin).first();
+      const tokenHash = await hashToken(token);
 
-      if (!user) {
+      const session = await env.DB.prepare(`
+        SELECT
+          s.user_id,
+          u.m8_pin
+        FROM sessions s
+        JOIN users u ON u.id = s.user_id
+        WHERE s.token_hash = ?
+        LIMIT 1
+      `).bind(tokenHash).first();
+
+      if (!session) {
         return json({
           success: false,
-          error: "Akun M8 tidak ditemukan.",
-        }, 404);
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      if (String(session.m8_pin || "").trim() !== m8Pin) {
+        return json({
+          success: false,
+          error: "M8 PIN tidak sesuai dengan akun yang sedang login.",
+        }, 403);
       }
 
       const result = await env.DB.prepare(`
         UPDATE users
         SET bio = ?
         WHERE id = ?
-      `).bind(bio || null, user.id).run();
+      `).bind(bio || null, session.user_id).run();
 
       if (!result.success) {
         throw new Error("Gagal memperbarui bio.");
@@ -2862,7 +2882,7 @@ export default {
         FROM users
         WHERE id = ?
         LIMIT 1
-      `).bind(user.id).first();
+      `).bind(session.user_id).first();
 
       return json({
         success: true,
