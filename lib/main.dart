@@ -4702,62 +4702,48 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
         message['sender_photo_url']?.toString().trim() ?? '';
 
     final avatar = CircleAvatar(
-      radius: 11,
+      radius: 17,
       backgroundColor: m8Blue.withValues(alpha: 0.14),
       backgroundImage:
           senderPhoto.isNotEmpty ? NetworkImage(senderPhoto) : null,
       child: senderPhoto.isNotEmpty
           ? null
-          : Icon(
+          : const Icon(
               Icons.person_rounded,
               color: m8Blue,
-              size: 13,
+              size: 19,
             ),
     );
 
     final bubble = Container(
-      constraints: const BoxConstraints(maxWidth: 300),
-      padding: const EdgeInsets.fromLTRB(12, 6, 12, 5),
+      constraints: const BoxConstraints(
+        maxWidth: 310,
+        minWidth: 80,
+      ),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
       decoration: BoxDecoration(
         color: mine
             ? bjoChatBubble
             : _groupBubbleColor(sender),
         borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(16),
-          topRight: const Radius.circular(16),
-          bottomLeft: Radius.circular(mine ? 16 : 4),
-          bottomRight: Radius.circular(mine ? 4 : 16),
+          topLeft: const Radius.circular(19),
+          topRight: const Radius.circular(19),
+          bottomLeft: Radius.circular(mine ? 19 : 5),
+          bottomRight: Radius.circular(mine ? 5 : 19),
         ),
         border: mine
             ? null
             : Border.all(
-                color: m8Blue.withValues(alpha: 0.12),
+                color: m8Blue.withValues(alpha: 0.10),
               ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            text,
-            style: TextStyle(
-              color: bjoChatNavy,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 1),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Text(
-              _formatTime(message['timestamp']),
-              style: TextStyle(
-                color: mine
-                    ? m8White.withValues(alpha: 0.72)
-                    : m8TextMuted,
-                fontSize: 9,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: bjoChatNavy,
+          fontSize: 15,
+          height: 1.35,
+        ),
       ),
     );
 
@@ -4767,34 +4753,53 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
           mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         avatar,
-        const SizedBox(height: 1),
-        Text(
-          sender,
-          style: TextStyle(
-            color: m8Blue,
-            fontSize: 6.5,
-            fontWeight: FontWeight.w800,
-            height: 0.95,
-          ),
-        ),
-        const SizedBox(height: 1),
-        Text(
-          senderName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: m8TextMuted,
-            fontSize: 7.5,
-            fontWeight: FontWeight.w600,
-            height: 0.95,
+        const SizedBox(height: 3),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 90),
+          child: Text(
+            senderName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: mine ? TextAlign.right : TextAlign.left,
+            style: const TextStyle(
+              color: m8BlueDark,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ],
     );
 
+    final time = Padding(
+      padding: const EdgeInsets.only(
+        top: 3,
+        left: 3,
+        right: 3,
+      ),
+      child: Text(
+        _formatTime(message['timestamp']),
+        style: const TextStyle(
+          color: m8TextMuted,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+
+    final messageColumn = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment:
+          mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        bubble,
+        time,
+      ],
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: 12,
+        horizontal: 10,
         vertical: 5,
       ),
       child: Row(
@@ -4803,14 +4808,14 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: mine
             ? [
-                Flexible(child: bubble),
-                const SizedBox(width: 4),
+                Flexible(child: messageColumn),
+                const SizedBox(width: 8),
                 identity,
               ]
             : [
                 identity,
-                const SizedBox(width: 4),
-                Flexible(child: bubble),
+                const SizedBox(width: 8),
+                Flexible(child: messageColumn),
               ],
       ),
     );
