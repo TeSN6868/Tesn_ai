@@ -344,6 +344,79 @@ void main() async {
   runApp(const M8App());
 }
 
+class BJoSession {
+  static const MethodChannel _channel = MethodChannel('bjo/device');
+
+  static Future<int> getBootCount() async {
+    try {
+      final value = await _channel.invokeMethod<int>('getBootCount');
+      return value ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  static Future<void> save({
+    required String token,
+    required Map<String, dynamic> user,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bootCount = await getBootCount();
+
+    await prefs.setString('bjo_session_token', token);
+    await prefs.setString('bjo_session_user', jsonEncode(user));
+    await prefs.setInt('bjo_session_boot_count', bootCount);
+  }
+
+  static Future<Map<String, dynamic>?> load() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString('bjo_session_token');
+    final userJson = prefs.getString('bjo_session_user');
+    final savedBootCount = prefs.getInt('bjo_session_boot_count');
+
+    if (token == null ||
+        token.isEmpty ||
+        userJson == null ||
+        userJson.isEmpty ||
+        savedBootCount == null) {
+      return null;
+    }
+
+    final currentBootCount = await getBootCount();
+
+    if (currentBootCount != savedBootCount) {
+      await clear();
+      return null;
+    }
+
+    try {
+      final decoded = jsonDecode(userJson);
+
+      if (decoded is! Map) {
+        await clear();
+        return null;
+      }
+
+      return {
+        'token': token,
+        'user': Map<String, dynamic>.from(decoded),
+      };
+    } catch (_) {
+      await clear();
+      return null;
+    }
+  }
+
+  static Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove('bjo_session_token');
+    await prefs.remove('bjo_session_user');
+    await prefs.remove('bjo_session_boot_count');
+  }
+}
+
 class M8App extends StatelessWidget {
   const M8App({super.key});
 
@@ -370,7 +443,54 @@ class M8App extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const LoginPage(),
+      home: const BJoStartupPage(),
+    );
+  }
+}
+
+class BJoStartupPage extends StatefulWidget {
+  const BJoStartupPage({super.key});
+
+  @override
+  State<BJoStartupPage> createState() => _BJoStartupPageState();
+}
+
+class _BJoStartupPageState extends State<BJoStartupPage> {
+  @override
+  void initState() {
+    super.initState();
+    _restoreSession();
+  }
+
+  Future<void> _restoreSession() async {
+    final session = await BJoSession.load();
+
+    if (!mounted) return;
+
+    if (session != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => BJoMainShell(
+            token: session['token'] as String,
+            user: Map<String, dynamic>.from(session['user']),
+          ),
+        ),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const LoginPage(),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }
@@ -429,11 +549,20 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
 
+        final loginUser = Map<String, dynamic>.from(data['user']);
+
+        await BJoSession.save(
+          token: token,
+          user: loginUser,
+        );
+
+        if (!mounted) return;
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => BJoMainShell(
               token: token,
-              user: Map<String, dynamic>.from(data['user']),
+              user: loginUser,
             ),
           ),
         );
