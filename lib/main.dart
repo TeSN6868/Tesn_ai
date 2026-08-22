@@ -4204,72 +4204,127 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
 
   Widget _buildMessage(Map<String, dynamic> message) {
     final sender = message['sender_pin']?.toString() ?? '';
-
     final mine = sender == widget.myPin;
 
     final text = message['message']?.toString() ?? '';
+    final senderName =
+        message['sender_name']?.toString().trim().isNotEmpty == true
+            ? message['sender_name'].toString().trim()
+            : (mine ? 'Kamu' : _memberName(sender));
 
-    final senderName = mine ? 'Kamu' : _memberName(sender);
+    final senderPhoto =
+        message['sender_photo_url']?.toString().trim() ?? '';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-      child: Align(
-        alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 320),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(13, 9, 13, 7),
-            decoration: BoxDecoration(
-              color: mine ? bjoChatBubble : bjoChatBubble,
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(16),
-                topRight: const Radius.circular(16),
-                bottomLeft: Radius.circular(mine ? 16 : 4),
-                bottomRight: Radius.circular(mine ? 4 : 16),
-              ),
-              border: mine
-                  ? null
-                  : Border.all(color: m8Blue.withValues(alpha: 0.12)),
+    final avatar = CircleAvatar(
+      radius: 18,
+      backgroundColor: m8Blue.withValues(alpha: 0.14),
+      backgroundImage:
+          senderPhoto.isNotEmpty ? NetworkImage(senderPhoto) : null,
+      child: senderPhoto.isNotEmpty
+          ? null
+          : Icon(
+              Icons.person_rounded,
+              color: m8Blue,
+              size: 20,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (!mine)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 3),
-                    child: Text(
-                      senderName,
-                      style: const TextStyle(
-                        color: m8Blue,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                Text(
-                  text,
-                  style: TextStyle(
-                    color: bjoChatNavy,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Text(
-                    _formatTime(message['timestamp']),
-                    style: TextStyle(
-                      color: mine
-                          ? m8White.withValues(alpha: 0.72)
-                          : m8TextMuted,
-                      fontSize: 9,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    );
+
+    final senderIdentity = Column(
+      crossAxisAlignment:
+          mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          sender,
+          style: TextStyle(
+            color: m8Blue,
+            fontSize: 9,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.3,
           ),
         ),
+        const SizedBox(height: 1),
+        Text(
+          senderName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: m8TextMuted,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+
+    final bubble = Container(
+      constraints: const BoxConstraints(maxWidth: 300),
+      padding: const EdgeInsets.fromLTRB(13, 9, 13, 7),
+      decoration: BoxDecoration(
+        color: bjoChatBubble,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(16),
+          topRight: const Radius.circular(16),
+          bottomLeft: Radius.circular(mine ? 16 : 4),
+          bottomRight: Radius.circular(mine ? 4 : 16),
+        ),
+        border: mine
+            ? null
+            : Border.all(
+                color: m8Blue.withValues(alpha: 0.12),
+              ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              color: bjoChatNavy,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Text(
+              _formatTime(message['timestamp']),
+              style: TextStyle(
+                color: mine
+                    ? m8White.withValues(alpha: 0.72)
+                    : m8TextMuted,
+                fontSize: 9,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 5,
+      ),
+      child: Row(
+        mainAxisAlignment:
+            mine ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: mine
+            ? [
+                Flexible(child: bubble),
+                const SizedBox(width: 7),
+                avatar,
+                const SizedBox(width: 5),
+                senderIdentity,
+              ]
+            : [
+                avatar,
+                const SizedBox(width: 5),
+                senderIdentity,
+                const SizedBox(width: 7),
+                Flexible(child: bubble),
+              ],
       ),
     );
   }

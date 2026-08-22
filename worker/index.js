@@ -1459,15 +1459,19 @@ export default {
 
         const result = await env.DB.prepare(`
           SELECT
-            id,
-            group_id,
-            sender_pin,
-            message,
-            timestamp,
-            status
-          FROM group_messages
-          WHERE group_id = ?
-          ORDER BY id ASC
+            gm.id,
+            gm.group_id,
+            gm.sender_pin,
+            u.name AS sender_name,
+            u.profile_photo_url AS sender_photo_url,
+            gm.message,
+            gm.timestamp,
+            gm.status
+          FROM group_messages gm
+          LEFT JOIN users u
+            ON u.m8_pin = gm.sender_pin
+          WHERE gm.group_id = ?
+          ORDER BY gm.id ASC
         `)
           .bind(groupId)
           .all();
