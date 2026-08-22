@@ -9143,7 +9143,10 @@ class BJoProfilePage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => SettingsPage(),
+                              builder: (_) => SettingsPage(
+                                token: token,
+                                user: user,
+                              ),
                             ),
                           );
                         },
@@ -12133,7 +12136,14 @@ class CallsPage extends StatelessWidget {
 
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  final String token;
+  final Map<String, dynamic> user;
+
+  const SettingsPage({
+    super.key,
+    required this.token,
+    required this.user,
+  });
 
   void _open(BuildContext context, String title, IconData icon) {
     Navigator.of(context).push(
@@ -12141,6 +12151,8 @@ class SettingsPage extends StatelessWidget {
         builder: (_) => _SettingsDetailPage(
           title: title,
           icon: icon,
+          token: token,
+          user: user,
         ),
       ),
     );
@@ -12343,10 +12355,14 @@ class SettingsPage extends StatelessWidget {
 class _SettingsDetailPage extends StatefulWidget {
   final String title;
   final IconData icon;
+  final String token;
+  final Map<String, dynamic> user;
 
   const _SettingsDetailPage({
     required this.title,
     required this.icon,
+    required this.token,
+    required this.user,
   });
 
   @override
@@ -12362,11 +12378,19 @@ class _SettingsDetailPageState
   bool compactChat = false;
   bool showAvatars = true;
 
+  String profilePhotoVisibility = 'everyone';
+  String bioVisibility = 'everyone';
+  String profileBackgroundVisibility = 'everyone';
+  String onlineVisibility = 'everyone';
+  String lastSeenVisibility = 'everyone';
+  bool privacyLoading = false;
+
   @override
   void initState() {
     super.initState();
     _load();
     _loadBJoNotifications();
+    _loadPrivacy();
   }
 
   Future<void> _load() async {
@@ -12447,6 +12471,304 @@ class _SettingsDetailPageState
         showAvatars = value;
       });
     }
+  }
+
+  Future<void> _loadPrivacy() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/api/privacy'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      if (response.statusCode != 200) return;
+
+      final data = jsonDecode(response.body);
+      final privacy = data['privacy'];
+
+      if (!mounted || privacy is! Map) return;
+
+      setState(() {
+        profilePhotoVisibility =
+            privacy['profile_photo_visibility']?.toString() ?? 'everyone';
+        bioVisibility =
+            privacy['bio_visibility']?.toString() ?? 'everyone';
+        profileBackgroundVisibility =
+            privacy['profile_background_visibility']?.toString() ?? 'everyone';
+        onlineVisibility =
+            privacy['online_visibility']?.toString() ?? 'everyone';
+        lastSeenVisibility =
+            privacy['last_seen_visibility']?.toString() ?? 'everyone';
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _savePrivacy() async {
+    if (privacyLoading) return;
+
+    setState(() {
+      privacyLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/privacy'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'profile_photo_visibility': profilePhotoVisibility,
+          'bio_visibility': bioVisibility,
+          'profile_background_visibility':
+              profileBackgroundVisibility,
+          'online_visibility': onlineVisibility,
+          'last_seen_visibility': lastSeenVisibility,
+        }),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode >= 200 &&
+          response.statusCode < 300) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pengaturan privasi tersimpan.'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal menyimpan pengaturan privasi.'),
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tidak dapat terhubung ke server.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          privacyLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _choosePrivacy(
+    String title,
+    String current,
+    void Function(String) update,
+  ) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return SimpleDialog(
+          title: Text(title),
+          children: [
+            RadioListTile<String>(
+              value: 'everyone',
+              groupValue: current,
+              title: const Text('Semua orang'),
+              subtitle: const Text('Informasi dapat dilihat pengguna lain'),
+              onChanged: (value) {
+                Navigator.pop(context, value);
+              },
+            ),
+            RadioListTile<String>(
+              value: 'none',
+              groupValue: current,
+              title: const Text('Tidak ada'),
+              subtitle: const Text('Informasi disembunyikan'),
+              onChanged: (value) {
+                Navigator.pop(context, value);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null || !mounted) return;
+
+    setState(() {
+      update(result);
+    });
+
+    await _savePrivacy();
+  }
+
+  Widget _privacyItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String value,
+    required void Function(String) update,
+  }) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon, color: m8Blue),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          '$subtitle • ${value == 'everyone' ? 'Semua orang' : 'Tidak ada'}',
+        ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+        ),
+        onTap: () => _choosePrivacy(
+          title,
+          value,
+          update,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrivacySettings() {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        elevation: 0,
+        title: const Text(
+          'Privasi & Keamanan',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+            'Privasi Profil',
+            style: TextStyle(
+              color: Color(0xFF102A43),
+              fontSize: 21,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          const Text(
+            'Tentukan informasi profil yang boleh dilihat pengguna lain.',
+            style: TextStyle(
+              color: Color(0xFF71808C),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          _privacyItem(
+            icon: Icons.account_circle_outlined,
+            title: 'Foto Profil',
+            subtitle: 'Siapa yang dapat melihat foto profil',
+            value: profilePhotoVisibility,
+            update: (v) => profilePhotoVisibility = v,
+          ),
+
+          const SizedBox(height: 8),
+
+          _privacyItem(
+            icon: Icons.description_outlined,
+            title: 'Bio',
+            subtitle: 'Siapa yang dapat melihat bio',
+            value: bioVisibility,
+            update: (v) => bioVisibility = v,
+          ),
+
+          const SizedBox(height: 8),
+
+          _privacyItem(
+            icon: Icons.wallpaper_outlined,
+            title: 'Background Profil',
+            subtitle: 'Siapa yang dapat melihat latar profil',
+            value: profileBackgroundVisibility,
+            update: (v) => profileBackgroundVisibility = v,
+          ),
+
+          const SizedBox(height: 20),
+
+          const Text(
+            'Aktivitas',
+            style: TextStyle(
+              color: Color(0xFF102A43),
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          _privacyItem(
+            icon: Icons.circle_outlined,
+            title: 'Status Online',
+            subtitle: 'Tampilkan status sedang online',
+            value: onlineVisibility,
+            update: (v) => onlineVisibility = v,
+          ),
+
+          const SizedBox(height: 8),
+
+          _privacyItem(
+            icon: Icons.access_time_rounded,
+            title: 'Terakhir Dilihat',
+            subtitle: 'Tampilkan waktu terakhir aktif',
+            value: lastSeenVisibility,
+            update: (v) => lastSeenVisibility = v,
+          ),
+
+          const SizedBox(height: 20),
+
+          Container(
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: m8Blue.withOpacity(.08),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.lock_outline_rounded,
+                  color: m8Blue,
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Pengaturan privasi disimpan di server B\'Jo dan berlaku untuk profil yang dilihat pengguna lain.',
+                    style: TextStyle(
+                      color: m8BlueDark,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (privacyLoading)
+            const Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Future<void> _chooseTheme() async {
@@ -12823,6 +13145,9 @@ class _SettingsDetailPageState
   @override
   Widget build(BuildContext context) {
 
+    if (widget.title == 'Privasi & Keamanan') {
+      return _buildPrivacySettings();
+    }
 
     if (widget.title == 'Notifikasi') {
       return _buildBJoNotificationSettings();

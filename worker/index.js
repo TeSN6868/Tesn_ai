@@ -2658,6 +2658,97 @@ export default {
 
 
     // ============================================================
+    // PRIVACY SETTINGS
+    // ============================================================
+    if (url.pathname === "/api/privacy" && request.method === "GET") {
+      const session = await getSessionUser(request, env);
+
+      if (!session) {
+        return json({
+          success: false,
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      const privacy = await getProfilePrivacy(env, session.user_id);
+
+      return json({
+        success: true,
+        privacy,
+      });
+    }
+
+    if (url.pathname === "/api/privacy" && request.method === "POST") {
+      const session = await getSessionUser(request, env);
+
+      if (!session) {
+        return json({
+          success: false,
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      const body = await request.json();
+
+      const profilePhotoVisibility =
+          privacyValue(body.profile_photo_visibility);
+
+      const bioVisibility =
+          privacyValue(body.bio_visibility);
+
+      const profileBackgroundVisibility =
+          privacyValue(body.profile_background_visibility);
+
+      const onlineVisibility =
+          privacyValue(body.online_visibility);
+
+      const lastSeenVisibility =
+          privacyValue(body.last_seen_visibility);
+
+      await ensurePrivacyTables(env);
+
+      await env.DB.prepare(`
+        INSERT INTO profile_privacy (
+          user_id,
+          profile_photo_visibility,
+          bio_visibility,
+          profile_background_visibility,
+          online_visibility,
+          last_seen_visibility,
+          updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, unixepoch())
+        ON CONFLICT(user_id) DO UPDATE SET
+          profile_photo_visibility = excluded.profile_photo_visibility,
+          bio_visibility = excluded.bio_visibility,
+          profile_background_visibility = excluded.profile_background_visibility,
+          online_visibility = excluded.online_visibility,
+          last_seen_visibility = excluded.last_seen_visibility,
+          updated_at = unixepoch()
+      `).bind(
+        session.user_id,
+        profilePhotoVisibility,
+        bioVisibility,
+        profileBackgroundVisibility,
+        onlineVisibility,
+        lastSeenVisibility,
+      ).run();
+
+      return json({
+        success: true,
+        message: "Pengaturan privasi berhasil disimpan.",
+        privacy: {
+          profile_photo_visibility: profilePhotoVisibility,
+          bio_visibility: bioVisibility,
+          profile_background_visibility:
+              profileBackgroundVisibility,
+          online_visibility: onlineVisibility,
+          last_seen_visibility: lastSeenVisibility,
+        },
+      });
+    }
+
+    // ============================================================
     // SEARCH B'JO USERS
     // ============================================================
     if (url.pathname === "/api/search/users" && request.method === "GET") {
@@ -2703,9 +2794,18 @@ export default {
         LIMIT 30
       `).bind(like, like, q, q).all();
 
+      const users = [];
+
+      for (const item of (result.results || [])) {
+        const privacy = await getProfilePrivacy(env, item.id);
+        users.push(
+          applyProfilePrivacy(item, privacy, false)
+        );
+      }
+
       return json({
         success: true,
-        users: result.results || [],
+        users,
       });
     }
 
@@ -2749,55 +2849,17 @@ export default {
         }, 404);
       }
 
-      return json({
-        success: true,
-        user: user,
-      });
-    }
+      const privacy = await getProfilePrivacy(env, user.id);
 
-    // ============================================================
-    // GET PUBLIC USER PROFILE
-    // ============================================================
-    if (url.pathname === "/api/profile" && request.method === "GET") {
-      const m8Pin = String(url.searchParams.get("m8_pin") || "").trim();
-
-      if (!m8Pin) {
-        return json({
-          success: false,
-          error: "M8 PIN wajib diisi.",
-        }, 400);
-      }
-
-      if (!env.DB) {
-        return json({
-          success: false,
-          error: "Binding D1 DB belum tersedia.",
-        }, 500);
-      }
-
-      const user = await env.DB.prepare(`
-        SELECT
-          id,
-          name,
-          m8_pin,
-          bio,
-          profile_photo_url,
-          profile_background_url
-        FROM users
-        WHERE m8_pin = ? AND active = 1
-        LIMIT 1
-      `).bind(m8Pin).first();
-
-      if (!user) {
-        return json({
-          success: false,
-          error: "Profil pengguna tidak ditemukan.",
-        }, 404);
-      }
+      const safeUser = applyProfilePrivacy(
+        user,
+        privacy,
+        false,
+      );
 
       return json({
         success: true,
-        user: user,
+        user: safeUser,
       });
     }
 
@@ -3621,6 +3683,103 @@ async function ensureSessionTables(env) {
     // Kolom sudah ada, lanjutkan.
   }
 }
+
+async function ensurePrivacyTables(env) {
+  if (!env.DB) return;
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS profile_privacy (
+      user_id INTEGER PRIMARY KEY,
+      profile_photo_visibility TEXT NOT NULL DEFAULT 'everyone',
+      bio_visibility TEXT NOT NULL DEFAULT 'everyone',
+      profile_background_visibility TEXT NOT NULL DEFAULT 'everyone',
+      online_visibility TEXT NOT NULL DEFAULT 'everyone',
+      last_seen_visibility TEXT NOT NULL DEFAULT 'everyone',
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `).run();
+}
+
+function privacyValue(value) {
+  const v = String(value || '').trim().toLowerCase();
+
+  if (v === 'none') return 'none';
+  return 'everyone';
+}
+
+async function getProfilePrivacy(env, userId) {
+  await ensurePrivacyTables(env);
+
+  let privacy = await env.DB.prepare(`
+    SELECT
+      profile_photo_visibility,
+      bio_visibility,
+      profile_background_visibility,
+      online_visibility,
+      last_seen_visibility
+    FROM profile_privacy
+    WHERE user_id = ?
+    LIMIT 1
+  `).bind(userId).first();
+
+  if (!privacy) {
+    await env.DB.prepare(`
+      INSERT INTO profile_privacy (
+        user_id,
+        profile_photo_visibility,
+        bio_visibility,
+        profile_background_visibility,
+        online_visibility,
+        last_seen_visibility,
+        updated_at
+      )
+      VALUES (?, 'everyone', 'everyone', 'everyone', 'everyone', 'everyone', unixepoch())
+    `).bind(userId).run();
+
+    privacy = {
+      profile_photo_visibility: 'everyone',
+      bio_visibility: 'everyone',
+      profile_background_visibility: 'everyone',
+      online_visibility: 'everyone',
+      last_seen_visibility: 'everyone',
+    };
+  }
+
+  return privacy;
+}
+
+function applyProfilePrivacy(user, privacy, isOwner = false) {
+  if (!user) return user;
+
+  const result = { ...user };
+
+  if (!isOwner) {
+    if (privacy.profile_photo_visibility === 'none') {
+      result.profile_photo_url = null;
+    }
+
+    if (privacy.bio_visibility === 'none') {
+      result.bio = null;
+    }
+
+    if (privacy.profile_background_visibility === 'none') {
+      result.profile_background_url = null;
+    }
+
+    if (privacy.online_visibility === 'none') {
+      result.online = null;
+      result.status = null;
+    }
+
+    if (privacy.last_seen_visibility === 'none') {
+      result.last_seen_at = null;
+    }
+  }
+
+  return result;
+}
+
 async function getBearerToken(request) {
   const header = request.headers.get("Authorization") || "";
 
