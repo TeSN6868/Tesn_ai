@@ -1577,41 +1577,47 @@ class _HomePageState extends State<HomePage> {
       if (callerPin.isEmpty) return;
 
       await _startIncomingRingtone();
-      final accepted = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text('Panggilan masuk'),
-            content: Text('Ada panggilan masuk dari PIN $callerPin.'),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  try {
-                    await _incomingCallService.rejectCall(
-                      incomingCallId: incomingId,
-                      calleePin: pin,
-                    );
-                  } finally {
-                    if (dialogContext.mounted) {
-                      Navigator.of(dialogContext).pop(false);
-                    }
-                  }
-                },
-                child: const Text('Tolak'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop(true);
-                },
-                child: const Text('Terima'),
-              ),
-            ],
-          );
-        },
-      );
 
-      await _stopIncomingRingtone();
+      bool? accepted;
+
+      try {
+        accepted = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: const Text('Panggilan masuk'),
+              content: Text('Ada panggilan masuk dari PIN $callerPin.'),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    try {
+                      await _incomingCallService.rejectCall(
+                        incomingCallId: incomingId,
+                        calleePin: pin,
+                      );
+                    } finally {
+                      if (dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop(false);
+                      }
+                    }
+                  },
+                  child: const Text('Tolak'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                  child: const Text('Terima'),
+                ),
+              ],
+            );
+          },
+        );
+      } finally {
+        // WAJIB: ringtone dihentikan dalam kondisi apa pun.
+        await _stopIncomingRingtone();
+      }
 
       if (!mounted || accepted != true) return;
 
