@@ -4232,7 +4232,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
 
     final bubble = Container(
       constraints: const BoxConstraints(maxWidth: 300),
-      padding: const EdgeInsets.fromLTRB(13, 9, 13, 7),
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 5),
       decoration: BoxDecoration(
         color: bjoChatBubble,
         borderRadius: BorderRadius.only(
