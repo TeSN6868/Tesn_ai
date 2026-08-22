@@ -5696,64 +5696,93 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         elevation: 0,
         toolbarHeight: 74,
         titleSpacing: 0,
-        title: Row(
-          children: [
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 21,
-                  backgroundColor: m8BlueDark,
-                  backgroundImage: otherPhotoUrl.isNotEmpty
-                      ? NetworkImage(otherPhotoUrl)
-                      : null,
-                  child: otherPhotoUrl.isEmpty
-                      ? const Icon(Icons.person, color: Colors.white)
-                      : null,
+        title: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            final profileUser = Map<String, dynamic>.from(otherUser);
+
+            if ((profileUser['m8_pin']?.toString().trim() ?? '').isEmpty) {
+              profileUser['m8_pin'] = otherPin;
+            }
+
+            if ((profileUser['name']?.toString().trim() ?? '').isEmpty) {
+              profileUser['name'] = otherName;
+            }
+
+            if ((profileUser['profile_photo_url']?.toString().trim() ?? '').isEmpty &&
+                otherPhotoUrl.isNotEmpty) {
+              profileUser['profile_photo_url'] = otherPhotoUrl;
+            }
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BJoPublicUserPage(
+                  user: profileUser,
+                  token: widget.token,
                 ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 11,
-                    height: 11,
-                    decoration: BoxDecoration(
-                      color: m8Blue,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: m8Text, width: 2),
+              ),
+            );
+          },
+          child: Row(
+            children: [
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 21,
+                    backgroundColor: m8BlueDark,
+                    backgroundImage: otherPhotoUrl.isNotEmpty
+                        ? NetworkImage(otherPhotoUrl)
+                        : null,
+                    child: otherPhotoUrl.isEmpty
+                        ? const Icon(Icons.person, color: Colors.white)
+                        : null,
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 11,
+                      height: 11,
+                      decoration: BoxDecoration(
+                        color: m8Blue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: m8Text, width: 2),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Transform.translate(
-                offset: const Offset(0, 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      otherName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                ],
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Transform.translate(
+                  offset: const Offset(0, 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        otherName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      "M8 PIN: $otherPin",
-                      style: const TextStyle(fontSize: 11, color: m8White),
-                    ),
-                    Text(
-                      _otherPresence(otherUser),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: _isOtherOnline(otherUser)
-                            ? m8WhiteSoft
-                            : m8WhiteSoft.withValues(alpha: 0.75),
+                      Text(
+                        "M8 PIN: $otherPin",
+                        style: const TextStyle(fontSize: 11, color: m8White),
                       ),
-                    ),
+                      Text(
+                        _otherPresence(otherUser),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: _isOtherOnline(otherUser)
+                              ? m8WhiteSoft
+                              : m8WhiteSoft.withValues(alpha: 0.75),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -10639,6 +10668,11 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                   const SizedBox(height: 11),
                   TextField(
                     controller: _bioController,
+                    style: const TextStyle(
+                      color: m8Text,
+                      fontSize: 14,
+                    ),
+                    cursorColor: m8Blue,
                     maxLength: 500,
                     maxLines: 5,
                     minLines: 3,
