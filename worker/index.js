@@ -3337,6 +3337,7 @@ export default {
       ).trim();
 
       const password = String(body.password || "");
+      const deviceId = String(body.device_id || "").trim();
 
       if ((!identifier && !m8Pin) || !password) {
         return json({
@@ -3426,14 +3427,15 @@ export default {
 
       await env.DB.prepare(`
         INSERT INTO sessions
-          (user_id, token_hash, device_name, platform, created_at, last_seen_at, expires_at)
-        VALUES (?, ?, ?, ?, unixepoch(), unixepoch(), unixepoch() + 2592000)
+          (user_id, token_hash, device_name, platform, device_id, created_at, last_seen_at, expires_at)
+        VALUES (?, ?, ?, ?, ?, unixepoch(), unixepoch(), unixepoch() + 2592000)
       `)
         .bind(
           user.id,
           tokenHash,
           deviceName,
-          platform
+          platform,
+          deviceId
         )
         .run();
 
@@ -3598,12 +3600,22 @@ async function ensureSessionTables(env) {
       token_hash TEXT NOT NULL UNIQUE,
       device_name TEXT,
       platform TEXT,
+      device_id TEXT,
       created_at INTEGER NOT NULL,
       last_seen_at INTEGER NOT NULL,
       expires_at INTEGER NOT NULL,
       revoked_at INTEGER
     )
   `).run();
+
+  // Migrasi database lama: tambahkan device_id jika belum ada.
+  try {
+    await env.DB.prepare(
+      `ALTER TABLE sessions ADD COLUMN device_id TEXT`
+    ).run();
+  } catch (error) {
+    // Kolom sudah ada, lanjutkan.
+  }
 }
 async function getBearerToken(request) {
   const header = request.headers.get("Authorization") || "";

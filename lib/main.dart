@@ -18,6 +18,7 @@ import 'package:path_provider/path_provider.dart';
 import 'm8_call_service.dart';
 import 'm8_notification_service.dart';
 import 'm8_voice_service.dart';
+import 'bjo_device_security.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 
@@ -516,6 +517,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> login() async {
     final m8Pin = pinController.text.trim();
     final password = passwordController.text;
+    final deviceId = await BJoDeviceSecurity.getDeviceId();
 
     if (m8Pin.isEmpty || password.isEmpty) {
       showMessage('M8 PIN dan password wajib diisi');
@@ -529,7 +531,11 @@ class _LoginPageState extends State<LoginPage> {
           .post(
             Uri.parse('$apiBase/api/login'),
             headers: <String, String>{'Content-Type': 'application/json'},
-            body: jsonEncode({'m8_pin': m8Pin, 'password': password}),
+            body: jsonEncode({
+              'm8_pin': m8Pin,
+              'password': password,
+              'device_id': deviceId,
+            }),
           )
           .timeout(const Duration(seconds: 20));
 
@@ -12964,11 +12970,6 @@ class _SettingsDetailPageState
             'title': 'Identitas Akun',
             'subtitle': 'Informasi akun B\'Jo',
             'icon': Icons.account_circle_outlined,
-          },
-          {
-            'title': 'Ubah PIN Login',
-            'subtitle': 'Kelola keamanan PIN login',
-            'icon': Icons.password_outlined,
           },
         ]);
         break;
