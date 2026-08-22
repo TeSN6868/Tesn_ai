@@ -1309,7 +1309,6 @@ class _BJoMainShellState extends State<BJoMainShell> {
       case 0:
         return HomePage(
           token: widget.token,
-                    myPin: widget.myPin,
           user: widget.user,
         );
 
@@ -5789,6 +5788,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               ),
             ),
           ],
+        ),
         ),
         actions: [
           IconButton(
