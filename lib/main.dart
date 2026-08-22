@@ -6846,8 +6846,12 @@ class _StoryPageState extends State<StoryPage> {
   bool posting = false;
   List<Map<String, dynamic>> posts = [];
 
-  String get myPin =>
-      _profile['m8_pin']?.toString() ?? widget.user['pin']?.toString() ?? '';
+  String get myPin {
+    final m8Pin = widget.user['m8_pin']?.toString().trim() ?? '';
+    if (m8Pin.isNotEmpty) return m8Pin;
+
+    return widget.user['pin']?.toString().trim() ?? '';
+  }
 
   @override
   void initState() {
@@ -9337,6 +9341,7 @@ class BJoProfilePage extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder: (_) => BJoProfileMediaPage(
                                     user: user,
+                                    token: token,
                                   ),
                                 ),
                               );
@@ -9829,10 +9834,12 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
 
 class BJoProfileMediaPage extends StatefulWidget {
   final Map<String, dynamic> user;
+  final String token;
 
   const BJoProfileMediaPage({
     super.key,
     required this.user,
+    required this.token,
   });
 
   @override
