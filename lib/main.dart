@@ -4202,6 +4202,28 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
     );
   }
 
+  Color _groupBubbleColor(String senderPin) {
+    const colors = [
+      Color(0xFFE3F0FF), // Soft Blue
+      Color(0xFFEDE7F6), // Soft Lavender
+      Color(0xFFFCE4EC), // Soft Rose
+      Color(0xFFFFEADB), // Soft Peach
+      Color(0xFFE0F7FA), // Soft Cyan
+      Color(0xFFF3E5F5), // Soft Lilac
+    ];
+
+    if (senderPin.isEmpty) {
+      return colors[0];
+    }
+
+    var hash = 0;
+    for (final code in senderPin.codeUnits) {
+      hash = (hash * 31 + code) & 0x7fffffff;
+    }
+
+    return colors[hash % colors.length];
+  }
+
   Widget _buildMessage(Map<String, dynamic> message) {
     final sender = message['sender_pin']?.toString() ?? '';
     final mine = sender == widget.myPin;
@@ -4234,7 +4256,9 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
       constraints: const BoxConstraints(maxWidth: 300),
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 5),
       decoration: BoxDecoration(
-        color: bjoChatBubble,
+        color: mine
+            ? bjoChatBubble
+            : _groupBubbleColor(sender),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(16),
           topRight: const Radius.circular(16),
@@ -4257,7 +4281,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 1),
           Align(
             alignment: Alignment.bottomRight,
             child: Text(
