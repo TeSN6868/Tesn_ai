@@ -2289,7 +2289,11 @@ class _ChatsPageState extends State<ChatsPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
       child: Row(
-        children: List.generate(tabs.length, (index) {
+        children: [
+          Expanded(
+            child: Row(
+              children: List.generate(tabs.length, (index) {
+
           final selected = selectedTab == index;
 
           return Expanded(
@@ -2327,8 +2331,49 @@ class _ChatsPageState extends State<ChatsPage> {
                 ),
               ),
             ),
-          );
-        }),
+              );
+            }),
+          ),
+          const SizedBox(width: 8),
+          Material(
+            color: m8White.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BJoUserSearchPage(
+                      token: widget.token,
+                      myPin: widget.myPin,
+                    ),
+                  ),
+                );
+
+                if (result == true && mounted) {
+                  await loadChats();
+                  if (mounted) {
+                    setState(() {
+                      selectedTab = 1;
+                    });
+                  }
+                }
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 10,
+                ),
+                child: Icon(
+                  Icons.person_search_rounded,
+                  color: m8Blue,
+                  size: 21,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2856,6 +2901,534 @@ class _ChatsPageState extends State<ChatsPage> {
 // ============================================================
 // M8 GROUP CHAT
 // ============================================================
+
+
+// ============================================================
+// B'JO USER SEARCH
+// ============================================================
+
+class BJoUserSearchPage extends StatefulWidget {
+  final String token;
+  final String myPin;
+
+  const BJoUserSearchPage({
+    super.key,
+    required this.token,
+    required this.myPin,
+  });
+
+  @override
+  State<BJoUserSearchPage> createState() => _BJoUserSearchPageState();
+}
+
+class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
+  final TextEditingController _searchController =
+      TextEditingController();
+
+  Timer? _searchTimer;
+  bool _loading = false;
+  List<Map<String, dynamic>> _users = [];
+
+  @override
+  void dispose() {
+    _searchTimer?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _searchChanged(String value) {
+    _searchTimer?.cancel();
+
+    final q = value.trim();
+
+    if (q.isEmpty) {
+      setState(() {
+        _users = [];
+        _loading = false;
+      });
+      return;
+    }
+
+    _searchTimer = Timer(
+      const Duration(milliseconds: 450),
+      () => _search(q),
+    );
+  }
+
+  Future<void> _search(String q) async {
+    if (!mounted) return;
+
+    setState(() => _loading = true);
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/search/users?q=${Uri.encodeQueryComponent(q)}',
+        ),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('HTTP ${response.statusCode}');
+      }
+
+      final data = jsonDecode(response.body);
+      final list = data['users'];
+
+      if (!mounted) return;
+
+      setState(() {
+        _users = list is List
+            ? list.map((e) => Map<String, dynamic>.from(e)).toList()
+            : [];
+      });
+    } catch (e) {
+      debugPrint('BJo user search error: $e');
+      if (mounted) {
+        setState(() => _users = []);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> _openUser(Map<String, dynamic> user) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BJoPublicUserPage(
+          user: user,
+          token: widget.token,
+          myPin: widget.myPin,
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      Navigator.pop(context, true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8White,
+        foregroundColor: m8BlueDark,
+        elevation: 0,
+        title: const Text(
+          'Cari Pengguna',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+            child: TextField(
+              controller: _searchController,
+              autofocus: true,
+              onChanged: _searchChanged,
+              decoration: InputDecoration(
+                hintText: 'Cari nama atau M8 PIN...',
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: m8Blue,
+                ),
+                filled: true,
+                fillColor: m8White,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _loading
+                ? const Center(
+                    child: CircularProgressIndicator(color: m8Blue),
+                  )
+                : _searchController.text.trim().isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.person_search_rounded,
+                              size: 64,
+                              color: m8Blue,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'Cari teman di B’Jo',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: m8BlueDark,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Masukkan nama atau M8 PIN',
+                              style: TextStyle(color: m8TextMuted),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _users.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Pengguna tidak ditemukan.',
+                              style: TextStyle(
+                                color: m8TextMuted,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(
+                              16, 4, 16, 24,
+                            ),
+                            itemCount: _users.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (_, index) {
+                              final user = _users[index];
+                              final name =
+                                  user['name']?.toString().trim() ?? '';
+                              final pin =
+                                  user['m8_pin']?.toString().trim() ?? '';
+                              final bio =
+                                  user['bio']?.toString().trim() ?? '';
+                              final photo =
+                                  user['profile_photo_url']
+                                          ?.toString()
+                                          .trim() ??
+                                      '';
+
+                              return Material(
+                                color: m8White,
+                                borderRadius: BorderRadius.circular(18),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(18),
+                                  onTap: () => _openUser(user),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 27,
+                                          backgroundColor:
+                                              m8Blue.withValues(alpha: 0.10),
+                                          backgroundImage: photo.isNotEmpty
+                                              ? NetworkImage(photo)
+                                              : null,
+                                          child: photo.isEmpty
+                                              ? const Icon(
+                                                  Icons.person_rounded,
+                                                  color: m8Blue,
+                                                  size: 30,
+                                                )
+                                              : null,
+                                        ),
+                                        const SizedBox(width: 13),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                name.isEmpty
+                                                    ? 'Pengguna B’Jo'
+                                                    : name,
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  color: m8Text,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                pin,
+                                                style: const TextStyle(
+                                                  color: m8Blue,
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              if (bio.isNotEmpty) ...[
+                                                const SizedBox(height: 3),
+                                                Text(
+                                                  bio,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    color: m8TextMuted,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                        const Icon(
+                                          Icons.chevron_right_rounded,
+                                          color: m8TextMuted,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+// ============================================================
+// B'JO PUBLIC USER PROFILE
+// ============================================================
+
+class BJoPublicUserPage extends StatefulWidget {
+  final Map<String, dynamic> user;
+  final String token;
+  final String myPin;
+
+  const BJoPublicUserPage({
+    super.key,
+    required this.user,
+    required this.token,
+    required this.myPin,
+  });
+
+  @override
+  State<BJoPublicUserPage> createState() => _BJoPublicUserPageState();
+}
+
+class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
+  bool _startingChat = false;
+
+  Future<void> _startChat() async {
+    final otherPin =
+        widget.user['m8_pin']?.toString().trim() ?? '';
+
+    if (otherPin.isEmpty) return;
+
+    if (otherPin == widget.myPin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Itu adalah akun kamu sendiri.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _startingChat = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/chats'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'my_pin': widget.myPin,
+          'other_pin': otherPin,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode < 200 ||
+          response.statusCode >= 300) {
+        throw Exception(
+          data['error']?.toString() ?? 'Tidak dapat membuat chat.',
+        );
+      }
+
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _startingChat = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final name = widget.user['name']?.toString().trim() ?? '';
+    final pin = widget.user['m8_pin']?.toString().trim() ?? '';
+    final bio = widget.user['bio']?.toString().trim() ?? '';
+    final photo =
+        widget.user['profile_photo_url']?.toString().trim() ?? '';
+    final background =
+        widget.user['profile_background_url']?.toString().trim() ?? '';
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      body: Stack(
+        children: [
+          if (background.isNotEmpty)
+            Positioned.fill(
+              child: Image.network(
+                background,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    const SizedBox.shrink(),
+              ),
+            ),
+          Positioned.fill(
+            child: Container(
+              color: m8White.withValues(alpha: 0.88),
+            ),
+          ),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 30),
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: m8BlueDark,
+                      ),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'Profil',
+                        style: TextStyle(
+                          color: m8BlueDark,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: CircleAvatar(
+                    radius: 58,
+                    backgroundColor:
+                        m8Blue.withValues(alpha: 0.12),
+                    backgroundImage:
+                        photo.isNotEmpty ? NetworkImage(photo) : null,
+                    child: photo.isEmpty
+                        ? const Icon(
+                            Icons.person_rounded,
+                            color: m8Blue,
+                            size: 58,
+                          )
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Center(
+                  child: Text(
+                    name.isEmpty ? 'Pengguna B’Jo' : name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: m8BlueDark,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Center(
+                  child: Text(
+                    pin,
+                    style: const TextStyle(
+                      color: m8Blue,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                if (bio.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: m8White,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(
+                      bio,
+                      style: const TextStyle(
+                        color: m8Text,
+                        fontSize: 14,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed:
+                        _startingChat ? null : _startChat,
+                    icon: _startingChat
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.3,
+                              color: m8White,
+                            ),
+                          )
+                        : const Icon(Icons.chat_rounded),
+                    label: Text(
+                      _startingChat
+                          ? 'MEMBUAT CHAT...'
+                          : 'MULAI CHAT',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: m8BlueDark,
+                      foregroundColor: m8White,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 class M8GroupChatPage extends StatefulWidget {
   final String token;

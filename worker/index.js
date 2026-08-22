@@ -2654,6 +2654,58 @@ export default {
 
 
     // ============================================================
+    // SEARCH B'JO USERS
+    // ============================================================
+    if (url.pathname === "/api/search/users" && request.method === "GET") {
+      const q = String(url.searchParams.get("q") || "").trim();
+
+      if (!q) {
+        return json({
+          success: true,
+          users: [],
+        });
+      }
+
+      if (!env.DB) {
+        return json({
+          success: false,
+          error: "Binding D1 DB belum tersedia.",
+        }, 500);
+      }
+
+      const like = `%${q}%`;
+
+      const result = await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          m8_pin,
+          bio,
+          profile_photo_url,
+          profile_background_url
+        FROM users
+        WHERE active = 1
+          AND (
+            name LIKE ?
+            OR m8_pin LIKE ?
+          )
+        ORDER BY
+          CASE
+            WHEN m8_pin = ? THEN 0
+            WHEN name = ? THEN 1
+            ELSE 2
+          END,
+          name ASC
+        LIMIT 30
+      `).bind(like, like, q, q).all();
+
+      return json({
+        success: true,
+        users: result.results || [],
+      });
+    }
+
+    // ============================================================
     // GET PUBLIC USER PROFILE
     // ============================================================
     if (url.pathname === "/api/profile" && request.method === "GET") {
