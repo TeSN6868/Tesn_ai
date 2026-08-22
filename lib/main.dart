@@ -1636,8 +1636,13 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _incomingCallTimer?.cancel();
+    _incomingCallTimer = null;
+
+    // Hentikan ringtone incoming call secepat mungkin.
     _incomingRingtonePlayer.stop();
+
     _incomingRingtonePlayer.dispose();
+
     super.dispose();
   }
 
