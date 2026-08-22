@@ -11215,7 +11215,8 @@ class SettingsPage extends StatelessWidget {
 // SETTINGS DETAIL
 // ============================================================
 
-class _SettingsDetailPage extends StatelessWidget {
+
+class _SettingsDetailPage extends StatefulWidget {
   final String title;
   final IconData icon;
 
@@ -11224,10 +11225,444 @@ class _SettingsDetailPage extends StatelessWidget {
     required this.icon,
   });
 
-  List<Map<String, dynamic>> _items() {
-    switch (title) {
+  @override
+  State<_SettingsDetailPage> createState() =>
+      _SettingsDetailPageState();
+}
+
+class _SettingsDetailPageState
+    extends State<_SettingsDetailPage> {
+
+  String themeMode = 'system';
+  double textScale = 1.0;
+  bool compactChat = false;
+  bool showAvatars = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (!mounted) return;
+
+    setState(() {
+      themeMode =
+          prefs.getString('bjo_theme_mode') ?? 'system';
+
+      textScale =
+          prefs.getDouble('bjo_text_scale') ?? 1.0;
+
+      compactChat =
+          prefs.getBool('bjo_compact_chat') ?? false;
+
+      showAvatars =
+          prefs.getBool('bjo_show_avatars') ?? true;
+    });
+  }
+
+  Future<void> _setTheme(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(
+      'bjo_theme_mode',
+      value,
+    );
+
+    if (mounted) {
+      setState(() {
+        themeMode = value;
+      });
+    }
+  }
+
+  Future<void> _setTextScale(double value) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setDouble(
+      'bjo_text_scale',
+      value,
+    );
+
+    if (mounted) {
+      setState(() {
+        textScale = value;
+      });
+    }
+  }
+
+  Future<void> _setCompactChat(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool(
+      'bjo_compact_chat',
+      value,
+    );
+
+    if (mounted) {
+      setState(() {
+        compactChat = value;
+      });
+    }
+  }
+
+  Future<void> _setShowAvatars(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool(
+      'bjo_show_avatars',
+      value,
+    );
+
+    if (mounted) {
+      setState(() {
+        showAvatars = value;
+      });
+    }
+  }
+
+  Future<void> _chooseTheme() async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return SimpleDialog(
+          title: const Text('Tema B\'Jo'),
+          children: [
+            RadioListTile<String>(
+              value: 'system',
+              groupValue: themeMode,
+              title: const Text('Ikuti sistem'),
+              onChanged: (value) {
+                Navigator.pop(context, value);
+              },
+            ),
+            RadioListTile<String>(
+              value: 'light',
+              groupValue: themeMode,
+              title: const Text('Terang'),
+              onChanged: (value) {
+                Navigator.pop(context, value);
+              },
+            ),
+            RadioListTile<String>(
+              value: 'dark',
+              groupValue: themeMode,
+              title: const Text('Gelap'),
+              onChanged: (value) {
+                Navigator.pop(context, value);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      await _setTheme(result);
+    }
+  }
+
+  Future<void> _chooseAccent() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final current =
+        prefs.getInt('bjo_accent_color') ??
+        0xFF3B82F6;
+
+    final colors = <Map<String, dynamic>>[
+      {'name': 'Biru', 'color': 0xFF3B82F6},
+      {'name': 'Navy', 'color': 0xFF1E3A8A},
+      {'name': 'Teal', 'color': 0xFF007A87},
+      {'name': 'Ungu', 'color': 0xFF7C3AED},
+      {'name': 'Hijau', 'color': 0xFF16A34A},
+      {'name': 'Emas', 'color': 0xFFB8A268},
+    ];
+
+    final result = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return SimpleDialog(
+          title: const Text('Warna B\'Jo'),
+          children: colors.map((item) {
+            final value = item['color'] as int;
+
+            return SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, value);
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Color(value),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(item['name'] as String),
+                  const Spacer(),
+                  if (value == current)
+                    const Icon(
+                      Icons.check_circle,
+                      color: m8Blue,
+                    ),
+                ],
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (result != null) {
+      await prefs.setInt(
+        'bjo_accent_color',
+        result,
+      );
+
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _chooseTextSize() async {
+    double value = textScale;
+
+    final result = await showDialog<double>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Ukuran Teks'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Contoh teks B\'Jo',
+                    textScaleFactor: value,
+                  ),
+                  const SizedBox(height: 15),
+                  Slider(
+                    min: .85,
+                    max: 1.25,
+                    divisions: 8,
+                    value: value,
+                    label: '${(value * 100).round()}%',
+                    onChanged: (v) {
+                      setDialogState(() {
+                        value = v;
+                      });
+                    },
+                  ),
+                  Text(
+                    '${(value * 100).round()}%',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('BATAL'),
+                ),
+                FilledButton(
+                  onPressed: () =>
+                      Navigator.pop(context, value),
+                  child: const Text('SIMPAN'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      await _setTextScale(result);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    if (widget.title == 'Tampilan') {
+      return Scaffold(
+        backgroundColor: m8WhiteSoft,
+        appBar: AppBar(
+          backgroundColor: m8Blue,
+          foregroundColor: m8White,
+          title: const Text(
+            'Tampilan',
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+
+            Card(
+              child: ListTile(
+                leading: const Icon(
+                  Icons.dark_mode_outlined,
+                  color: m8Blue,
+                ),
+                title: const Text(
+                  'Tema',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                subtitle: Text(
+                  themeMode == 'dark'
+                      ? 'Gelap'
+                      : themeMode == 'light'
+                          ? 'Terang'
+                          : 'Ikuti sistem',
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                ),
+                onTap: _chooseTheme,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(
+                  Icons.color_lens_outlined,
+                  color: m8Blue,
+                ),
+                title: const Text(
+                  'Warna B\'Jo',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Pilih warna utama aplikasi',
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                ),
+                onTap: _chooseAccent,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Card(
+              child: ListTile(
+                leading: const Icon(
+                  Icons.format_size_rounded,
+                  color: m8Blue,
+                ),
+                title: const Text(
+                  'Ukuran Teks',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                subtitle: Text(
+                  '${(textScale * 100).round()}%',
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                ),
+                onTap: _chooseTextSize,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Card(
+              child: SwitchListTile(
+                secondary: const Icon(
+                  Icons.view_agenda_outlined,
+                  color: m8Blue,
+                ),
+                title: const Text(
+                  'Chat Ringkas',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Gunakan jarak chat yang lebih rapat',
+                ),
+                value: compactChat,
+                onChanged: _setCompactChat,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Card(
+              child: SwitchListTile(
+                secondary: const Icon(
+                  Icons.account_circle_outlined,
+                  color: m8Blue,
+                ),
+                title: const Text(
+                  'Tampilkan Foto Profil',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Tampilkan avatar pada daftar chat',
+                ),
+                value: showAvatars,
+                onChanged: _setShowAvatars,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: m8Blue.withOpacity(.08),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline,
+                    color: m8Blue,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Pengaturan tersimpan otomatis di perangkat.',
+                      style: TextStyle(
+                        color: m8BlueDark,
+                        fontSize: 13 * textScale,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final items = <Map<String, dynamic>>[];
+
+    switch (widget.title) {
       case 'Akun & Profil':
-        return [
+        items.addAll([
           {
             'title': 'Edit Nama',
             'subtitle': 'Ubah nama yang tampil di B\'Jo',
@@ -11258,220 +11693,27 @@ class _SettingsDetailPage extends StatelessWidget {
             'subtitle': 'Kelola keamanan PIN login',
             'icon': Icons.password_outlined,
           },
-        ];
-
-      case 'Tampilan':
-        return [
-          {
-            'title': 'Tema',
-            'subtitle': 'Terang, gelap atau mengikuti sistem',
-            'icon': Icons.dark_mode_outlined,
-          },
-          {
-            'title': 'Warna B\'Jo',
-            'subtitle': 'Atur warna utama aplikasi',
-            'icon': Icons.color_lens_outlined,
-          },
-          {
-            'title': 'Ukuran Teks',
-            'subtitle': 'Atur ukuran tulisan',
-            'icon': Icons.format_size_rounded,
-          },
-        ];
-
-      case 'Notifikasi':
-        return [
-          {
-            'title': 'Pesan',
-            'subtitle': 'Notifikasi pesan baru',
-            'icon': Icons.message_outlined,
-          },
-          {
-            'title': 'Panggilan',
-            'subtitle': 'Notifikasi panggilan masuk',
-            'icon': Icons.phone_in_talk_outlined,
-          },
-          {
-            'title': 'Pengingat',
-            'subtitle': 'Pengingat tugas dan agenda',
-            'icon': Icons.notifications_active_outlined,
-          },
-          {
-            'title': 'Suara & Getar',
-            'subtitle': 'Atur suara dan getaran',
-            'icon': Icons.vibration_outlined,
-          },
-        ];
-
-      case 'Chat & Panggilan':
-        return [
-          {
-            'title': 'Enter untuk Mengirim',
-            'subtitle': 'Tekan Enter untuk mengirim pesan',
-            'icon': Icons.keyboard_return_rounded,
-          },
-          {
-            'title': 'Media',
-            'subtitle': 'Atur foto dan video',
-            'icon': Icons.perm_media_outlined,
-          },
-          {
-            'title': 'Nada Dering',
-            'subtitle': 'Pilih nada panggilan B\'Jo',
-            'icon': Icons.music_note_outlined,
-          },
-          {
-            'title': 'Video Call',
-            'subtitle': 'Pengaturan panggilan video',
-            'icon': Icons.videocam_outlined,
-          },
-        ];
-
-      case 'Produktivitas':
-        return [
-          {
-            'title': 'Tugas',
-            'subtitle': 'Kelola tugas dan pekerjaan',
-            'icon': Icons.check_circle_outline,
-          },
-          {
-            'title': 'Agenda',
-            'subtitle': 'Kelola jadwal kegiatan',
-            'icon': Icons.event_note_outlined,
-          },
-          {
-            'title': 'Pengingat',
-            'subtitle': 'Kelola pengingat',
-            'icon': Icons.notifications_none_rounded,
-          },
-          {
-            'title': 'Target',
-            'subtitle': 'Kelola tujuan dan pencapaian',
-            'icon': Icons.flag_outlined,
-          },
-          {
-            'title': 'Jurnal',
-            'subtitle': 'Kelola catatan harian',
-            'icon': Icons.menu_book_outlined,
-          },
-          {
-            'title': 'Keuangan',
-            'subtitle': 'Kelola pemasukan dan pengeluaran',
-            'icon': Icons.account_balance_wallet_outlined,
-          },
-        ];
-
-      case 'Privasi & Keamanan':
-        return [
-          {
-            'title': 'Kunci Aplikasi',
-            'subtitle': 'Lindungi akses ke B\'Jo',
-            'icon': Icons.lock_outline_rounded,
-          },
-          {
-            'title': 'Status Online',
-            'subtitle': 'Atur siapa yang dapat melihat status',
-            'icon': Icons.circle_outlined,
-          },
-          {
-            'title': 'Laporan Dibaca',
-            'subtitle': 'Tampilkan status pesan dibaca',
-            'icon': Icons.done_all_rounded,
-          },
-          {
-            'title': 'Blokir Pengguna',
-            'subtitle': 'Kelola pengguna yang diblokir',
-            'icon': Icons.block_rounded,
-          },
-        ];
-
-      case 'Penyimpanan & Data':
-        return [
-          {
-            'title': 'Penggunaan Penyimpanan',
-            'subtitle': 'Lihat penggunaan ruang',
-            'icon': Icons.storage_outlined,
-          },
-          {
-            'title': 'Bersihkan Cache',
-            'subtitle': 'Hapus data sementara',
-            'icon': Icons.cleaning_services_outlined,
-          },
-          {
-            'title': 'Penggunaan Data',
-            'subtitle': 'Atur penggunaan internet',
-            'icon': Icons.data_usage_outlined,
-          },
-          {
-            'title': 'Backup Data',
-            'subtitle': 'Cadangkan data B\'Jo',
-            'icon': Icons.backup_outlined,
-          },
-        ];
-
-      case 'Bantuan':
-        return [
-          {
-            'title': 'Panduan B\'Jo',
-            'subtitle': 'Pelajari cara menggunakan B\'Jo',
-            'icon': Icons.menu_book_outlined,
-          },
-          {
-            'title': 'Laporkan Masalah',
-            'subtitle': 'Kirim laporan jika ada masalah',
-            'icon': Icons.bug_report_outlined,
-          },
-          {
-            'title': 'Kirim Saran',
-            'subtitle': 'Berikan masukan untuk B\'Jo',
-            'icon': Icons.lightbulb_outline_rounded,
-          },
-        ];
-
-      case 'Tentang B\'Jo':
-        return [
-          {
-            'title': 'Tentang B\'Jo',
-            'subtitle': 'Informasi aplikasi',
-            'icon': Icons.info_outline_rounded,
-          },
-          {
-            'title': 'Versi Aplikasi',
-            'subtitle': 'Informasi versi B\'Jo',
-            'icon': Icons.phone_android_outlined,
-          },
-          {
-            'title': 'Kebijakan Privasi',
-            'subtitle': 'Baca kebijakan privasi',
-            'icon': Icons.privacy_tip_outlined,
-          },
-          {
-            'title': 'Syarat & Ketentuan',
-            'subtitle': 'Baca ketentuan penggunaan',
-            'icon': Icons.description_outlined,
-          },
-        ];
+        ]);
+        break;
 
       default:
-        return [];
+        items.add({
+          'title': widget.title,
+          'subtitle': 'Pengaturan tersedia di B\'Jo',
+          'icon': widget.icon,
+        });
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final items = _items();
 
     return Scaffold(
       backgroundColor: m8WhiteSoft,
       appBar: AppBar(
         backgroundColor: m8Blue,
         foregroundColor: m8White,
-        title: Row(
-          children: [
-            Icon(icon),
-            const SizedBox(width: 10),
-            Text(title),
-          ],
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
       body: ListView.separated(
