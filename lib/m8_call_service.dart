@@ -42,17 +42,23 @@ class M8CallService {
     onCallStatusChanged?.call(status);
     print('[M8 CALL STATUS] $status');
 
-    // B'Jo voice call menggunakan receiver/earpiece secara default.
-    // Speaker hanya diaktifkan oleh tombol Speaker pada UI.
-    if (status == 'connected' && !_isVideoCall) {
+    // Voice call menggunakan receiver secara default.
+    // Video call menggunakan speaker agar suara lebih jelas.
+    if (status == 'connected') {
       _setDefaultCallAudioRoute();
     }
   }
 
   Future<void> _setDefaultCallAudioRoute() async {
     try {
-      await Helper.setSpeakerphoneOn(false);
-      print('[BJO AUDIO] DEFAULT ROUTE = EARPIECE');
+      final useSpeaker = _isVideoCall;
+
+      await Helper.setSpeakerphoneOn(useSpeaker);
+
+      print(
+        '[BJO AUDIO] DEFAULT ROUTE = '
+        '${useSpeaker ? 'SPEAKER (VCALL)' : 'EARPIECE (VOICE)'}',
+      );
     } catch (e) {
       print('[BJO AUDIO] DEFAULT ROUTE ERROR: $e');
     }
