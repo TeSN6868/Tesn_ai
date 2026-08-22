@@ -4687,11 +4687,36 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
     return colors[hash % colors.length];
   }
 
-  Widget _buildMessage(Map<String, dynamic> message) {
+  Widget _buildVoiceBubble(
+    String url,
+    int duration,
+    bool mine,
+  ) {
+    return _BjoVoiceBubble(
+      url: url,
+      duration: duration,
+      mine: mine,
+    );
+  }
+
+  Widget _buildMessage(
+    Map<String, dynamic> message, {
+    bool showIdentity = true,
+  }) {
     final sender = message['sender_pin']?.toString() ?? '';
     final mine = sender == widget.myPin;
 
     final text = message['message']?.toString() ?? '';
+
+    final isVoice = text.startsWith('__BJO_VOICE_URL__:');
+    final voicePayload = isVoice
+        ? text.substring('__BJO_VOICE_URL__:'.length)
+        : '';
+    final voiceParts = voicePayload.split('|duration=');
+    final voiceUrl = voiceParts.isNotEmpty ? voiceParts[0] : '';
+    final voiceDuration = voiceParts.length > 1
+        ? int.tryParse(voiceParts[1]) ?? 0
+        : 0;
 
     final senderName =
         message['sender_name']?.toString().trim().isNotEmpty == true
@@ -4720,7 +4745,10 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
         maxWidth: 310,
         minWidth: 80,
       ),
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 9,
+      ),
       decoration: BoxDecoration(
         color: mine
             ? bjoChatBubble
@@ -4737,39 +4765,48 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                 color: m8Blue.withValues(alpha: 0.10),
               ),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: bjoChatNavy,
-          fontSize: 15,
-          height: 1.35,
-        ),
-      ),
+      child: isVoice
+          ? _buildVoiceBubble(
+              voiceUrl,
+              voiceDuration,
+              mine,
+            )
+          : Text(
+              text,
+              style: const TextStyle(
+                color: bjoChatNavy,
+                fontSize: 15,
+                height: 1.25,
+              ),
+            ),
     );
 
-    final identity = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment:
-          mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-      children: [
-        avatar,
-        const SizedBox(height: 3),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 90),
-          child: Text(
-            senderName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: mine ? TextAlign.right : TextAlign.left,
-            style: const TextStyle(
-              color: m8BlueDark,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ],
-    );
+    final identity = showIdentity
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment:
+                mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              avatar,
+              const SizedBox(height: 3),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 90),
+                child: Text(
+                  senderName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign:
+                      mine ? TextAlign.right : TextAlign.left,
+                  style: const TextStyle(
+                    color: m8BlueDark,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          )
+        : const SizedBox(width: 0);
 
     final time = Padding(
       padding: const EdgeInsets.only(
@@ -4932,7 +4969,36 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                             ),
                             itemCount: messages.length,
                             itemBuilder: (context, index) {
-                              return _buildMessage(messages[index]);
+                              final message = messages[index];
+
+                              bool showIdentity = true;
+
+                              if (index > 0) {
+                                final previous = messages[index - 1];
+
+                                final currentSender =
+                                    message['sender_pin']
+                                        ?.toString() ??
+                                    '';
+
+                                final previousSender =
+                                    previous['sender_pin']
+                                        ?.toString() ??
+                                    '';
+
+                                showIdentity =
+                                    currentSender != previousSender;
+                              }
+
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  top: showIdentity ? 5 : 0,
+                                ),
+                                child: _buildMessage(
+                                  message,
+                                  showIdentity: showIdentity,
+                                ),
+                              );
                             },
                           ),
               ),
@@ -5327,6 +5393,174 @@ class ChatRoomPage extends StatefulWidget {
   State<ChatRoomPage> createState() => _ChatRoomPageState();
 }
 
+class _BjoVoiceBubble extends StatefulWidget {
+  final String url;
+  final int duration;
+  final bool mine;
+
+  const _BjoVoiceBubble({
+    required this.url,
+    required this.duration,
+    required this.mine,
+  });
+
+  @override
+  State<_BjoVoiceBubble> createState() => _BjoVoiceBubbleState();
+}
+
+class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
+  final AudioPlayer _player = AudioPlayer();
+
+  bool _playing = false;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _duration = Duration(seconds: widget.duration);
+
+    _player.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+      setState(() {
+        _playing = state == PlayerState.playing;
+      });
+    });
+
+    _player.onPositionChanged.listen((position) {
+      if (!mounted) return;
+      setState(() {
+        _position = position;
+      });
+    });
+
+    _player.onDurationChanged.listen((duration) {
+      if (!mounted) return;
+      if (duration > Duration.zero) {
+        setState(() {
+          _duration = duration;
+        });
+      }
+    });
+
+    _player.onPlayerComplete.listen((_) {
+      if (!mounted) return;
+      setState(() {
+        _playing = false;
+        _position = Duration.zero;
+      });
+    });
+  }
+
+  String _time(Duration d) {
+    final seconds = d.inSeconds;
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${secs.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _togglePlay() async {
+    if (widget.url.isEmpty) return;
+
+    try {
+      if (_playing) {
+        await _player.pause();
+      } else {
+        await _player.play(
+          UrlSource(widget.url),
+        );
+      }
+    } catch (e) {
+      debugPrint('[BJO VOICE] PLAY ERROR: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Voice note tidak dapat diputar: $e'),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = _duration.inMilliseconds;
+    final current = _position.inMilliseconds;
+
+    final progress = total > 0
+        ? (current / total).clamp(0.0, 1.0)
+        : 0.0;
+
+    return SizedBox(
+      height: 42,
+      width: 250,
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: _togglePlay,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(
+              minWidth: 34,
+              minHeight: 34,
+            ),
+            icon: Icon(
+              _playing
+                  ? Icons.pause_rounded
+                  : Icons.play_arrow_rounded,
+              color: widget.mine ? m8White : m8BlueDark,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 3,
+                  backgroundColor: widget.mine
+                      ? m8White.withValues(alpha: 0.20)
+                      : m8Blue.withValues(alpha: 0.12),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    widget.mine ? m8White : m8Blue,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  _time(
+                    _position > Duration.zero
+                        ? _position
+                        : _duration,
+                  ),
+                  style: TextStyle(
+                    color: widget.mine
+                        ? m8White.withValues(alpha: 0.82)
+                        : m8TextMuted,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ChatRoomPageState extends State<ChatRoomPage> {
   final AudioPlayer _chatHeyPlayer = AudioPlayer();
 
@@ -5336,6 +5570,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   DateTime? _voiceRecordingStartedAt;
   Timer? _voiceRecordingTimer;
   int _voiceRecordingSeconds = 0;
+  String? _pendingVoicePath;
+  int _pendingVoiceDuration = 0;
 
   bool _chatLoadedOnce = false;
   final Set<String> _heyPlayedMessageIds = <String>{};
@@ -5544,6 +5780,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       }
 
       debugPrint('[BJO VOICE] RECORDING READY: $path');
+
+      if (mounted) {
+        setState(() {
+          _pendingVoicePath = path;
+          _pendingVoiceDuration = _voiceRecordingSeconds;
+          _voiceRecordingSeconds = 0;
+        });
+      }
 
       return path;
     } catch (e) {
@@ -6019,6 +6263,122 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('HI gagal dikirim: $e')));
+      }
+    }
+  }
+
+  Future<void> sendVoiceMessage() async {
+    final path = _pendingVoicePath;
+
+    if (path == null || path.isEmpty || sending) return;
+
+    setState(() {
+      sending = true;
+    });
+
+    try {
+      final file = File(path);
+
+      if (!await file.exists()) {
+        throw Exception('File voice note tidak ditemukan.');
+      }
+
+      final bytes = await file.readAsBytes();
+
+      if (bytes.isEmpty) {
+        throw Exception('Voice note kosong.');
+      }
+
+      if (bytes.length > 10 * 1024 * 1024) {
+        throw Exception(
+          'Voice note terlalu besar. Maksimal 10 MB.',
+        );
+      }
+
+      final uploadResponse = await http.post(
+        Uri.parse('$apiBase/api/upload'),
+        headers: {
+          'Content-Type': 'audio/mp4',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: bytes,
+      );
+
+      final uploadData = jsonDecode(uploadResponse.body);
+
+      if (uploadResponse.statusCode != 201 ||
+          uploadData['success'] != true) {
+        throw Exception(
+          uploadData['error']?.toString() ??
+              'Gagal mengupload voice note.',
+        );
+      }
+
+      final audioUrl = uploadData['url']?.toString();
+
+      if (audioUrl == null || audioUrl.isEmpty) {
+        throw Exception(
+          'URL voice note tidak ditemukan.',
+        );
+      }
+
+      final duration = _pendingVoiceDuration;
+
+      final response = await http.post(
+        Uri.parse('$apiBase/api/messages'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'chat_id': widget.chat['id'],
+          'sender_pin': widget.myPin,
+          'message':
+              '__BJO_VOICE_URL__:$audioUrl|duration=$duration',
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode < 200 ||
+          response.statusCode >= 300 ||
+          data['success'] != true) {
+        throw Exception(
+          data['error']?.toString() ??
+              'Gagal mengirim voice note.',
+        );
+      }
+
+      if (mounted) {
+        setState(() {
+          _pendingVoicePath = null;
+          _pendingVoiceDuration = 0;
+        });
+      }
+
+      await loadMessages();
+      _scrollChatToBottom(animated: true);
+
+      try {
+        await file.delete();
+      } catch (_) {}
+    } catch (e) {
+      debugPrint('[BJO VOICE] SEND ERROR: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Voice note gagal dikirim: $e',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          sending = false;
+        });
       }
     }
   }
@@ -7202,20 +7562,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                               await stopVoiceRecording();
 
                                           if (path != null && mounted) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  'Rekaman suara siap dikirim.',
-                                                ),
-                                              ),
-                                            );
+                                            await sendVoiceMessage();
                                           }
                                         },
                                         child: const Icon(
-                                          Icons.stop_circle_rounded,
+                                          Icons.send_rounded,
                                           color: m8Blue,
-                                          size: 28,
+                                          size: 25,
                                         ),
                                       ),
                                     ],
@@ -7236,14 +7589,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           await stopVoiceRecording();
 
                                       if (path != null && mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Rekaman suara siap dikirim.',
-                                            ),
-                                          ),
-                                        );
+                                        await sendVoiceMessage();
                                       }
                                     }
                                   },
