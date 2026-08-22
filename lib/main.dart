@@ -1355,6 +1355,20 @@ class _BJoMainShellState extends State<BJoMainShell> {
         ),
         actions: [
           IconButton(
+            tooltip: 'Kontak B’Jo',
+            icon: const Icon(Icons.contacts_rounded),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => BJoContactsPage(
+                    token: widget.token,
+                    myPin: myPin,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
             tooltip: "Profil B'Jo",
             icon: const Icon(Icons.person_rounded),
             onPressed: () {
@@ -2914,6 +2928,294 @@ class _ChatsPageState extends State<ChatsPage> {
 // B'JO USER SEARCH
 // ============================================================
 
+
+// ============================================================
+// B'JO CONTACTS
+// ============================================================
+
+class BJoContactsPage extends StatefulWidget {
+  final String token;
+  final String myPin;
+
+  const BJoContactsPage({
+    super.key,
+    required this.token,
+    required this.myPin,
+  });
+
+  @override
+  State<BJoContactsPage> createState() => _BJoContactsPageState();
+}
+
+class _BJoContactsPageState extends State<BJoContactsPage> {
+  bool _loading = true;
+  List<Map<String, dynamic>> _contacts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadContacts();
+  }
+
+  Future<void> _loadContacts() async {
+    if (!mounted) return;
+
+    setState(() => _loading = true);
+
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/api/contacts'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 &&
+          data['success'] == true &&
+          data['contacts'] is List) {
+        _contacts = (data['contacts'] as List)
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      } else {
+        _contacts = [];
+      }
+    } catch (e) {
+      debugPrint('BJo contacts error: $e');
+      _contacts = [];
+    }
+
+    if (mounted) {
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _openSearch() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BJoUserSearchPage(
+          token: widget.token,
+          myPin: widget.myPin,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      await _loadContacts();
+    }
+  }
+
+  Future<void> _deleteContact(Map<String, dynamic> contact) async {
+    final pin = contact['m8_pin']?.toString().trim() ?? '';
+
+    if (pin.isEmpty) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus kontak?'),
+        content: Text(
+          'Hapus ${contact['name']?.toString() ?? pin} dari kontak B’Jo?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final response = await http.delete(
+        Uri.parse(
+          '$apiBase/api/contacts?m8_pin=${Uri.encodeQueryComponent(pin)}',
+        ),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      if (response.statusCode == 200 && mounted) {
+        await _loadContacts();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kontak dihapus.'),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Delete contact error: $e');
+    }
+  }
+
+  Future<void> _openContact(Map<String, dynamic> contact) async {
+    final pin = contact['m8_pin']?.toString().trim() ?? '';
+
+    if (pin.isEmpty) return;
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BJoPublicUserPage(
+          user: contact,
+          token: widget.token,
+          myPin: widget.myPin,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      await _loadContacts();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        elevation: 0,
+        title: const Text(
+          'Kontak B’Jo',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Tambah kontak',
+            onPressed: _openSearch,
+            icon: const Icon(Icons.person_add_alt_1_rounded),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadContacts,
+        color: m8Blue,
+        child: _loading
+            ? const Center(
+                child: CircularProgressIndicator(color: m8Blue),
+              )
+            : _contacts.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 120),
+                      Icon(
+                        Icons.contacts_outlined,
+                        size: 72,
+                        color: m8Blue,
+                      ),
+                      SizedBox(height: 16),
+                      Center(
+                        child: Text(
+                          'Belum ada kontak',
+                          style: TextStyle(
+                            color: m8BlueDark,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Center(
+                        child: Text(
+                          'Tambahkan teman dari pencarian pengguna.',
+                          style: TextStyle(color: m8TextMuted),
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                    itemCount: _contacts.length,
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(height: 6),
+                    itemBuilder: (context, index) {
+                      final contact = _contacts[index];
+
+                      final name =
+                          contact['name']?.toString().trim().isNotEmpty == true
+                              ? contact['name'].toString().trim()
+                              : 'B’Jo User';
+
+                      final pin =
+                          contact['m8_pin']?.toString().trim() ?? '';
+
+                      final photo =
+                          contact['profile_photo_url']?.toString().trim() ?? '';
+
+                      return Card(
+                        elevation: 0,
+                        color: m8White,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 5,
+                          ),
+                          leading: CircleAvatar(
+                            radius: 25,
+                            backgroundColor:
+                                m8Blue.withValues(alpha: 0.12),
+                            backgroundImage: photo.isNotEmpty
+                                ? NetworkImage(photo)
+                                : null,
+                            child: photo.isNotEmpty
+                                ? null
+                                : const Icon(
+                                    Icons.person_rounded,
+                                    color: m8Blue,
+                                  ),
+                          ),
+                          title: Text(
+                            name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              color: m8BlueDark,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'M8 PIN: $pin',
+                            style: const TextStyle(
+                              color: m8TextMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                          onTap: () => _openContact(contact),
+                          trailing: PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'delete') {
+                                _deleteContact(contact);
+                              }
+                            },
+                            itemBuilder: (_) => const [
+                              PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Text('Hapus kontak'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+      ),
+    );
+  }
+}
+
 class BJoUserSearchPage extends StatefulWidget {
   final String token;
   final String myPin;
@@ -3229,6 +3531,9 @@ class BJoPublicUserPage extends StatefulWidget {
 class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
   bool _startingChat = false;
   bool _loadingProfile = true;
+  bool _checkingContact = true;
+  bool _isContact = false;
+  bool _contactBusy = false;
   late Map<String, dynamic> _profile;
 
   @override
@@ -3236,6 +3541,115 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
     super.initState();
     _profile = Map<String, dynamic>.from(widget.user);
     _loadLatestProfile();
+    _checkContact();
+  }
+
+  Future<void> _checkContact() async {
+    final pin = _profile['m8_pin']?.toString().trim() ?? '';
+
+    if (pin.isEmpty || pin == widget.myPin) {
+      if (mounted) {
+        setState(() {
+          _checkingContact = false;
+          _isContact = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/contacts/check?m8_pin=${Uri.encodeQueryComponent(pin)}',
+        ),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      ).timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 &&
+          data['success'] == true) {
+        if (mounted) {
+          setState(() {
+            _isContact = data['is_contact'] == true;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('BJo contact check error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _checkingContact = false);
+      }
+    }
+  }
+
+  Future<void> _addContact() async {
+    final pin = _profile['m8_pin']?.toString().trim() ?? '';
+
+    if (pin.isEmpty || pin == widget.myPin || _contactBusy) {
+      return;
+    }
+
+    setState(() => _contactBusy = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/contacts'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'm8_pin': pin,
+        }),
+      ).timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode < 200 ||
+          response.statusCode >= 300 ||
+          data['success'] != true) {
+        throw Exception(
+          data['error']?.toString() ??
+              'Tidak dapat menambahkan kontak.',
+        );
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _isContact = true;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kontak berhasil ditambahkan.'),
+        ),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _contactBusy = false);
+      }
+    }
   }
 
   Future<void> _loadLatestProfile() async {
@@ -3447,6 +3861,55 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                   ),
                 ],
                 const SizedBox(height: 20),
+
+                SizedBox(
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        (_checkingContact ||
+                                _contactBusy ||
+                                _isContact)
+                            ? null
+                            : _addContact,
+                    icon: _contactBusy
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: m8Blue,
+                            ),
+                          )
+                        : Icon(
+                            _isContact
+                                ? Icons.check_circle_rounded
+                                : Icons.person_add_alt_1_rounded,
+                          ),
+                    label: Text(
+                      _checkingContact
+                          ? 'MEMERIKSA KONTAK...'
+                          : _contactBusy
+                              ? 'MENAMBAHKAN...'
+                              : _isContact
+                                  ? 'SUDAH DI KONTAK'
+                                  : 'TAMBAH KE KONTAK',
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: m8BlueDark,
+                      side: BorderSide(
+                        color: _isContact
+                            ? m8Blue.withValues(alpha: 0.25)
+                            : m8Blue,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
                 SizedBox(
                   height: 52,
                   child: ElevatedButton.icon(

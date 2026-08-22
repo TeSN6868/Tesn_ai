@@ -2749,6 +2749,255 @@ export default {
     }
 
     // ============================================================
+    // B'JO CONTACTS
+    // ============================================================
+    async function ensureContactTables() {
+      await env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS contacts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          owner_user_id INTEGER NOT NULL,
+          contact_user_id INTEGER NOT NULL,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          UNIQUE(owner_user_id, contact_user_id)
+        )
+      `).run();
+
+      await env.DB.prepare(`
+        CREATE INDEX IF NOT EXISTS idx_contacts_owner
+        ON contacts(owner_user_id)
+      `).run();
+
+      await env.DB.prepare(`
+        CREATE INDEX IF NOT EXISTS idx_contacts_contact
+        ON contacts(contact_user_id)
+      `).run();
+    }
+
+    if (url.pathname === "/api/contacts" && request.method === "GET") {
+      const session = await getSessionUser(request, env);
+
+      if (!session) {
+        return json({
+          success: false,
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      await ensureContactTables();
+
+      const result = await env.DB.prepare(`
+        SELECT
+          u.id,
+          u.name,
+          u.m8_pin,
+          u.bio,
+          u.profile_photo_url,
+          u.profile_background_url,
+          c.created_at AS contact_created_at
+        FROM contacts c
+        INNER JOIN users u
+          ON u.id = c.contact_user_id
+        WHERE c.owner_user_id = ?
+          AND u.active = 1
+        ORDER BY LOWER(COALESCE(u.name, '')) ASC
+      `).bind(session.user_id).all();
+
+      const contacts = [];
+
+      for (const item of (result.results || [])) {
+        const privacy = await getProfilePrivacy(env, item.id);
+        contacts.push(
+          applyProfilePrivacy(item, privacy, false)
+        );
+      }
+
+      return json({
+        success: true,
+        contacts,
+      });
+    }
+
+    if (url.pathname === "/api/contacts" && request.method === "POST") {
+      const session = await getSessionUser(request, env);
+
+      if (!session) {
+        return json({
+          success: false,
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      const body = await request.json();
+      const m8Pin = String(body.m8_pin || "").trim();
+
+      if (!m8Pin) {
+        return json({
+          success: false,
+          error: "M8 PIN kontak wajib diisi.",
+        }, 400);
+      }
+
+      await ensureContactTables();
+
+      const target = await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          m8_pin,
+          bio,
+          profile_photo_url,
+          profile_background_url
+        FROM users
+        WHERE m8_pin = ?
+          AND active = 1
+        LIMIT 1
+      `).bind(m8Pin).first();
+
+      if (!target) {
+        return json({
+          success: false,
+          error: "Pengguna tidak ditemukan.",
+        }, 404);
+      }
+
+      if (Number(target.id) === Number(session.user_id)) {
+        return json({
+          success: false,
+          error: "Kamu tidak dapat menambahkan akun sendiri.",
+        }, 400);
+      }
+
+      await env.DB.prepare(`
+        INSERT INTO contacts (
+          owner_user_id,
+          contact_user_id,
+          created_at,
+          updated_at
+        )
+        VALUES (?, ?, unixepoch(), unixepoch())
+        ON CONFLICT(owner_user_id, contact_user_id)
+        DO UPDATE SET updated_at = unixepoch()
+      `).bind(session.user_id, target.id).run();
+
+      const privacy = await getProfilePrivacy(env, target.id);
+
+      return json({
+        success: true,
+        message: "Kontak berhasil ditambahkan.",
+        contact: applyProfilePrivacy(target, privacy, false),
+      });
+    }
+
+    if (
+      url.pathname === "/api/contacts" &&
+      request.method === "DELETE"
+    ) {
+      const session = await getSessionUser(request, env);
+
+      if (!session) {
+        return json({
+          success: false,
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      const m8Pin = String(
+        url.searchParams.get("m8_pin") || ""
+      ).trim();
+
+      if (!m8Pin) {
+        return json({
+          success: false,
+          error: "M8 PIN kontak wajib diisi.",
+        }, 400);
+      }
+
+      await ensureContactTables();
+
+      const target = await env.DB.prepare(`
+        SELECT id
+        FROM users
+        WHERE m8_pin = ?
+          AND active = 1
+        LIMIT 1
+      `).bind(m8Pin).first();
+
+      if (!target) {
+        return json({
+          success: false,
+          error: "Pengguna tidak ditemukan.",
+        }, 404);
+      }
+
+      await env.DB.prepare(`
+        DELETE FROM contacts
+        WHERE owner_user_id = ?
+          AND contact_user_id = ?
+      `).bind(session.user_id, target.id).run();
+
+      return json({
+        success: true,
+        message: "Kontak berhasil dihapus.",
+      });
+    }
+
+    if (
+      url.pathname === "/api/contacts/check" &&
+      request.method === "GET"
+    ) {
+      const session = await getSessionUser(request, env);
+
+      if (!session) {
+        return json({
+          success: false,
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      const m8Pin = String(
+        url.searchParams.get("m8_pin") || ""
+      ).trim();
+
+      if (!m8Pin) {
+        return json({
+          success: false,
+          error: "M8 PIN wajib diisi.",
+        }, 400);
+      }
+
+      await ensureContactTables();
+
+      const target = await env.DB.prepare(`
+        SELECT id
+        FROM users
+        WHERE m8_pin = ?
+          AND active = 1
+        LIMIT 1
+      `).bind(m8Pin).first();
+
+      if (!target) {
+        return json({
+          success: true,
+          is_contact: false,
+        });
+      }
+
+      const row = await env.DB.prepare(`
+        SELECT id
+        FROM contacts
+        WHERE owner_user_id = ?
+          AND contact_user_id = ?
+        LIMIT 1
+      `).bind(session.user_id, target.id).first();
+
+      return json({
+        success: true,
+        is_contact: !!row,
+      });
+    }
+
+    // ============================================================
     // SEARCH B'JO USERS
     // ============================================================
     if (url.pathname === "/api/search/users" && request.method === "GET") {
