@@ -1388,15 +1388,40 @@ class _BJoMainShellState extends State<BJoMainShell> {
         children: [
           Container(
             width: double.infinity,
-            color: m8Blue,
-            padding: const EdgeInsets.fromLTRB(18, 2, 18, 14),
-            child: Text(
-              'Welcome back, ${widget.user['name']?.toString().trim().isNotEmpty == true ? widget.user['name'].toString().trim() : 'M8 User'} 👋',
-              style: const TextStyle(
-                color: m8White,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
+            padding: const EdgeInsets.fromLTRB(18, 2, 18, 12),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0B5ED7),
+                  Color(0xFF174EA6),
+                  Color(0xFF123B78),
+                ],
               ),
+            ),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: _BjoBatikHeaderPainter(),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    'Welcome back, ${widget.user['name']?.toString().trim().isNotEmpty == true ? widget.user['name'].toString().trim() : 'M8 User'} 👋',
+                    style: const TextStyle(
+                      color: m8White,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.15,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -1636,6 +1661,72 @@ class _BJoGroupsPageState extends State<BJoGroupsPage> {
 }
 
 
+
+
+class _BjoBatikHeaderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..color = Colors.white.withValues(alpha: 0.075);
+
+    const spacing = 34.0;
+
+    for (double x = -spacing; x < size.width + spacing; x += spacing) {
+      for (double y = -spacing; y < size.height + spacing; y += spacing) {
+        final path = Path();
+
+        path.moveTo(x, y + 9);
+        path.quadraticBezierTo(
+          x + 8,
+          y,
+          x + 17,
+          y + 9,
+        );
+        path.quadraticBezierTo(
+          x + 8,
+          y + 18,
+          x,
+          y + 9,
+        );
+
+        path.moveTo(x + 17, y + 9);
+        path.quadraticBezierTo(
+          x + 25,
+          y,
+          x + 34,
+          y + 9,
+        );
+        path.quadraticBezierTo(
+          x + 25,
+          y + 18,
+          x + 17,
+          y + 9,
+        );
+
+        canvas.drawPath(path, paint);
+      }
+    }
+
+    final dotPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white.withValues(alpha: 0.055);
+
+    for (double x = 10; x < size.width; x += 34) {
+      for (double y = 8; y < size.height; y += 34) {
+        canvas.drawCircle(
+          Offset(x, y),
+          1.3,
+          dotPaint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
 class HomePage extends StatefulWidget {
   final String token;
@@ -2304,7 +2395,7 @@ class _ChatsPageState extends State<ChatsPage> {
   }
 
   Widget buildMessengerTabs() {
-    const tabs = ['Semua', 'Pribadi', 'Grup'];
+    const tabs = ['Semua', 'Chat', 'Grup', 'Kontak'];
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
@@ -2325,6 +2416,24 @@ class _ChatsPageState extends State<ChatsPage> {
                       if (index == 2) {
                         loadGroups();
                       }
+
+                      if (index == 3) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BJoContactsPage(
+                              token: widget.token,
+                              myPin: widget.myPin,
+                            ),
+                          ),
+                        ).then((_) {
+                          if (mounted) {
+                            setState(() {
+                              selectedTab = 0;
+                            });
+                          }
+                        });
+                      }
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
@@ -2342,7 +2451,7 @@ class _ChatsPageState extends State<ChatsPage> {
                         tabs[index],
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: selected ? m8White : m8TextMuted,
+                          color: selected ? m8White : bjoChatNavy,
                           fontWeight:
                               selected ? FontWeight.w800 : FontWeight.w600,
                           fontSize: 13,
@@ -2356,7 +2465,7 @@ class _ChatsPageState extends State<ChatsPage> {
           ),
           const SizedBox(width: 8),
           Material(
-            color: m8White.withValues(alpha: 0.72),
+            color: m8White.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(12),
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
