@@ -11007,27 +11007,511 @@ class CallsPage extends StatelessWidget {
   }
 }
 
+
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
+  void _open(BuildContext context, String title, IconData icon) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _SettingsDetailPage(
+          title: title,
+          icon: icon,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final sections = <Map<String, dynamic>>[
+      {
+        'title': 'Akun & Profil',
+        'subtitle': 'Nama, foto, PIN dan identitas akun',
+        'icon': Icons.person_outline_rounded,
+      },
+      {
+        'title': 'Tampilan',
+        'subtitle': 'Tema, warna dan ukuran tampilan',
+        'icon': Icons.palette_outlined,
+      },
+      {
+        'title': 'Notifikasi',
+        'subtitle': 'Pesan, panggilan dan pengingat',
+        'icon': Icons.notifications_none_rounded,
+      },
+      {
+        'title': 'Chat & Panggilan',
+        'subtitle': 'Pengaturan pesan, suara dan video',
+        'icon': Icons.chat_bubble_outline_rounded,
+      },
+      {
+        'title': 'Produktivitas',
+        'subtitle': 'Tugas, agenda, target dan jurnal',
+        'icon': Icons.task_alt_rounded,
+      },
+      {
+        'title': 'Privasi & Keamanan',
+        'subtitle': 'Kontrol keamanan dan privasi',
+        'icon': Icons.lock_outline_rounded,
+      },
+      {
+        'title': 'Penyimpanan & Data',
+        'subtitle': 'Media, cache dan penggunaan data',
+        'icon': Icons.storage_outlined,
+      },
+      {
+        'title': 'Bantuan',
+        'subtitle': 'Panduan, bantuan dan laporan masalah',
+        'icon': Icons.help_outline_rounded,
+      },
+      {
+        'title': 'Tentang B\'Jo',
+        'subtitle': 'Versi, kebijakan dan informasi aplikasi',
+        'icon': Icons.info_outline_rounded,
+      },
+    ];
+
     return Scaffold(
       backgroundColor: m8WhiteSoft,
       appBar: AppBar(
-        title: const Text('Pengaturan'),
         backgroundColor: m8Blue,
         foregroundColor: m8White,
-      ),
-      body: const Center(
-        child: Text(
-          'Pengaturan M8',
+        elevation: 0,
+        title: const Text(
+          'Pengaturan',
           style: TextStyle(
-            fontSize: 20,
             fontWeight: FontWeight.w800,
-            color: m8Text,
           ),
         ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
+        children: [
+          const Text(
+            'Pengaturan B\'Jo',
+            style: TextStyle(
+              color: Color(0xFF102A43),
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 5),
+          const Text(
+            'Atur akun dan pengalaman B\'Jo sesuai kebutuhanmu.',
+            style: TextStyle(
+              color: Color(0xFF71808C),
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          ...sections.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Material(
+                color: m8White,
+                borderRadius: BorderRadius.circular(18),
+                elevation: 1,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => _open(
+                    context,
+                    item['title'] as String,
+                    item['icon'] as IconData,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 15,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: m8Blue.withOpacity(.10),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            item['icon'] as IconData,
+                            color: m8Blue,
+                            size: 25,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['title'] as String,
+                                style: const TextStyle(
+                                  color: Color(0xFF102A43),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                item['subtitle'] as String,
+                                style: const TextStyle(
+                                  color: Color(0xFF71808C),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Color(0xFF9AA7B2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Card(
+            child: ListTile(
+              leading: const Icon(
+                Icons.logout_rounded,
+                color: Colors.redAccent,
+              ),
+              title: const Text(
+                'Keluar',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              subtitle: const Text(
+                'Keluar dari akun B\'Jo',
+              ),
+              onTap: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (_) => const LoginPage(),
+                  ),
+                  (_) => false,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+// ============================================================
+// SETTINGS DETAIL
+// ============================================================
+
+class _SettingsDetailPage extends StatelessWidget {
+  final String title;
+  final IconData icon;
+
+  const _SettingsDetailPage({
+    required this.title,
+    required this.icon,
+  });
+
+  List<Map<String, dynamic>> _items() {
+    switch (title) {
+      case 'Akun & Profil':
+        return [
+          {
+            'title': 'Edit Nama',
+            'subtitle': 'Ubah nama yang tampil di B\'Jo',
+            'icon': Icons.badge_outlined,
+          },
+          {
+            'title': 'Foto Profil',
+            'subtitle': 'Ganti foto profil akun',
+            'icon': Icons.photo_camera_outlined,
+          },
+          {
+            'title': 'Background Profil',
+            'subtitle': 'Atur latar belakang profil',
+            'icon': Icons.wallpaper_outlined,
+          },
+          {
+            'title': 'M8 PIN',
+            'subtitle': 'Lihat identitas M8 PIN',
+            'icon': Icons.pin_outlined,
+          },
+          {
+            'title': 'Identitas Akun',
+            'subtitle': 'Informasi akun B\'Jo',
+            'icon': Icons.account_circle_outlined,
+          },
+          {
+            'title': 'Ubah PIN Login',
+            'subtitle': 'Kelola keamanan PIN login',
+            'icon': Icons.password_outlined,
+          },
+        ];
+
+      case 'Tampilan':
+        return [
+          {
+            'title': 'Tema',
+            'subtitle': 'Terang, gelap atau mengikuti sistem',
+            'icon': Icons.dark_mode_outlined,
+          },
+          {
+            'title': 'Warna B\'Jo',
+            'subtitle': 'Atur warna utama aplikasi',
+            'icon': Icons.color_lens_outlined,
+          },
+          {
+            'title': 'Ukuran Teks',
+            'subtitle': 'Atur ukuran tulisan',
+            'icon': Icons.format_size_rounded,
+          },
+        ];
+
+      case 'Notifikasi':
+        return [
+          {
+            'title': 'Pesan',
+            'subtitle': 'Notifikasi pesan baru',
+            'icon': Icons.message_outlined,
+          },
+          {
+            'title': 'Panggilan',
+            'subtitle': 'Notifikasi panggilan masuk',
+            'icon': Icons.phone_in_talk_outlined,
+          },
+          {
+            'title': 'Pengingat',
+            'subtitle': 'Pengingat tugas dan agenda',
+            'icon': Icons.notifications_active_outlined,
+          },
+          {
+            'title': 'Suara & Getar',
+            'subtitle': 'Atur suara dan getaran',
+            'icon': Icons.vibration_outlined,
+          },
+        ];
+
+      case 'Chat & Panggilan':
+        return [
+          {
+            'title': 'Enter untuk Mengirim',
+            'subtitle': 'Tekan Enter untuk mengirim pesan',
+            'icon': Icons.keyboard_return_rounded,
+          },
+          {
+            'title': 'Media',
+            'subtitle': 'Atur foto dan video',
+            'icon': Icons.perm_media_outlined,
+          },
+          {
+            'title': 'Nada Dering',
+            'subtitle': 'Pilih nada panggilan B\'Jo',
+            'icon': Icons.music_note_outlined,
+          },
+          {
+            'title': 'Video Call',
+            'subtitle': 'Pengaturan panggilan video',
+            'icon': Icons.videocam_outlined,
+          },
+        ];
+
+      case 'Produktivitas':
+        return [
+          {
+            'title': 'Tugas',
+            'subtitle': 'Kelola tugas dan pekerjaan',
+            'icon': Icons.check_circle_outline,
+          },
+          {
+            'title': 'Agenda',
+            'subtitle': 'Kelola jadwal kegiatan',
+            'icon': Icons.event_note_outlined,
+          },
+          {
+            'title': 'Pengingat',
+            'subtitle': 'Kelola pengingat',
+            'icon': Icons.notifications_none_rounded,
+          },
+          {
+            'title': 'Target',
+            'subtitle': 'Kelola tujuan dan pencapaian',
+            'icon': Icons.flag_outlined,
+          },
+          {
+            'title': 'Jurnal',
+            'subtitle': 'Kelola catatan harian',
+            'icon': Icons.menu_book_outlined,
+          },
+          {
+            'title': 'Keuangan',
+            'subtitle': 'Kelola pemasukan dan pengeluaran',
+            'icon': Icons.account_balance_wallet_outlined,
+          },
+        ];
+
+      case 'Privasi & Keamanan':
+        return [
+          {
+            'title': 'Kunci Aplikasi',
+            'subtitle': 'Lindungi akses ke B\'Jo',
+            'icon': Icons.lock_outline_rounded,
+          },
+          {
+            'title': 'Status Online',
+            'subtitle': 'Atur siapa yang dapat melihat status',
+            'icon': Icons.circle_outlined,
+          },
+          {
+            'title': 'Laporan Dibaca',
+            'subtitle': 'Tampilkan status pesan dibaca',
+            'icon': Icons.done_all_rounded,
+          },
+          {
+            'title': 'Blokir Pengguna',
+            'subtitle': 'Kelola pengguna yang diblokir',
+            'icon': Icons.block_rounded,
+          },
+        ];
+
+      case 'Penyimpanan & Data':
+        return [
+          {
+            'title': 'Penggunaan Penyimpanan',
+            'subtitle': 'Lihat penggunaan ruang',
+            'icon': Icons.storage_outlined,
+          },
+          {
+            'title': 'Bersihkan Cache',
+            'subtitle': 'Hapus data sementara',
+            'icon': Icons.cleaning_services_outlined,
+          },
+          {
+            'title': 'Penggunaan Data',
+            'subtitle': 'Atur penggunaan internet',
+            'icon': Icons.data_usage_outlined,
+          },
+          {
+            'title': 'Backup Data',
+            'subtitle': 'Cadangkan data B\'Jo',
+            'icon': Icons.backup_outlined,
+          },
+        ];
+
+      case 'Bantuan':
+        return [
+          {
+            'title': 'Panduan B\'Jo',
+            'subtitle': 'Pelajari cara menggunakan B\'Jo',
+            'icon': Icons.menu_book_outlined,
+          },
+          {
+            'title': 'Laporkan Masalah',
+            'subtitle': 'Kirim laporan jika ada masalah',
+            'icon': Icons.bug_report_outlined,
+          },
+          {
+            'title': 'Kirim Saran',
+            'subtitle': 'Berikan masukan untuk B\'Jo',
+            'icon': Icons.lightbulb_outline_rounded,
+          },
+        ];
+
+      case 'Tentang B\'Jo':
+        return [
+          {
+            'title': 'Tentang B\'Jo',
+            'subtitle': 'Informasi aplikasi',
+            'icon': Icons.info_outline_rounded,
+          },
+          {
+            'title': 'Versi Aplikasi',
+            'subtitle': 'Informasi versi B\'Jo',
+            'icon': Icons.phone_android_outlined,
+          },
+          {
+            'title': 'Kebijakan Privasi',
+            'subtitle': 'Baca kebijakan privasi',
+            'icon': Icons.privacy_tip_outlined,
+          },
+          {
+            'title': 'Syarat & Ketentuan',
+            'subtitle': 'Baca ketentuan penggunaan',
+            'icon': Icons.description_outlined,
+          },
+        ];
+
+      default:
+        return [];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _items();
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: Row(
+          children: [
+            Icon(icon),
+            const SizedBox(width: 10),
+            Text(title),
+          ],
+        ),
+      ),
+      body: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: items.length,
+        separatorBuilder: (_, __) =>
+            const SizedBox(height: 8),
+        itemBuilder: (context, index) {
+          final item = items[index];
+
+          return Card(
+            child: ListTile(
+              leading: Icon(
+                item['icon'] as IconData,
+                color: m8Blue,
+              ),
+              title: Text(
+                item['title'] as String,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              subtitle: Text(
+                item['subtitle'] as String,
+              ),
+              trailing: const Icon(
+                Icons.chevron_right_rounded,
+              ),
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '${item['title']} siap diaktifkan.',
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
