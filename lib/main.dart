@@ -139,6 +139,214 @@ class _BJoMapPickerState extends State<_BJoMapPicker> {
     selectedLocation = widget.initialLocation;
   }
 
+
+  bool _notifMessage = true;
+  bool _notifCalls = true;
+  bool _notifTasks = true;
+  bool _notifSound = true;
+  bool _notifVibration = true;
+  bool _notifDnd = false;
+
+  Future<void> _loadBJoNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (!mounted) return;
+
+    setState(() {
+      _notifMessage = prefs.getBool('bjo_notif_message') ?? true;
+      _notifCalls = prefs.getBool('bjo_notif_calls') ?? true;
+      _notifTasks = prefs.getBool('bjo_notif_tasks') ?? true;
+      _notifSound = prefs.getBool('bjo_notif_sound') ?? true;
+      _notifVibration = prefs.getBool('bjo_notif_vibration') ?? true;
+      _notifDnd = prefs.getBool('bjo_notif_dnd') ?? false;
+    });
+  }
+
+  Future<void> _saveBJoNotification(
+    String key,
+    bool value,
+    void Function() update,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+
+    if (mounted) {
+      setState(update);
+    }
+  }
+
+  Widget _bjoNotificationSwitch({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required String key,
+    required void Function() update,
+  }) {
+    return Card(
+      child: SwitchListTile(
+        secondary: Icon(icon, color: m8Blue),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(subtitle),
+        value: value,
+        onChanged: (v) {
+          _saveBJoNotification(key, v, update);
+        },
+      ),
+    );
+  }
+
+  Widget _buildBJoNotificationSettings() {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        elevation: 0,
+        title: const Text(
+          'Notifikasi',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+            "Notifikasi B'Jo",
+            style: TextStyle(
+              color: Color(0xFF102A43),
+              fontSize: 21,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          _bjoNotificationSwitch(
+            icon: Icons.chat_bubble_outline,
+            title: 'Pesan Baru',
+            subtitle: 'Beritahu saat ada pesan masuk',
+            value: _notifMessage,
+            key: 'bjo_notif_message',
+            update: () => _notifMessage = !_notifMessage,
+          ),
+
+          const SizedBox(height: 8),
+
+          _bjoNotificationSwitch(
+            icon: Icons.call_outlined,
+            title: 'Panggilan',
+            subtitle: 'Notifikasi panggilan masuk',
+            value: _notifCalls,
+            key: 'bjo_notif_calls',
+            update: () => _notifCalls = !_notifCalls,
+          ),
+
+          const SizedBox(height: 8),
+
+          _bjoNotificationSwitch(
+            icon: Icons.task_alt_outlined,
+            title: 'Tugas & Pengingat',
+            subtitle: 'Pengingat tugas, agenda dan target',
+            value: _notifTasks,
+            key: 'bjo_notif_tasks',
+            update: () => _notifTasks = !_notifTasks,
+          ),
+
+          const SizedBox(height: 20),
+
+          const Text(
+            'Suara & Getar',
+            style: TextStyle(
+              color: Color(0xFF102A43),
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          _bjoNotificationSwitch(
+            icon: Icons.volume_up_outlined,
+            title: 'Suara',
+            subtitle: 'Putar suara saat ada notifikasi',
+            value: _notifSound,
+            key: 'bjo_notif_sound',
+            update: () => _notifSound = !_notifSound,
+          ),
+
+          const SizedBox(height: 8),
+
+          _bjoNotificationSwitch(
+            icon: Icons.vibration,
+            title: 'Getar',
+            subtitle: 'Getarkan perangkat saat notifikasi',
+            value: _notifVibration,
+            key: 'bjo_notif_vibration',
+            update: () => _notifVibration = !_notifVibration,
+          ),
+
+          const SizedBox(height: 20),
+
+          const Text(
+            'Mode Tenang',
+            style: TextStyle(
+              color: Color(0xFF102A43),
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          _bjoNotificationSwitch(
+            icon: Icons.do_not_disturb_on_outlined,
+            title: 'Jangan Ganggu',
+            subtitle: "Nonaktifkan notifikasi B'Jo sementara",
+            value: _notifDnd,
+            key: 'bjo_notif_dnd',
+            update: () => _notifDnd = !_notifDnd,
+          ),
+
+          const SizedBox(height: 20),
+
+          Container(
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: m8Blue.withOpacity(.08),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: m8Blue,
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Pengaturan notifikasi tersimpan otomatis.',
+                    style: TextStyle(
+                      color: m8BlueDark,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -10507,6 +10715,7 @@ class _ProductivityPageState
   void initState() {
     super.initState();
     _load();
+    _loadBJoNotifications();
   }
 
   @override
@@ -11489,6 +11698,10 @@ class _SettingsDetailPageState
 
   @override
   Widget build(BuildContext context) {
+
+    if (widget.title == 'Notifikasi') {
+      return _buildBJoNotificationSettings();
+    }
 
     if (widget.title == 'Tampilan') {
       return Scaffold(
