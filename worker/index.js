@@ -2654,6 +2654,172 @@ export default {
 
 
     // ============================================================
+    // GET PUBLIC USER PROFILE
+    // ============================================================
+    if (url.pathname === "/api/profile" && request.method === "GET") {
+      const m8Pin = String(url.searchParams.get("m8_pin") || "").trim();
+
+      if (!m8Pin) {
+        return json({
+          success: false,
+          error: "M8 PIN wajib diisi.",
+        }, 400);
+      }
+
+      if (!env.DB) {
+        return json({
+          success: false,
+          error: "Binding D1 DB belum tersedia.",
+        }, 500);
+      }
+
+      const user = await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          m8_pin,
+          bio,
+          profile_photo_url,
+          profile_background_url
+        FROM users
+        WHERE m8_pin = ? AND active = 1
+        LIMIT 1
+      `).bind(m8Pin).first();
+
+      if (!user) {
+        return json({
+          success: false,
+          error: "Profil pengguna tidak ditemukan.",
+        }, 404);
+      }
+
+      return json({
+        success: true,
+        user: user,
+      });
+    }
+
+    // ============================================================
+    // GET PUBLIC USER PROFILE
+    // ============================================================
+    if (url.pathname === "/api/profile" && request.method === "GET") {
+      const m8Pin = String(url.searchParams.get("m8_pin") || "").trim();
+
+      if (!m8Pin) {
+        return json({
+          success: false,
+          error: "M8 PIN wajib diisi.",
+        }, 400);
+      }
+
+      if (!env.DB) {
+        return json({
+          success: false,
+          error: "Binding D1 DB belum tersedia.",
+        }, 500);
+      }
+
+      const user = await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          m8_pin,
+          bio,
+          profile_photo_url,
+          profile_background_url
+        FROM users
+        WHERE m8_pin = ? AND active = 1
+        LIMIT 1
+      `).bind(m8Pin).first();
+
+      if (!user) {
+        return json({
+          success: false,
+          error: "Profil pengguna tidak ditemukan.",
+        }, 404);
+      }
+
+      return json({
+        success: true,
+        user: user,
+      });
+    }
+
+    // ============================================================
+    // UPDATE PROFILE BIO
+    // ============================================================
+    if (url.pathname === "/api/profile/bio" && request.method === "POST") {
+      const body = await request.json();
+
+      const m8Pin = String(body.m8_pin || "").trim();
+      const bio = String(body.bio || "").trim();
+
+      if (!m8Pin) {
+        return json({
+          success: false,
+          error: "M8 PIN wajib diisi.",
+        }, 400);
+      }
+
+      if (bio.length > 500) {
+        return json({
+          success: false,
+          error: "Bio maksimal 500 karakter.",
+        }, 400);
+      }
+
+      if (!env.DB) {
+        return json({
+          success: false,
+          error: "Binding D1 DB belum tersedia.",
+        }, 500);
+      }
+
+      const user = await env.DB.prepare(`
+        SELECT id
+        FROM users
+        WHERE m8_pin = ?
+        LIMIT 1
+      `).bind(m8Pin).first();
+
+      if (!user) {
+        return json({
+          success: false,
+          error: "Akun M8 tidak ditemukan.",
+        }, 404);
+      }
+
+      const result = await env.DB.prepare(`
+        UPDATE users
+        SET bio = ?
+        WHERE id = ?
+      `).bind(bio || null, user.id).run();
+
+      if (!result.success) {
+        throw new Error("Gagal memperbarui bio.");
+      }
+
+      const updated = await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          m8_pin,
+          bio,
+          profile_photo_url,
+          profile_background_url
+        FROM users
+        WHERE id = ?
+        LIMIT 1
+      `).bind(user.id).first();
+
+      return json({
+        success: true,
+        message: "Bio berhasil diperbarui.",
+        user: updated,
+      });
+    }
+
+    // ============================================================
     // UPDATE PROFILE NAME
     // ============================================================
     if (url.pathname === "/api/profile/name" && request.method === "POST") {

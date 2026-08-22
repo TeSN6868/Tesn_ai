@@ -9223,6 +9223,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
   XFile? _backgroundImage;
 
   late final TextEditingController _nameController;
+  late final TextEditingController _bioController;
 
   bool _uploading = false;
 
@@ -9232,11 +9233,15 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     _nameController = TextEditingController(
       text: widget.user['name']?.toString().trim() ?? '',
     );
+    _bioController = TextEditingController(
+      text: widget.user['bio']?.toString().trim() ?? '',
+    );
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _bioController.dispose();
     super.dispose();
   }
 
@@ -9718,10 +9723,14 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
   Future<void> _save() async {
     final newName = _nameController.text.trim();
     final oldName = widget.user['name']?.toString().trim() ?? '';
+    final newBio = _bioController.text.trim();
+    final oldBio = widget.user['bio']?.toString().trim() ?? '';
 
     final nameChanged = newName != oldName;
+    final bioChanged = newBio != oldBio;
 
     if (!nameChanged &&
+        !bioChanged &&
         _profileImage == null &&
         _backgroundImage == null) {
       _showError('Belum ada perubahan untuk disimpan.');
@@ -9735,6 +9744,11 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
 
     if (nameChanged && newName.length > 50) {
       _showError('Nama maksimal 50 karakter.');
+      return;
+    }
+
+    if (bioChanged && newBio.length > 500) {
+      _showError('Bio maksimal 500 karakter.');
       return;
     }
 
@@ -9777,6 +9791,36 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
         }
 
         widget.user['name'] = newName;
+      }
+
+      if (bioChanged) {
+        final m8Pin = widget.user['m8_pin']?.toString().trim() ?? '';
+
+        if (m8Pin.isEmpty) {
+          throw Exception('M8 ID tidak tersedia untuk memperbarui bio.');
+        }
+
+        final response = await http.post(
+          Uri.parse('$apiBase/api/profile/bio'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'm8_pin': m8Pin,
+            'bio': newBio,
+          }),
+        ).timeout(const Duration(seconds: 20));
+
+        final data = jsonDecode(response.body);
+
+        if (response.statusCode != 200 || data['success'] != true) {
+          throw Exception(
+            data['error']?.toString() ??
+                'Gagal memperbarui bio profil.',
+          );
+        }
+
+        widget.user['bio'] = newBio;
       }
 
       if (_profileImage != null) {
@@ -9924,6 +9968,73 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+              margin: const EdgeInsets.only(bottom: 10),
+              decoration: BoxDecoration(
+                color: m8White,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: m8Blue.withValues(alpha: 0.10),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.edit_note_rounded,
+                        color: m8Blue,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Tentang Aku',
+                        style: TextStyle(
+                          color: m8Text,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 11),
+                  TextField(
+                    controller: _bioController,
+                    maxLength: 500,
+                    maxLines: 5,
+                    minLines: 3,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                      hintText: 'Ceritakan sedikit tentang dirimu...',
+                      counterText: '',
+                      filled: true,
+                      fillColor: m8WhiteSoft,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      'Maksimal 500 karakter',
+                      style: TextStyle(
+                        color: m8Text.withValues(alpha: 0.55),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
