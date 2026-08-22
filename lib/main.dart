@@ -10289,6 +10289,11 @@ class _CallButton extends StatelessWidget {
 // B'JO TUGAS / PRODUCTIVITY
 // ============================================================
 
+
+// ============================================================
+// B'JO TUGAS / PRODUCTIVITY FULL
+// ============================================================
+
 class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
@@ -10298,18 +10303,9 @@ class TasksPage extends StatelessWidget {
   });
 
   void _open(BuildContext context, String title, IconData icon) {
-    if (title == 'Keuangan') {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const _FinancePage(),
-        ),
-      );
-      return;
-    }
-
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => _SimpleManagerPage(
+        builder: (_) => _ProductivityPage(
           title: title,
           icon: icon,
         ),
@@ -10403,7 +10399,7 @@ class TasksPage extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: m8Blue.withOpacity(0.10),
+                          color: m8Blue.withOpacity(.10),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Icon(
@@ -10453,33 +10449,40 @@ class TasksPage extends StatelessWidget {
   }
 }
 
+
 // ============================================================
-// CATATAN / AGENDA / TUGAS / PENGINGAT / TARGET / JURNAL
+// PRODUCTIVITY DETAIL
 // ============================================================
 
-class _SimpleManagerPage extends StatefulWidget {
+class _ProductivityPage extends StatefulWidget {
   final String title;
   final IconData icon;
 
-  const _SimpleManagerPage({
+  const _ProductivityPage({
     required this.title,
     required this.icon,
   });
 
   @override
-  State<_SimpleManagerPage> createState() =>
-      _SimpleManagerPageState();
+  State<_ProductivityPage> createState() =>
+      _ProductivityPageState();
 }
 
-class _SimpleManagerPageState
-    extends State<_SimpleManagerPage> {
-  final TextEditingController controller =
-      TextEditingController();
+class _ProductivityPageState
+    extends State<_ProductivityPage> {
 
-  List<String> entries = [];
+  final List<Map<String, dynamic>> items = [];
+
+  final titleController = TextEditingController();
+  final detailController = TextEditingController();
+
+  String priority = 'Normal';
+  DateTime? selectedDate;
+  TimeOfDay? selectedTime;
+  bool completed = false;
 
   String get storageKey =>
-      'bjo_productivity_${widget.title.toLowerCase()}';
+      'bjo_full_${widget.title.toLowerCase()}';
 
   @override
   void initState() {
@@ -10487,47 +10490,335 @@ class _SimpleManagerPageState
     _load();
   }
 
+  @override
+  void dispose() {
+    titleController.dispose();
+    detailController.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getStringList(storageKey) ?? [];
+    final prefs =
+        await SharedPreferences.getInstance();
 
-    if (!mounted) return;
+    final data = prefs.getString(storageKey);
 
-    setState(() {
-      entries = saved;
-    });
+    if (data == null || data.isEmpty) return;
+
+    try {
+      final decoded = jsonDecode(data);
+
+      if (!mounted) return;
+
+      setState(() {
+        items.clear();
+
+        for (final item in decoded) {
+          items.add(
+            Map<String, dynamic>.from(item),
+          );
+        }
+      });
+    } catch (_) {}
   }
 
   Future<void> _save() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(storageKey, entries);
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    await prefs.setString(
+      storageKey,
+      jsonEncode(items),
+    );
+  }
+
+  String _dateText(DateTime? date) {
+    if (date == null) return '';
+
+    return '${date.day.toString().padLeft(2, '0')}/'
+        '${date.month.toString().padLeft(2, '0')}/'
+        '${date.year}';
+  }
+
+  String _timeText(TimeOfDay? time) {
+    if (time == null) return '';
+
+    return '${time.hour.toString().padLeft(2, '0')}:'
+        '${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      initialDate: selectedDate ?? DateTime.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime:
+          selectedTime ?? TimeOfDay.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedTime = picked;
+      });
+    }
+  }
+
+  void _resetForm() {
+    titleController.clear();
+    detailController.clear();
+
+    priority = 'Normal';
+    selectedDate = null;
+    selectedTime = null;
+    completed = false;
   }
 
   Future<void> _add() async {
-    final text = controller.text.trim();
+    final title =
+        titleController.text.trim();
 
-    if (text.isEmpty) return;
+    if (title.isEmpty) return;
+
+    final item = <String, dynamic>{
+      'title': title,
+      'detail':
+          detailController.text.trim(),
+      'date': selectedDate?.toIso8601String(),
+      'time': selectedTime == null
+          ? null
+          : '${selectedTime!.hour}:'
+              '${selectedTime!.minute}',
+      'priority': priority,
+      'completed': completed,
+    };
 
     setState(() {
-      entries.insert(0, text);
-      controller.clear();
+      items.insert(0, item);
     });
 
     await _save();
+
+    _resetForm();
+
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _showAddDialog() async {
+    _resetForm();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: m8White,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 18,
+                right: 18,
+                top: 20,
+                bottom:
+                    MediaQuery.of(context)
+                            .viewInsets
+                            .bottom +
+                        20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tambah ${widget.title}',
+                      style: const TextStyle(
+                        fontSize: 21,
+                        fontWeight:
+                            FontWeight.w900,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    TextField(
+                      controller:
+                          titleController,
+                      decoration:
+                          InputDecoration(
+                        labelText:
+                            widget.title ==
+                                    'Tugas'
+                                ? 'Nama tugas'
+                                : 'Judul',
+                        border:
+                            OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius
+                                  .circular(14),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    TextField(
+                      controller:
+                          detailController,
+                      maxLines: 4,
+                      decoration:
+                          InputDecoration(
+                        labelText:
+                            'Keterangan',
+                        border:
+                            OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius
+                                  .circular(14),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    DropdownButtonFormField<
+                        String>(
+                      value: priority,
+                      decoration:
+                          const InputDecoration(
+                        labelText: 'Prioritas',
+                        border:
+                            OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Rendah',
+                          child:
+                              Text('Rendah'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Normal',
+                          child:
+                              Text('Normal'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Tinggi',
+                          child:
+                              Text('Tinggi'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setModalState(() {
+                            priority = value;
+                          });
+                        }
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child:
+                              OutlinedButton.icon(
+                            onPressed: () async {
+                              await _pickDate();
+                              setModalState(
+                                  () {});
+                            },
+                            icon: const Icon(
+                              Icons
+                                  .calendar_today,
+                            ),
+                            label: Text(
+                              selectedDate ==
+                                      null
+                                  ? 'Tanggal'
+                                  : _dateText(
+                                      selectedDate),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                            width: 10),
+                        Expanded(
+                          child:
+                              OutlinedButton.icon(
+                            onPressed: () async {
+                              await _pickTime();
+                              setModalState(
+                                  () {});
+                            },
+                            icon: const Icon(
+                              Icons.access_time,
+                            ),
+                            label: Text(
+                              selectedTime ==
+                                      null
+                                  ? 'Jam'
+                                  : _timeText(
+                                      selectedTime),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _add,
+                        icon: const Icon(
+                          Icons.save_outlined,
+                        ),
+                        label:
+                            const Text('Simpan'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _delete(int index) async {
     setState(() {
-      entries.removeAt(index);
+      items.removeAt(index);
     });
 
     await _save();
   }
 
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
+  Future<void> _toggle(int index) async {
+    setState(() {
+      items[index]['completed'] =
+          !(items[index]['completed'] ==
+              true);
+    });
+
+    await _save();
   }
 
   @override
@@ -10539,419 +10830,134 @@ class _SimpleManagerPageState
         foregroundColor: m8White,
         title: Text(widget.title),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: entries.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          widget.icon,
-                          size: 58,
-                          color: m8Blue,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Belum ada ${widget.title.toLowerCase()}.',
-                          style: const TextStyle(
-                            color: Color(0xFF71808C),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: entries.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        margin:
-                            const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          leading: Icon(
-                            widget.icon,
-                            color: m8Blue,
-                          ),
-                          title: Text(entries[index]),
-                          trailing: IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline,
-                            ),
-                            onPressed: () =>
-                                _delete(index),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      textInputAction:
-                          TextInputAction.done,
-                      onSubmitted: (_) => _add(),
-                      decoration: InputDecoration(
-                        hintText:
-                            'Tambahkan ${widget.title.toLowerCase()}...',
-                        border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FloatingActionButton(
-                    mini: true,
-                    backgroundColor: m8Blue,
-                    foregroundColor: m8White,
-                    onPressed: _add,
-                    child: const Icon(Icons.add),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ============================================================
-// KEUANGAN
-// ============================================================
-
-class _FinancePage extends StatefulWidget {
-  const _FinancePage();
-
-  @override
-  State<_FinancePage> createState() =>
-      _FinancePageState();
-}
-
-class _FinancePageState extends State<_FinancePage> {
-  List<Map<String, dynamic>> transactions = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data =
-        prefs.getString('bjo_finance_transactions');
-
-    if (data == null || data.isEmpty) return;
-
-    try {
-      final decoded = jsonDecode(data);
-
-      if (!mounted) return;
-
-      setState(() {
-        transactions =
-            List<Map<String, dynamic>>.from(
-          (decoded as List).map(
-            (e) => Map<String, dynamic>.from(e),
-          ),
-        );
-      });
-    } catch (_) {}
-  }
-
-  Future<void> _save() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      'bjo_finance_transactions',
-      jsonEncode(transactions),
-    );
-  }
-
-  double get income => transactions
-      .where((e) => e['type'] == 'in')
-      .fold(
-        0.0,
-        (sum, e) =>
-            sum + (e['amount'] as num).toDouble(),
-      );
-
-  double get expense => transactions
-      .where((e) => e['type'] == 'out')
-      .fold(
-        0.0,
-        (sum, e) =>
-            sum + (e['amount'] as num).toDouble(),
-      );
-
-  double get balance => income - expense;
-
-  String rupiah(double value) {
-    return 'Rp ${value.toStringAsFixed(0)}';
-  }
-
-  Future<void> _addTransaction(
-    bool isIncome,
-  ) async {
-    final amountController =
-        TextEditingController();
-    final noteController =
-        TextEditingController();
-
-    await showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(
-            isIncome
-                ? 'Tambah pemasukan'
-                : 'Tambah pengeluaran',
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: amountController,
-                keyboardType:
-                    TextInputType.number,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Jumlah',
-                  prefixText: 'Rp ',
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: noteController,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Keterangan',
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final amount =
-                    double.tryParse(
-                          amountController.text
-                              .trim(),
-                        ) ??
-                        0;
-
-                if (amount <= 0) return;
-
-                setState(() {
-                  transactions.insert(
-                    0,
-                    {
-                      'type':
-                          isIncome ? 'in' : 'out',
-                      'amount': amount,
-                      'note': noteController
-                              .text
-                              .trim()
-                              .isEmpty
-                          ? 'Tanpa keterangan'
-                          : noteController.text
-                              .trim(),
-                    },
-                  );
-                });
-
-                await _save();
-
-                if (dialogContext.mounted) {
-                  Navigator.pop(dialogContext);
-                }
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        );
-      },
-    );
-
-    amountController.dispose();
-    noteController.dispose();
-  }
-
-  Future<void> _deleteTransaction(
-    int index,
-  ) async {
-    setState(() {
-      transactions.removeAt(index);
-    });
-
-    await _save();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: m8WhiteSoft,
-      appBar: AppBar(
+      floatingActionButton:
+          FloatingActionButton(
         backgroundColor: m8Blue,
         foregroundColor: m8White,
-        title: const Text('Keuangan'),
+        onPressed: _showAddDialog,
+        child: const Icon(Icons.add),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+      body: items.isEmpty
+          ? Center(
               child: Column(
+                mainAxisSize:
+                    MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Saldo',
-                    style: TextStyle(
-                      color: Color(0xFF71808C),
-                    ),
+                  Icon(
+                    widget.icon,
+                    size: 62,
+                    color: m8Blue,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(
+                      height: 12),
                   Text(
-                    rupiah(balance),
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF102A43),
+                    'Belum ada ${widget.title.toLowerCase()}.',
+                    style:
+                        const TextStyle(
+                      color:
+                          Color(0xFF71808C),
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceAround,
-                    children: [
-                      Column(
-                        children: [
-                          const Text('Pemasukan'),
-                          const SizedBox(height: 4),
-                          Text(
-                            rupiah(income),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          const Text('Pengeluaran'),
-                          const SizedBox(height: 4),
-                          Text(
-                            rupiah(expense),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  const SizedBox(height: 14),
+                  ElevatedButton.icon(
+                    onPressed:
+                        _showAddDialog,
+                    icon:
+                        const Icon(Icons.add),
+                    label: Text(
+                      'Tambah ${widget.title}',
+                    ),
                   ),
                 ],
               ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () =>
-                      _addTransaction(true),
-                  icon: const Icon(Icons.add),
-                  label:
-                      const Text('Pemasukan'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () =>
-                      _addTransaction(false),
-                  icon:
-                      const Icon(Icons.remove),
-                  label:
-                      const Text('Pengeluaran'),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 18),
-
-          if (transactions.isEmpty)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(30),
-                child: Text(
-                  'Belum ada transaksi.',
-                  style: TextStyle(
-                    color: Color(0xFF71808C),
-                  ),
-                ),
-              ),
             )
-          else
-            ...transactions.asMap().entries.map(
-              (entry) {
-                final index = entry.key;
-                final item = entry.value;
-                final isIn =
-                    item['type'] == 'in';
+          : ListView.builder(
+              padding:
+                  const EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                90,
+              ),
+              itemCount: items.length,
+              itemBuilder:
+                  (context, index) {
+                final item =
+                    items[index];
+
+                final done =
+                    item['completed'] ==
+                        true;
 
                 return Card(
+                  margin:
+                      const EdgeInsets.only(
+                    bottom: 10,
+                  ),
                   child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor:
-                          m8Blue.withOpacity(.10),
-                      child: Icon(
-                        isIn
-                            ? Icons.arrow_downward
-                            : Icons.arrow_upward,
-                        color: m8Blue,
-                      ),
-                    ),
+                    leading: widget.title ==
+                            'Tugas'
+                        ? Checkbox(
+                            value: done,
+                            onChanged: (_) =>
+                                _toggle(index),
+                          )
+                        : CircleAvatar(
+                            backgroundColor:
+                                m8Blue.withOpacity(
+                                    .10),
+                            child: Icon(
+                              widget.icon,
+                              color: m8Blue,
+                            ),
+                          ),
                     title: Text(
-                      rupiah(
-                        (item['amount'] as num)
-                            .toDouble(),
+                      item['title']
+                          .toString(),
+                      style: TextStyle(
+                        fontWeight:
+                            FontWeight.w800,
+                        decoration: done
+                            ? TextDecoration
+                                .lineThrough
+                            : null,
                       ),
                     ),
                     subtitle:
-                        Text(item['note'].toString()),
+                        Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment
+                              .start,
+                      children: [
+                        if ((item['detail']
+                                ?.toString()
+                                .isNotEmpty ??
+                            false))
+                          Text(
+                            item['detail']
+                                .toString(),
+                          ),
+                        if (item['date'] !=
+                            null)
+                          Text(
+                            'Tanggal: ${_dateText(DateTime.tryParse(item['date'].toString()))}',
+                          ),
+                        if (item['priority'] !=
+                            null)
+                          Text(
+                            'Prioritas: ${item['priority']}',
+                          ),
+                      ],
+                    ),
+                    isThreeLine: true,
                     trailing: IconButton(
-                      icon: const Icon(
-                        Icons.delete_outline,
-                      ),
-                      onPressed: () =>
-                          _deleteTransaction(index),
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => _delete(index),
                     ),
                   ),
                 );
               },
             ),
-        ],
-      ),
     );
   }
 }
