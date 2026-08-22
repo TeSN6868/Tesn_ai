@@ -9222,7 +9222,23 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
   XFile? _profileImage;
   XFile? _backgroundImage;
 
+  late final TextEditingController _nameController;
+
   bool _uploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(
+      text: widget.user['name']?.toString().trim() ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   String get currentPhotoUrl =>
       widget.user['profile_photo_url']?.toString().trim() ?? '';
@@ -9700,8 +9716,25 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
   }
 
   Future<void> _save() async {
-    if (_profileImage == null && _backgroundImage == null) {
+    final newName = _nameController.text.trim();
+    final oldName = widget.user['name']?.toString().trim() ?? '';
+
+    final nameChanged = newName != oldName;
+
+    if (!nameChanged &&
+        _profileImage == null &&
+        _backgroundImage == null) {
       _showError('Belum ada perubahan untuk disimpan.');
+      return;
+    }
+
+    if (nameChanged && newName.length < 2) {
+      _showError('Nama minimal 2 karakter.');
+      return;
+    }
+
+    if (nameChanged && newName.length > 50) {
+      _showError('Nama maksimal 50 karakter.');
       return;
     }
 
@@ -9714,6 +9747,36 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
 
       if (userId == null) {
         throw Exception('ID akun B’Jo tidak tersedia.');
+      }
+
+      if (nameChanged) {
+        final m8Pin = widget.user['m8_pin']?.toString().trim() ?? '';
+
+        if (m8Pin.isEmpty) {
+          throw Exception('M8 ID tidak tersedia untuk memperbarui nama.');
+        }
+
+        final response = await http.post(
+          Uri.parse('$apiBase/api/profile/name'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'm8_pin': m8Pin,
+            'name': newName,
+          }),
+        ).timeout(const Duration(seconds: 20));
+
+        final data = jsonDecode(response.body);
+
+        if (response.statusCode != 200 || data['success'] != true) {
+          throw Exception(
+            data['error']?.toString() ??
+                'Gagal memperbarui nama profil.',
+          );
+        }
+
+        widget.user['name'] = newName;
       }
 
       if (_profileImage != null) {
@@ -9814,6 +9877,59 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
               ),
             ),
             const SizedBox(height: 10),
+
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+              margin: const EdgeInsets.only(bottom: 10),
+              decoration: BoxDecoration(
+                color: m8White,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: m8Blue.withValues(alpha: 0.10),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.badge_rounded,
+                        color: m8Blue,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Nama B’Jo',
+                        style: TextStyle(
+                          color: m8Text,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 11),
+                  TextField(
+                    controller: _nameController,
+                    textCapitalization: TextCapitalization.words,
+                    maxLength: 50,
+                    decoration: InputDecoration(
+                      hintText: 'Masukkan nama',
+                      counterText: '',
+                      filled: true,
+                      fillColor: m8WhiteSoft,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
             _optionCard(
               icon: Icons.person_rounded,
