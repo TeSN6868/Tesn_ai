@@ -9289,18 +9289,46 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     try {
       final picked = await _picker.pickImage(
         source: source,
-        imageQuality: 88,
-        maxWidth: 2200,
-        maxHeight: 1400,
+        imageQuality: 92,
+        maxWidth: 2400,
+        maxHeight: 1600,
       );
 
-      if (picked == null || !mounted) return;
+      if (picked == null) return;
+
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: picked.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 92,
+        aspectRatio: const CropAspectRatio(
+          ratioX: 16,
+          ratioY: 9,
+        ),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Atur Background Profil',
+            toolbarColor: m8BlueDark,
+            toolbarWidgetColor: m8White,
+            backgroundColor: m8White,
+            activeControlsWidgetColor: m8Blue,
+            lockAspectRatio: true,
+            hideBottomControls: false,
+          ),
+          IOSUiSettings(
+            title: 'Atur Background Profil',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+
+      if (cropped == null || !mounted) return;
 
       setState(() {
-        _backgroundImage = picked;
+        _backgroundImage = XFile(cropped.path);
       });
     } catch (e) {
-      _showError('Gagal memilih background: $e');
+      _showError('Gagal memilih atau crop background: $e');
     }
   }
 
