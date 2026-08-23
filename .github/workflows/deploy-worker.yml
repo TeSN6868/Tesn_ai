@@ -43,11 +43,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          HAS_EXPIRES_AT=$(wrangler d1 execute m8-database --remote --config wrangler.toml --command "SELECT COUNT(*) AS count FROM pragma_table_info('sessions') WHERE name = 'expires_at';" --json | grep -o '"count":[0-9]*' | head -1 | grep -o '[0-9]*$' || true)
-
-          if [ "$HAS_EXPIRES_AT" = "1" ]; then
-            wrangler d1 execute m8-database --remote --config wrangler.toml --command "INSERT INTO d1_migrations (name) SELECT '0003_add_session_expires_at.sql' WHERE NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name = '0003_add_session_expires_at.sql');"
-          fi
+          wrangler d1 execute m8-database --remote --config wrangler.toml --command "INSERT INTO d1_migrations (name) SELECT '0003_add_session_expires_at.sql' WHERE NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name = '0003_add_session_expires_at.sql');"
 
           wrangler d1 execute m8-database --remote --config wrangler.toml --command "SELECT * FROM d1_migrations ORDER BY id;"
 
