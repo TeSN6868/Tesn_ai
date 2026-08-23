@@ -1,1 +1,3 @@
-ALTER TABLE users ADD COLUMN profile_background_url TEXT;
+-- 0002_add_profile_background.sql
+-- profile_background_url sudah ada di database remote.
+-- Migration dipertahankan sebagai placeholder agar urutan migration tetap konsisten.
