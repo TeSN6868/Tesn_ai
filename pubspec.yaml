@@ -73,14 +73,21 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/sounds/bjo_notification.wav
+    - assets/sounds/bjo_ringtone.wav
+    - assets/sounds/bjo_connecting.wav
+    - assets/sounds/bjo_connected.wav
+    - assets/sounds/bjo_rejected.wav
+    - assets/sounds/bjo_failed.wav
+    - assets/sounds/bjo_ended.wav
     - assets/m8_icon-final.png
-    - assets/sounds/m8_hey.wav
-    - assets/sounds/m8_ringtone_02.wav
-    - assets/sounds/m8_ringtone_03.wav
-    - assets/sounds/m8_ringtone_04.wav
-    - assets/sounds/m8_ringtone_05.wav
-    - assets/sounds/m8_ringtone_06.wav
-    - assets/sounds/m8_notification.wav
+
+
+
+
+
+
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

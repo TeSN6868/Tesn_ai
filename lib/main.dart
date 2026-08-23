@@ -32,24 +32,11 @@ Future<void> _m8StartCallRinging() async {
   try {
     _m8RingingTimer?.cancel();
     await _m8CallSoundPlayer.stop();
-    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.release);
+    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.loop);
     await _m8CallSoundPlayer.setVolume(1.0);
-
-    // Nada sambung telepon sederhana:
-    // TUT ... jeda ... TUT ... jeda ...
-    await _m8CallSoundPlayer.play(AssetSource('sounds/m8_call_ringing.wav'));
-
-    _m8RingingTimer = Timer.periodic(const Duration(milliseconds: 1800), (
-      _,
-    ) async {
-      try {
-        await _m8CallSoundPlayer.play(
-          AssetSource('sounds/m8_call_ringing.wav'),
-        );
-      } catch (e) {
-        debugPrint('[M8 CALL SOUND] RING ERROR: $e');
-      }
-    });
+    await _m8CallSoundPlayer.play(
+      AssetSource('sounds/bjo_ringtone.wav'),
+    );
 
     debugPrint('[M8 CALL SOUND] RINGING START');
   } catch (e) {
@@ -84,19 +71,19 @@ Future<void> _m8PlayCallSound(String asset) async {
 }
 
 Future<void> _m8CallConnectedSound() async {
-  await _m8PlayCallSound('sounds/m8_call_connected.wav');
+  await _m8PlayCallSound('sounds/bjo_connected.wav');
 }
 
 Future<void> _m8CallRejectedSound() async {
-  await _m8PlayCallSound('sounds/m8_call_rejected.wav');
+  await _m8PlayCallSound('sounds/bjo_rejected.wav');
 }
 
 Future<void> _m8CallFailedSound() async {
-  await _m8PlayCallSound('sounds/m8_call_failed.wav');
+  await _m8PlayCallSound('sounds/bjo_failed.wav');
 }
 
 Future<void> _m8CallEndedSound() async {
-  await _m8PlayCallSound('sounds/m8_call_ended.wav');
+  await _m8PlayCallSound('sounds/bjo_ended.wav');
 }
 
 const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
@@ -1965,17 +1952,7 @@ class _HomePageState extends State<HomePage> {
       await _incomingRingtonePlayer.stop();
 
       final prefs = await SharedPreferences.getInstance();
-      final selected = prefs.getString('m8_selected_ringtone') ?? "B'Jo Tone 01";
-
-      const ringtoneAssets = <String, String>{
-        "B'Jo Tone 01": 'sounds/m8_ringtone_02.wav',
-        "B'Jo Tone 02": 'sounds/m8_ringtone_03.wav',
-        "B'Jo Tone 03": 'sounds/m8_ringtone_04.wav',
-        "B'Jo Tone 04": 'sounds/m8_ringtone_05.wav',
-        "B'Jo Tone 05": 'sounds/m8_ringtone_06.wav',
-      };
-
-      final asset = ringtoneAssets[selected] ?? 'sounds/m8_ringtone_02.wav';
+      const asset = 'sounds/bjo_ringtone.wav';
 
       await _incomingRingtonePlayer.setReleaseMode(ReleaseMode.loop);
       await _incomingRingtonePlayer.setVolume(1.0);
@@ -6769,7 +6746,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
       await _chatHeyPlayer.setVolume(1.0);
 
-      await _chatHeyPlayer.play(AssetSource('sounds/m8_hey.wav'));
+      await _chatHeyPlayer.play(AssetSource('sounds/bjo_notification.wav'));
 
       debugPrint('M8 HEY CHAT: SOUND PLAY');
     } catch (e) {

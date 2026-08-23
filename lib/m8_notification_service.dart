@@ -6,8 +6,8 @@ class M8NotificationService {
 
   static const AndroidNotificationChannel _chatChannel =
       AndroidNotificationChannel(
-        'm8_chat_v4',
-        'M8 Chat',
+        'bjo_messages_v1',
+        'B'Jo Messages',
         description: 'Notifikasi pesan masuk M8',
         importance: Importance.high,
         playSound: true,
@@ -36,13 +36,13 @@ class M8NotificationService {
     required String message,
   }) async {
     const details = AndroidNotificationDetails(
-      'm8_chat_v4',
-      'M8 Chat',
+      'bjo_messages_v1',
+      'B'Jo Messages',
       channelDescription: 'Notifikasi pesan masuk M8',
       importance: Importance.high,
       priority: Priority.high,
       playSound: true,
-      sound: RawResourceAndroidNotificationSound('m8_notification'),
+      sound: RawResourceAndroidNotificationSound('bjo_notification'),
     );
 
     await _notifications.show(
