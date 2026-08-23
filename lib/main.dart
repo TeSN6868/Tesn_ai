@@ -10570,7 +10570,7 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                                 ? null
                                 : () {
                                     Clipboard.setData(
-                                      ClipboardData(text: pin),
+                                      ClipboardData(text: widget.user['pin']?.toString() ?? ''),
                                     );
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
