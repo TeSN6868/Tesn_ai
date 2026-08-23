@@ -1001,84 +1001,170 @@ class _RegisterPageState extends State<RegisterPage> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
-        return AlertDialog(
+        return Dialog(
           backgroundColor: m8White,
           surfaceTintColor: Colors.transparent,
-          title: const Row(
-            children: [
-              Icon(
-                Icons.verified_user_outlined,
-                color: m8BlueDark,
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'PIN B\'Jo Kamu',
+          insetPadding: const EdgeInsets.symmetric(horizontal: 22),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  width: 68,
+                  height: 68,
+                  decoration: BoxDecoration(
+                    color: m8Blue.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.key_rounded,
+                    color: m8Blue,
+                    size: 32,
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                const Text(
+                  "PIN B'Jo Kamu",
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: m8BlueDark,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'PIN B\'Jo dibuat otomatis oleh sistem. '
-                'Kamu tidak dapat memilih atau mengubah PIN ini.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: m8Text,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 22),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 18,
-                  horizontal: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: m8White,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: m8Blue,
-                    width: 1.5,
-                  ),
-                ),
-                child: SelectableText(
-                  pin,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: m8BlueDark,
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 4,
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Simpan PIN ini. PIN akan digunakan sebagai identitas akun B\'Jo.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: m8TextMuted,
-                  fontWeight: FontWeight.w500,
+
+                const SizedBox(height: 8),
+
+                const Text(
+                  "Akun B'Jo kamu sudah siap.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: m8Text,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: const Text('LANJUT DAFTAR'),
+
+                const SizedBox(height: 6),
+
+                const Text(
+                  "PIN ini dibuat otomatis dan akan menjadi identitas akunmu di B'Jo.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: m8TextMuted,
+                    fontSize: 13,
+                    height: 1.45,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 20,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F9FD),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: m8Blue.withValues(alpha: 0.18),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: SelectableText(
+                    pin,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: m8BlueDark,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 5,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text(
+                  "Contoh format: abcd1234",
+                  style: TextStyle(
+                    color: m8TextMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                    color: m8Blue.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: m8Blue,
+                        size: 19,
+                      ),
+                      SizedBox(width: 9),
+                      Expanded(
+                        child: Text(
+                          "Simpan PIN ini baik-baik. Kamu akan menggunakannya untuk masuk dan terhubung dengan pengguna B'Jo lainnya.",
+                          style: TextStyle(
+                            color: m8Text,
+                            fontSize: 12,
+                            height: 1.4,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 22),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop(true);
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: m8Blue,
+                      foregroundColor: m8White,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      "LANJUT DAFTAR",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.7,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
