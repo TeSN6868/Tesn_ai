@@ -8525,33 +8525,129 @@ class _StoryPageState extends State<StoryPage> {
               )
             : const Icon(Icons.add_rounded),
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadPosts,
-        child: loading
-            ? const Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                padding: const EdgeInsets.only(top: 8, bottom: 100),
-                itemCount: posts.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return _BJoComposerCard(
-                      user: widget.user,
-                      onTap: posting ? null : _openComposer,
-                    );
-                  }
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: CustomPaint(
+              painter: _BJoMomentsBackgroundPainter(),
+            ),
+          ),
+          RefreshIndicator(
+            onRefresh: _loadPosts,
+            color: m8Blue,
+            backgroundColor: m8White,
+            child: loading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: m8Blue,
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(
+                      top: 8,
+                      bottom: 100,
+                    ),
+                    itemCount: posts.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return _BJoComposerCard(
+                          user: widget.user,
+                          onTap: posting ? null : _openComposer,
+                        );
+                      }
 
-                  final post = posts[index - 1];
+                      final post = posts[index - 1];
 
-                  return _BJoPostCard(
-                    post: post,
-                    currentPin: myPin,
-                    timeAgo: _timeAgo(post['created_at']),
-                  );
-                },
-              ),
+                      return _BJoPostCard(
+                        post: post,
+                        currentPin: myPin,
+                        timeAgo: _timeAgo(post['created_at']),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }
+class _BJoMomentsBackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+
+    // Biru di bagian atas, perlahan menjadi putih di bagian bawah.
+    final gradient = const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0xFF0B5ED7),
+        Color(0xFF3D82D8),
+        Color(0xFFEAF3FF),
+        Color(0xFFFFFFFF),
+      ],
+      stops: [0.0, 0.22, 0.72, 1.0],
+    );
+
+    canvas.drawRect(
+      rect,
+      Paint()..shader = gradient.createShader(rect),
+    );
+
+    // Motif path yang sangat halus.
+    final pathPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.12);
+
+    final softPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.035);
+
+    for (double y = -size.height; y < size.height * 1.5; y += 105) {
+      final path = Path()
+        ..moveTo(-80, y + 90)
+        ..cubicTo(
+          size.width * 0.20,
+          y - 15,
+          size.width * 0.38,
+          y + 175,
+          size.width * 0.58,
+          y + 70,
+        )
+        ..cubicTo(
+          size.width * 0.78,
+          y - 20,
+          size.width * 0.92,
+          y + 150,
+          size.width + 100,
+          y + 45,
+        );
+
+      canvas.drawPath(path, pathPaint);
+      canvas.drawPath(path, softPaint);
+    }
+
+    // Titik kecil sebagai aksen.
+    final dotPaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.16);
+
+    for (double y = 35; y < size.height; y += 105) {
+      for (double x = 24; x < size.width; x += 78) {
+        canvas.drawCircle(
+          Offset(
+            x + ((y / 105).floor() % 2) * 28,
+            y,
+          ),
+          1.7,
+          dotPaint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _BJoComposerCard extends StatelessWidget {
