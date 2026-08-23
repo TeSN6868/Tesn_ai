@@ -1687,6 +1687,26 @@ export default {
       }
 
       // ============================================================
+      // BJO PRESENCE HEARTBEAT
+      // ============================================================
+
+      if (url.pathname === "/api/presence/heartbeat" && request.method === "POST") {
+        const session = await getSessionUser(request, env);
+
+        if (!session) {
+          return json({
+            success: false,
+            error: "Unauthorized"
+          }, 401);
+        }
+
+        return json({
+          success: true,
+          last_seen_at: Math.floor(Date.now() / 1000)
+        });
+      }
+
+      // ============================================================
       // CREATE CHAT
       // ============================================================
 

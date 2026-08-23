@@ -1289,6 +1289,41 @@ class BJoMainShell extends StatefulWidget {
 
 class _BJoMainShellState extends State<BJoMainShell> {
   int currentIndex = 0;
+  Timer? _presenceTimer;
+
+  Future<void> _sendPresenceHeartbeat() async {
+    if (widget.token.trim().isEmpty) return;
+
+    try {
+      await http.post(
+        Uri.parse('$apiBase/api/presence/heartbeat'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+    } catch (_) {
+      // Presence tidak boleh mengganggu aplikasi.
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _sendPresenceHeartbeat();
+
+    _presenceTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _sendPresenceHeartbeat(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _presenceTimer?.cancel();
+    super.dispose();
+  }
 
   String get myPin =>
       widget.user['m8_pin']?.toString() ??
