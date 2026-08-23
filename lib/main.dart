@@ -2872,6 +2872,85 @@ class _ChatsPageState extends State<ChatsPage> {
     );
   }
 
+
+
+
+
+
+
+Widget buildEmptyMessenger() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: m8Blue.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.chat_bubble_outline_rounded,
+                size: 32,
+                color: m8Blue,
+              ),
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'Belum ada percakapan',
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: m8Text,
+              ),
+            ),
+            const SizedBox(height: 7),
+            const Text(
+              'Mulai percakapan pribadi atau buat grup baru.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: m8TextMuted,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: showNewChatMenu,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Mulai Chat'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+Widget _buildPremiumAvatar({
+    required String name,
+    String photoUrl = '',
+    bool group = false,
+  }) {
+    return CircleAvatar(
+      radius: 25,
+      backgroundColor: m8Blue.withValues(alpha: 0.12),
+      backgroundImage:
+          photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+      child: photoUrl.isEmpty
+          ? Icon(
+              group
+                  ? Icons.groups_rounded
+                  : Icons.person_rounded,
+              color: m8Blue,
+              size: group ? 25 : 23,
+            )
+          : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
