@@ -602,107 +602,132 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: m8BlueDark,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: <Color>[m8Blue, m8BlueDark, m8Blue],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: <Color>[
+              m8BlueDark,
+              m8Blue,
+              Color(0xFF0E5C91),
+            ],
             stops: <double>[0.0, 0.48, 1.0],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+              padding: const EdgeInsets.fromLTRB(24, 34, 24, 28),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 430),
                 child: Column(
                   children: <Widget>[
+                    const SizedBox(height: 12),
+
                     const Text(
-                      'M8',
+                      "B'Jo",
                       style: TextStyle(
-                        fontSize: 34,
+                        color: m8White,
+                        fontSize: 48,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 2,
+                        letterSpacing: -1.5,
                       ),
                     ),
 
-                    const SizedBox(height: 2),
-
-                    const Text(
-                      'MESSENGER',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        letterSpacing: 4,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 4),
 
                     Text(
-                      'Private. Secure. Connected.',
+                      "Tempat Kita Terhubung",
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: .82),
-                        fontSize: 14,
+                        color: m8White.withValues(alpha: 0.88),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 34),
 
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: .13),
+                        color: m8White,
                         borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: m8Blue),
                         boxShadow: <BoxShadow>[
                           BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 30,
-                            offset: Offset(0, 16),
+                            color: Colors.black.withValues(alpha: 0.18),
+                            blurRadius: 34,
+                            offset: const Offset(0, 18),
                           ),
                         ],
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
+                          const Text(
+                            "Selamat datang kembali",
+                            style: TextStyle(
+                              color: m8BlueDark,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          Text(
+                            "Masuk ke akun B'Jo kamu.",
+                            style: TextStyle(
+                              color: m8TextMuted,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+
+                          const SizedBox(height: 22),
+
                           TextField(
-                            cursorColor: m8BlueDark,
                             controller: pinController,
+                            cursorColor: m8Blue,
                             textInputAction: TextInputAction.next,
+                            keyboardType: TextInputType.number,
                             style: const TextStyle(
                               color: m8BlueDark,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                             ),
                             decoration: InputDecoration(
-                              labelText: 'M8 PIN',
-                              hintText: 'Masukkan M8 PIN',
-                              labelStyle: const TextStyle(
-                                color: m8Text,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              hintStyle: const TextStyle(color: m8TextMuted),
+                              labelText: "B'Jo PIN",
+                              hintText: "Masukkan PIN kamu",
                               prefixIcon: const Icon(
                                 Icons.key_rounded,
-                                color: m8BlueDark,
+                                color: m8Blue,
+                              ),
+                              labelStyle: const TextStyle(
+                                color: m8TextMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              floatingLabelStyle: const TextStyle(
+                                color: m8Blue,
+                                fontWeight: FontWeight.w700,
                               ),
                               filled: true,
-                              fillColor: m8White,
+                              fillColor: const Color(0xFFF4F8FC),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 17,
+                              ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(17),
                                 borderSide: BorderSide(
-                                  color: m8BlueDark.withValues(alpha: 0.22),
+                                  color: m8Blue.withValues(alpha: 0.14),
                                 ),
                               ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(17),
-                                ),
-                                borderSide: BorderSide(
-                                  color: Colors.white,
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(17),
+                                borderSide: const BorderSide(
+                                  color: m8Blue,
                                   width: 1.5,
                                 ),
                               ),
@@ -712,24 +737,20 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 14),
 
                           TextField(
-                            cursorColor: m8BlueDark,
                             controller: passwordController,
+                            cursorColor: m8Blue,
                             obscureText: obscurePassword,
                             onSubmitted: (_) => login(),
                             style: const TextStyle(
                               color: m8BlueDark,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                             ),
                             decoration: InputDecoration(
-                              labelText: 'Password',
-                              labelStyle: const TextStyle(color: m8BlueDark),
-                              floatingLabelStyle: const TextStyle(
-                                color: m8BlueDark,
-                              ),
-                              hintStyle: const TextStyle(color: m8TextMuted),
+                              labelText: "Password",
+                              hintText: "Masukkan password",
                               prefixIcon: const Icon(
                                 Icons.lock_outline_rounded,
-                                color: m8BlueDark,
+                                color: m8Blue,
                               ),
                               suffixIcon: IconButton(
                                 onPressed: () {
@@ -741,30 +762,40 @@ class _LoginPageState extends State<LoginPage> {
                                   obscurePassword
                                       ? Icons.visibility_outlined
                                       : Icons.visibility_off_outlined,
-                                  color: m8BlueDark,
+                                  color: m8Blue,
                                 ),
                               ),
+                              labelStyle: const TextStyle(
+                                color: m8TextMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              floatingLabelStyle: const TextStyle(
+                                color: m8Blue,
+                                fontWeight: FontWeight.w700,
+                              ),
                               filled: true,
-                              fillColor: m8White,
+                              fillColor: const Color(0xFFF4F8FC),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 17,
+                              ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(17),
                                 borderSide: BorderSide(
-                                  color: m8BlueDark.withValues(alpha: 0.22),
+                                  color: m8Blue.withValues(alpha: 0.14),
                                 ),
                               ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(17),
-                                ),
-                                borderSide: BorderSide(
-                                  color: Colors.white,
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(17),
+                                borderSide: const BorderSide(
+                                  color: m8Blue,
                                   width: 1.5,
                                 ),
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 22),
 
                           SizedBox(
                             width: double.infinity,
@@ -774,57 +805,60 @@ class _LoginPageState extends State<LoginPage> {
                               style: FilledButton.styleFrom(
                                 backgroundColor: m8Blue,
                                 foregroundColor: m8White,
+                                disabledBackgroundColor:
+                                    m8Blue.withValues(alpha: 0.55),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(17),
                                 ),
-                                elevation: 8,
+                                elevation: 0,
                               ),
                               child: loading
                                   ? const SizedBox(
                                       width: 22,
                                       height: 22,
                                       child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                                        strokeWidth: 2.2,
+                                        color: m8White,
                                       ),
                                     )
                                   : const Text(
-                                      'MASUK KE M8',
+                                      "MASUK KE B'JO",
                                       style: TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.8,
                                       ),
                                     ),
                             ),
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
 
                           SizedBox(
                             width: double.infinity,
-                            height: 54,
+                            height: 50,
                             child: TextButton(
                               onPressed: loading
                                   ? null
                                   : () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (_) => const RegisterPage(),
+                                          builder: (_) =>
+                                              const RegisterPage(),
                                         ),
                                       );
                                     },
                               style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-
+                                foregroundColor: m8Blue,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(17),
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
                               child: const Text(
-                                'Belum punya akun : Daftar',
+                                "Belum punya akun? Daftar",
                                 style: TextStyle(
                                   color: m8Blue,
                                   fontWeight: FontWeight.w700,
-                                  letterSpacing: 1,
                                 ),
                               ),
                             ),
@@ -836,10 +870,11 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 22),
 
                     Text(
-                      'M8 Messenger API • Online',
+                      "B'Jo • Tempat Kita Terhubung",
                       style: TextStyle(
-                        fontSize: 12,
-                        color: m8White.withValues(alpha: 0.72),
+                        color: m8White.withValues(alpha: 0.68),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
