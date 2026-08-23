@@ -10025,7 +10025,7 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
 // ============================================================
 
 
-class BJoProfilePage extends StatelessWidget {
+class BJoProfilePage extends StatefulWidget {
   final Map<String, dynamic> user;
   final String token;
 
@@ -10035,42 +10035,76 @@ class BJoProfilePage extends StatelessWidget {
     required this.token,
   });
 
+
+  @override
+  State<BJoProfilePage> createState() => _BJoProfilePageState();
+}
+
+class _BJoProfilePageState extends State<BJoProfilePage> {
+  bool _isOnline = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOnlineStatus();
+  }
+
+  Future<void> _loadOnlineStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+
+    setState(() {
+      _isOnline = prefs.getBool('bjo_online_status') ?? true;
+    });
+  }
+
+  Future<void> _toggleOnlineStatus() async {
+    final value = !_isOnline;
+
+    setState(() {
+      _isOnline = value;
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('bjo_online_status', value);
+  }
+
   String get name {
-    final v = user['name']?.toString().trim();
+    final v = widget.user['name']?.toString().trim();
     return v == null || v.isEmpty ? "Pengguna B'Jo" : v;
   }
 
   String get pin {
-    final v = user['m8_pin']?.toString() ??
-        user['pin']?.toString() ??
+    final v = widget.user['m8_pin']?.toString() ??
+        widget.user['pin']?.toString() ??
         '';
     return v.trim();
   }
 
   String get photoUrl {
-    return (user['profile_photo_url'] ??
-            user['photo_url'] ??
-            user['avatar_url'] ??
+    return (widget.user['profile_photo_url'] ??
+            widget.user['photo_url'] ??
+            widget.user['avatar_url'] ??
             '')
         .toString();
   }
 
   String get backgroundUrl {
-      return (user['profile_background_url'] ??
-              user['background_url'] ??
+      return (widget.user['profile_background_url'] ??
+              widget.user['background_url'] ??
               '')
           .toString()
           .trim();
     }
 
     String get username {
-    final v = user['username']?.toString().trim();
+    final v = widget.user['username']?.toString().trim();
     if (v != null && v.isNotEmpty) return '@$v';
     return '';
   }
 
   String get bio {
-    final v = user['bio']?.toString().trim();
+    final v = widget.user['bio']?.toString().trim();
     return v ?? '';
   }
 
@@ -10265,11 +10299,13 @@ class BJoProfilePage extends StatelessWidget {
                     const SizedBox(height: 9),
 
                     Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 13,
-                          vertical: 6,
-                        ),
+                      child: GestureDetector(
+                        onTap: _toggleOnlineStatus,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 13,
+                            vertical: 6,
+                          ),
                         decoration: BoxDecoration(
                           color: m8White.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(30),
@@ -10283,22 +10319,33 @@ class BJoProfilePage extends StatelessWidget {
                             Container(
                               width: 7,
                               height: 7,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFBDECC8),
-                                shape: BoxShape.circle,
-                              ),
+                              decoration: BoxDecoration(
+                                  color: _isOnline
+                                      ? const Color(0xFFBDECC8)
+                                      : m8White.withValues(alpha: 0.45),
+                                  shape: BoxShape.circle,
+                                ),
                             ),
                             const SizedBox(width: 7),
                             Text(
-                              "Online",
-                              style: TextStyle(
-                                color: m8White.withValues(alpha: 0.94),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
+                                _isOnline ? "Online" : "Offline",
+                                style: TextStyle(
+                                  color: m8White.withValues(alpha: 0.94),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                            ),
+                              const SizedBox(width: 5),
+                              Icon(
+                                _isOnline
+                                    ? Icons.toggle_on_rounded
+                                    : Icons.toggle_off_rounded,
+                                size: 21,
+                                color: m8White.withValues(alpha: 0.90),
+                              ),
                           ],
                         ),
+                      ),
                       ),
                     ),
 
