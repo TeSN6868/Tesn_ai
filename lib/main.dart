@@ -10063,84 +10063,89 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
                         ),
                       ),
               )
-            else
-              Center(
-                child: _videoLoading
-                    ? const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 42,
-                            height: 42,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Memuat video...',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                        ],
-                      )
-                    : _videoController != null &&
-                          _videoController!.value.isInitialized
-                    ? GestureDetector(
-                        onTap: _toggleVideoPlayback,
-                        child: Stack(
-                          alignment: Alignment.center,
+              else
+                Center(
+                  child: _videoLoading
+                      ? const Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            AspectRatio(
-                              aspectRatio: _videoController!.value.aspectRatio,
-                              child: VideoPlayer(_videoController!),
-                            ),
-                            if (!_videoController!.value.isPlaying)
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  shape: BoxShape.circle,
-                                ),
-                                padding: const EdgeInsets.all(12),
-                                child: const Icon(
-                                  Icons.play_arrow_rounded,
-                                  color: Colors.white,
-                                  size: 54,
-                                ),
+                            SizedBox(
+                              width: 42,
+                              height: 42,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
                               ),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Memuat video...',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
                           ],
-                        ),
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.error_outline_rounded,
-                            color: Colors.white,
-                            size: 70,
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Video tidak dapat diputar',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                        )
+                      : (_videoController != null &&
+                              _videoController!.value.isInitialized)
+                          ? GestureDetector(
+                              onTap: _toggleVideoPlayback,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  AspectRatio(
+                                    aspectRatio:
+                                        _videoController!.value.aspectRatio,
+                                    child: VideoPlayer(_videoController!),
+                                  ),
+                                  if (!_videoController!.value.isPlaying)
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.35),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      padding: const EdgeInsets.all(12),
+                                      child: const Icon(
+                                        Icons.play_arrow_rounded,
+                                        color: Colors.white,
+                                        size: 54,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            )
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline_rounded,
+                                  color: Colors.white,
+                                  size: 70,
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Video tidak dapat diputar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  url,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            url,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
+                ),
 
             if (_videoController != null &&
                 _videoController!.value.isInitialized)
