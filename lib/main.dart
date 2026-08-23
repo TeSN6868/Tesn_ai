@@ -2387,7 +2387,7 @@ class _ChatsPageState extends State<ChatsPage> {
 
       if (mounted) {
         setState(() {
-          selectedTab = 1;
+          selectedTab = 0;
         });
       }
     } catch (e) {
@@ -2511,7 +2511,7 @@ class _ChatsPageState extends State<ChatsPage> {
 
         if (mounted) {
           setState(() {
-            selectedTab = 2;
+            selectedTab = 0;
           });
         }
       } else {
@@ -2593,35 +2593,10 @@ class _ChatsPageState extends State<ChatsPage> {
       child: Row(
         children: [
           _buildMessengerAction(
-            icon: Icons.chat_bubble_rounded,
-            label: 'Chat',
-            selected: selectedTab == 1,
-            onTap: () {
-              setState(() {
-                selectedTab = 1;
-              });
-            },
-          ),
-          _buildMessengerAction(
-            icon: Icons.groups_rounded,
-            label: 'Grup',
-            selected: selectedTab == 2,
-            onTap: () {
-              setState(() {
-                selectedTab = 2;
-              });
-              loadGroups();
-            },
-          ),
-          _buildMessengerAction(
-            icon: Icons.person_rounded,
-            label: 'Kontak',
-            selected: selectedTab == 3,
-            onTap: () {
-              setState(() {
-                selectedTab = 3;
-              });
-            },
+            icon: Icons.all_inbox_rounded,
+            label: 'Semua',
+            selected: true,
+            onTap: () {},
           ),
           _buildMessengerAction(
             icon: Icons.search_rounded,
@@ -3034,56 +3009,12 @@ class _ChatsPageState extends State<ChatsPage> {
           bottom: 90,
         ),
         children: [
-          if (chats.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.fromLTRB(
-                18,
-                10,
-                18,
-                4,
-              ),
-              child: Text(
-                'Percakapan',
-                style: TextStyle(
-                  color: bjoChatNavy,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.4,
-                ),
-              ),
-            ),
-            ...chats.map(_buildPrivateChatTile),
-          ],
-          if (groups.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.fromLTRB(
-                18,
-                18,
-                18,
-                4,
-              ),
-              child: Text(
-                'Grup',
-                style: TextStyle(
-                  color: bjoChatNavy,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.4,
-                ),
-              ),
-            ),
-            ...groups.map(_buildGroupChatTile),
-          ],
+          ...chats.map(_buildPrivateChatTile),
+          ...groups.map(_buildGroupChatTile),
         ],
       ),
     );
   }
-
-
-
-
-
-
 
 Widget buildEmptyMessenger() {
     return Center(
@@ -3183,12 +3114,8 @@ Widget _buildPremiumAvatar({
                   const Center(
                     child: CircularProgressIndicator(),
                   )
-                else if (selectedTab == 0)
-                  buildAllMessenger()
-                else if (selectedTab == 1)
-                  buildPrivateChats()
                 else
-                  buildGroupList(),
+                  buildAllMessenger(),
 
                 Positioned(
                   right: 20,
