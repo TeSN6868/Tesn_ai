@@ -1958,7 +1958,7 @@ class _HomePageState extends State<HomePage> {
       await _incomingRingtonePlayer.setVolume(1.0);
       await _incomingRingtonePlayer.play(AssetSource(asset));
 
-      debugPrint("B'Jo RINGTONE: $selected -> $asset");
+      debugPrint("B'Jo RINGTONE: $asset");
     } catch (e) {
       debugPrint('B\'Jo RINGTONE ERROR: $e');
     }

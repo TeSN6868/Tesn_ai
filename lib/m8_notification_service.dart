@@ -7,7 +7,7 @@ class M8NotificationService {
   static const AndroidNotificationChannel _chatChannel =
       AndroidNotificationChannel(
         'bjo_messages_v1',
-        'B'Jo Messages',
+        "B'Jo Messages",
         description: 'Notifikasi pesan masuk M8',
         importance: Importance.high,
         playSound: true,
@@ -37,7 +37,7 @@ class M8NotificationService {
   }) async {
     const details = AndroidNotificationDetails(
       'bjo_messages_v1',
-      'B'Jo Messages',
+      "B'Jo Messages",
       channelDescription: 'Notifikasi pesan masuk M8',
       importance: Importance.high,
       priority: Priority.high,
