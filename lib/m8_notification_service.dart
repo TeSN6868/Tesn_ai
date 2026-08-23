@@ -6,11 +6,12 @@ class M8NotificationService {
 
   static const AndroidNotificationChannel _chatChannel =
       AndroidNotificationChannel(
-        'bjo_messages_v1',
+        'bjo_messages_v2',
         "B'Jo Messages",
         description: 'Notifikasi pesan masuk M8',
         importance: Importance.high,
         playSound: true,
+        sound: RawResourceAndroidNotificationSound('bjo_notification'),
       );
 
   static Future<void> initialize() async {
@@ -36,7 +37,7 @@ class M8NotificationService {
     required String message,
   }) async {
     const details = AndroidNotificationDetails(
-      'bjo_messages_v1',
+      'bjo_messages_v2',
       "B'Jo Messages",
       channelDescription: 'Notifikasi pesan masuk M8',
       importance: Importance.high,
@@ -46,7 +47,7 @@ class M8NotificationService {
     );
 
     await _notifications.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      DateTime.now().millisecondsSinceEpoch.remainder(2147483647),
       'Pesan baru dari $sender',
       message,
       const NotificationDetails(android: details),
