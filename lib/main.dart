@@ -488,9 +488,84 @@ class _BJoStartupPageState extends State<BJoStartupPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FCFF),
+      body: SafeArea(
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: Container(
+              margin: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: m8White,
+                borderRadius: BorderRadius.circular(42),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: m8Blue.withValues(alpha: 0.12),
+                    blurRadius: 40,
+                    offset: const Offset(0, 18),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Text(
+                      "B'Jo",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: m8Blue,
+                        fontSize: 58,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -2.2,
+                        height: 1,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Container(
+                      width: 54,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: m8Blue,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    const Text(
+                      "ULTIMATE",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: m8BlueDark,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 4.2,
+                        height: 1,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    Text(
+                      "Tempat Kita Terhubung",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: m8TextMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
