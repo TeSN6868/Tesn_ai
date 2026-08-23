@@ -3569,6 +3569,417 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
   }
 }
 
+
+// ============================================================
+// B'JO CONTACT REQUESTS
+// ============================================================
+
+class BJoContactRequestsPage extends StatefulWidget {
+  final String token;
+
+  const BJoContactRequestsPage({
+    super.key,
+    required this.token,
+  });
+
+  @override
+  State<BJoContactRequestsPage> createState() =>
+      _BJoContactRequestsPageState();
+}
+
+class _BJoContactRequestsPageState
+    extends State<BJoContactRequestsPage> {
+  bool _loading = true;
+  String? _busyRequestId;
+  List<Map<String, dynamic>> _requests = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRequests();
+  }
+
+  Future<void> _loadRequests() async {
+    if (!mounted) return;
+
+    setState(() => _loading = true);
+
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/api/contact-requests'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode != 200 ||
+          data['success'] != true ||
+          data['requests'] is! List) {
+        throw Exception(
+          data['error']?.toString() ??
+              'Gagal memuat permintaan kontak.',
+        );
+      }
+
+      final loaded = (data['requests'] as List)
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+
+      if (!mounted) return;
+
+      setState(() {
+        _requests = loaded;
+      });
+    } catch (e) {
+      debugPrint('BJo contact requests error: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> _handleRequest(
+    Map<String, dynamic> request,
+    String action,
+  ) async {
+    final requestId = int.tryParse(
+      request['request_id']?.toString() ?? '',
+    );
+
+    if (requestId == null || _busyRequestId != null) {
+      return;
+    }
+
+    setState(() {
+      _busyRequestId = requestId.toString();
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/api/contact-requests'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'request_id': requestId,
+          'action': action,
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode < 200 ||
+          response.statusCode >= 300 ||
+          data['success'] != true) {
+        throw Exception(
+          data['error']?.toString() ??
+              'Gagal memproses permintaan kontak.',
+        );
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _requests.removeWhere(
+          (item) =>
+              item['request_id']?.toString() ==
+              requestId.toString(),
+        );
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            action == 'accept'
+                ? 'Kontak berhasil ditambahkan.'
+                : 'Permintaan kontak ditolak.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _busyRequestId = null);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        elevation: 0,
+        title: const Text(
+          'Permintaan Kontak',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadRequests,
+        color: m8Blue,
+        child: _loading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: m8Blue,
+                ),
+              )
+            : _requests.isEmpty
+                ? ListView(
+                    physics:
+                        const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(height: 140),
+                      Icon(
+                        Icons.person_add_alt_1_rounded,
+                        size: 68,
+                        color: m8Blue,
+                      ),
+                      SizedBox(height: 16),
+                      Center(
+                        child: Text(
+                          'Tidak ada permintaan kontak',
+                          style: TextStyle(
+                            color: m8BlueDark,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Center(
+                        child: Text(
+                          'Permintaan kontak baru akan muncul di sini.',
+                          style: TextStyle(
+                            color: m8TextMuted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(
+                      12,
+                      12,
+                      12,
+                      24,
+                    ),
+                    itemCount: _requests.length,
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final request = _requests[index];
+
+                      final requestId =
+                          request['request_id']?.toString() ?? '';
+
+                      final name =
+                          request['name']?.toString().trim() ?? '';
+
+                      final pin =
+                          request['m8_pin']?.toString().trim() ?? '';
+
+                      final bio =
+                          request['bio']?.toString().trim() ?? '';
+
+                      final photo =
+                          request['profile_photo_url']
+                                  ?.toString()
+                                  .trim() ??
+                              '';
+
+                      final busy =
+                          _busyRequestId == requestId;
+
+                      return Card(
+                        elevation: 0,
+                        color: m8White,
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 27,
+                                    backgroundColor:
+                                        m8Blue.withValues(alpha: 0.12),
+                                    backgroundImage:
+                                        photo.isNotEmpty
+                                            ? NetworkImage(photo)
+                                            : null,
+                                    child: photo.isEmpty
+                                        ? const Icon(
+                                            Icons.person_rounded,
+                                            color: m8Blue,
+                                            size: 30,
+                                          )
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 13),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          name.isEmpty
+                                              ? 'Pengguna B’Jo'
+                                              : name,
+                                          maxLines: 1,
+                                          overflow:
+                                              TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: m8BlueDark,
+                                            fontWeight:
+                                                FontWeight.w900,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          pin,
+                                          style: const TextStyle(
+                                            color: m8Blue,
+                                            fontSize: 12,
+                                            fontWeight:
+                                                FontWeight.w800,
+                                          ),
+                                        ),
+                                        if (bio.isNotEmpty) ...[
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            bio,
+                                            maxLines: 2,
+                                            overflow:
+                                                TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: m8TextMuted,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: busy
+                                          ? null
+                                          : () => _handleRequest(
+                                                request,
+                                                'reject',
+                                              ),
+                                      style:
+                                          OutlinedButton.styleFrom(
+                                        foregroundColor:
+                                            m8BlueDark,
+                                        side: const BorderSide(
+                                          color: m8Blue,
+                                        ),
+                                        shape:
+                                            RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                            14,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'TOLAK',
+                                        style: TextStyle(
+                                          fontWeight:
+                                              FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: busy
+                                          ? null
+                                          : () => _handleRequest(
+                                                request,
+                                                'accept',
+                                              ),
+                                      style:
+                                          ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            m8BlueDark,
+                                        foregroundColor: m8White,
+                                        shape:
+                                            RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                            14,
+                                          ),
+                                        ),
+                                      ),
+                                      child: busy
+                                          ? const SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child:
+                                                  CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: m8White,
+                                              ),
+                                            )
+                                          : const Text(
+                                              'TERIMA',
+                                              style: TextStyle(
+                                                fontWeight:
+                                                    FontWeight.w900,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+      ),
+    );
+  }
+}
+
 class BJoUserSearchPage extends StatefulWidget {
   final String token;
   final String myPin;

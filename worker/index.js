@@ -2769,8 +2769,9 @@ export default {
     }
 
     // ============================================================
-    // B'JO CONTACTS
+    // B'JO CONTACTS + CONTACT REQUESTS
     // ============================================================
+
     async function ensureContactTables() {
       await env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS contacts (
@@ -2792,8 +2793,33 @@ export default {
         CREATE INDEX IF NOT EXISTS idx_contacts_contact
         ON contacts(contact_user_id)
       `).run();
+
+      await env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS contact_requests (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          requester_user_id INTEGER NOT NULL,
+          target_user_id INTEGER NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending',
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          UNIQUE(requester_user_id, target_user_id)
+        )
+      `).run();
+
+      await env.DB.prepare(`
+        CREATE INDEX IF NOT EXISTS idx_contact_requests_target
+        ON contact_requests(target_user_id, status)
+      `).run();
+
+      await env.DB.prepare(`
+        CREATE INDEX IF NOT EXISTS idx_contact_requests_requester
+        ON contact_requests(requester_user_id, status)
+      `).run();
     }
 
+    // ------------------------------------------------------------
+    // GET CONTACTS
+    // ------------------------------------------------------------
     if (url.pathname === "/api/contacts" && request.method === "GET") {
       const session = await getSessionUser(request, env);
 
@@ -2838,7 +2864,13 @@ export default {
       });
     }
 
-    if (url.pathname === "/api/contacts" && request.method === "POST") {
+    // ------------------------------------------------------------
+    // SEND CONTACT REQUEST
+    // ------------------------------------------------------------
+    if (
+      url.pathname === "/api/contacts" &&
+      request.method === "POST"
+    ) {
       const session = await getSessionUser(request, env);
 
       if (!session) {
@@ -2888,27 +2920,98 @@ export default {
         }, 400);
       }
 
-      await env.DB.prepare(`
-        INSERT INTO contacts (
-          owner_user_id,
-          contact_user_id,
-          created_at,
-          updated_at
-        )
-        VALUES (?, ?, unixepoch(), unixepoch())
-        ON CONFLICT(owner_user_id, contact_user_id)
-        DO UPDATE SET updated_at = unixepoch()
-      `).bind(session.user_id, target.id).run();
+      const alreadyContact = await env.DB.prepare(`
+        SELECT id
+        FROM contacts
+        WHERE owner_user_id = ?
+          AND contact_user_id = ?
+        LIMIT 1
+      `).bind(session.user_id, target.id).first();
 
-      const privacy = await getProfilePrivacy(env, target.id);
+      if (alreadyContact) {
+        return json({
+          success: true,
+          already_contact: true,
+          request_pending: false,
+          message: "Pengguna sudah ada di kontak.",
+        });
+      }
+
+      const reverseContact = await env.DB.prepare(`
+        SELECT id
+        FROM contacts
+        WHERE owner_user_id = ?
+          AND contact_user_id = ?
+        LIMIT 1
+      `).bind(target.id, session.user_id).first();
+
+      if (reverseContact) {
+        await env.DB.prepare(`
+          INSERT OR IGNORE INTO contacts (
+            owner_user_id,
+            contact_user_id,
+            created_at,
+            updated_at
+          )
+          VALUES (?, ?, unixepoch(), unixepoch())
+        `).bind(session.user_id, target.id).run();
+
+        return json({
+          success: true,
+          already_contact: true,
+          request_pending: false,
+          message: "Kontak berhasil disimpan.",
+        });
+      }
+
+      const existingRequest = await env.DB.prepare(`
+        SELECT id, status
+        FROM contact_requests
+        WHERE requester_user_id = ?
+          AND target_user_id = ?
+        LIMIT 1
+      `).bind(session.user_id, target.id).first();
+
+      if (existingRequest) {
+        if (existingRequest.status === "pending") {
+          return json({
+            success: true,
+            already_contact: false,
+            request_pending: true,
+            message: "Permintaan kontak sudah terkirim.",
+          });
+        }
+
+        await env.DB.prepare(`
+          UPDATE contact_requests
+          SET status = 'pending',
+              updated_at = unixepoch()
+          WHERE id = ?
+        `).bind(existingRequest.id).run();
+      } else {
+        await env.DB.prepare(`
+          INSERT INTO contact_requests (
+            requester_user_id,
+            target_user_id,
+            status,
+            created_at,
+            updated_at
+          )
+          VALUES (?, ?, 'pending', unixepoch(), unixepoch())
+        `).bind(session.user_id, target.id).run();
+      }
 
       return json({
         success: true,
-        message: "Kontak berhasil ditambahkan.",
-        contact: applyProfilePrivacy(target, privacy, false),
+        already_contact: false,
+        request_pending: true,
+        message: "Permintaan kontak berhasil dikirim.",
       });
     }
 
+    // ------------------------------------------------------------
+    // DELETE CONTACT
+    // ------------------------------------------------------------
     if (
       url.pathname === "/api/contacts" &&
       request.method === "DELETE"
@@ -2962,6 +3065,9 @@ export default {
       });
     }
 
+    // ------------------------------------------------------------
+    // CHECK CONTACT + REQUEST STATUS
+    // ------------------------------------------------------------
     if (
       url.pathname === "/api/contacts/check" &&
       request.method === "GET"
@@ -3000,6 +3106,7 @@ export default {
         return json({
           success: true,
           is_contact: false,
+          request_pending: false,
         });
       }
 
@@ -3011,9 +3118,184 @@ export default {
         LIMIT 1
       `).bind(session.user_id, target.id).first();
 
+      if (row) {
+        return json({
+          success: true,
+          is_contact: true,
+          request_pending: false,
+        });
+      }
+
+      const requestRow = await env.DB.prepare(`
+        SELECT id
+        FROM contact_requests
+        WHERE requester_user_id = ?
+          AND target_user_id = ?
+          AND status = 'pending'
+        LIMIT 1
+      `).bind(session.user_id, target.id).first();
+
       return json({
         success: true,
-        is_contact: !!row,
+        is_contact: false,
+        request_pending: !!requestRow,
+      });
+    }
+
+    // ------------------------------------------------------------
+    // GET INCOMING CONTACT REQUESTS
+    // ------------------------------------------------------------
+    if (
+      url.pathname === "/api/contact-requests" &&
+      request.method === "GET"
+    ) {
+      const session = await getSessionUser(request, env);
+
+      if (!session) {
+        return json({
+          success: false,
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      await ensureContactTables();
+
+      const result = await env.DB.prepare(`
+        SELECT
+          r.id AS request_id,
+          r.created_at,
+          u.id,
+          u.name,
+          u.m8_pin,
+          u.bio,
+          u.profile_photo_url,
+          u.profile_background_url
+        FROM contact_requests r
+        INNER JOIN users u
+          ON u.id = r.requester_user_id
+        WHERE r.target_user_id = ?
+          AND r.status = 'pending'
+          AND u.active = 1
+        ORDER BY r.created_at DESC
+      `).bind(session.user_id).all();
+
+      const requests = [];
+
+      for (const item of (result.results || [])) {
+        const privacy = await getProfilePrivacy(env, item.id);
+        requests.push(
+          applyProfilePrivacy(item, privacy, false)
+        );
+      }
+
+      return json({
+        success: true,
+        requests,
+      });
+    }
+
+    // ------------------------------------------------------------
+    // ACCEPT / REJECT CONTACT REQUEST
+    // ------------------------------------------------------------
+    if (
+      url.pathname === "/api/contact-requests" &&
+      request.method === "POST"
+    ) {
+      const session = await getSessionUser(request, env);
+
+      if (!session) {
+        return json({
+          success: false,
+          error: "Sesi login tidak valid.",
+        }, 401);
+      }
+
+      const body = await request.json();
+      const requestId = Number(body.request_id);
+      const action = String(body.action || "").trim().toLowerCase();
+
+      if (!Number.isInteger(requestId) || requestId <= 0) {
+        return json({
+          success: false,
+          error: "ID permintaan tidak valid.",
+        }, 400);
+      }
+
+      if (action !== "accept" && action !== "reject") {
+        return json({
+          success: false,
+          error: "Aksi permintaan tidak valid.",
+        }, 400);
+      }
+
+      await ensureContactTables();
+
+      const contactRequest = await env.DB.prepare(`
+        SELECT
+          id,
+          requester_user_id,
+          target_user_id
+        FROM contact_requests
+        WHERE id = ?
+          AND target_user_id = ?
+          AND status = 'pending'
+        LIMIT 1
+      `).bind(requestId, session.user_id).first();
+
+      if (!contactRequest) {
+        return json({
+          success: false,
+          error: "Permintaan kontak tidak ditemukan.",
+        }, 404);
+      }
+
+      if (action === "reject") {
+        await env.DB.prepare(`
+          DELETE FROM contact_requests
+          WHERE id = ?
+            AND target_user_id = ?
+        `).bind(requestId, session.user_id).run();
+
+        return json({
+          success: true,
+          action: "rejected",
+          message: "Permintaan kontak ditolak.",
+        });
+      }
+
+      const requesterId = Number(contactRequest.requester_user_id);
+      const targetId = Number(contactRequest.target_user_id);
+
+      await env.DB.prepare(`
+        INSERT OR IGNORE INTO contacts (
+          owner_user_id,
+          contact_user_id,
+          created_at,
+          updated_at
+        )
+        VALUES (?, ?, unixepoch(), unixepoch())
+      `).bind(targetId, requesterId).run();
+
+      await env.DB.prepare(`
+        INSERT OR IGNORE INTO contacts (
+          owner_user_id,
+          contact_user_id,
+          created_at,
+          updated_at
+        )
+        VALUES (?, ?, unixepoch(), unixepoch())
+      `).bind(requesterId, targetId).run();
+
+      await env.DB.prepare(`
+        DELETE FROM contact_requests
+        WHERE id = ?
+          AND target_user_id = ?
+      `).bind(requestId, targetId).run();
+
+      return json({
+        success: true,
+        action: "accepted",
+        message: "Permintaan kontak diterima.",
       });
     }
 
