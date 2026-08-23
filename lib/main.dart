@@ -767,7 +767,7 @@ class _LoginPageState extends State<LoginPage> {
                             controller: pinController,
                             cursorColor: m8Blue,
                             textInputAction: TextInputAction.next,
-                            keyboardType: TextInputType.number,
+                            keyboardType: TextInputType.text,
                             style: const TextStyle(
                               color: m8BlueDark,
                               fontWeight: FontWeight.w700,
