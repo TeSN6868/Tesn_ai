@@ -128,6 +128,7 @@ class _BJoMapPickerState extends State<_BJoMapPicker> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -14557,6 +14558,9 @@ class _SettingsDetailPageState
   bool _notifSound = true;
   bool _notifVibration = true;
   bool _notifDnd = false;
+  String _notificationSound = 'bjo_notification.wav';
+  String _ringtoneSound = 'bjo_ringtone.wav';
+  final AudioPlayer _soundPreviewPlayer = AudioPlayer();
 
   Future<void> _loadBJoNotifications() async {
     final prefs = await SharedPreferences.getInstance();
@@ -14570,6 +14574,10 @@ class _SettingsDetailPageState
       _notifSound = prefs.getBool('bjo_notif_sound') ?? true;
       _notifVibration = prefs.getBool('bjo_notif_vibration') ?? true;
       _notifDnd = prefs.getBool('bjo_notif_dnd') ?? false;
+      _notificationSound = prefs.getString('bjo_notification_sound') ??
+          'bjo_notification.wav';
+      _ringtoneSound = prefs.getString('bjo_ringtone_sound') ??
+          'bjo_ringtone.wav';
     });
   }
 
@@ -14585,6 +14593,208 @@ class _SettingsDetailPageState
       setState(update);
     }
   }
+
+    Future<void> _saveSoundChoice({
+      required String type,
+      required String value,
+    }) async {
+      final prefs = await SharedPreferences.getInstance();
+
+      if (type == 'notification') {
+        await prefs.setString('bjo_notification_sound', value);
+
+        if (mounted) {
+          setState(() {
+            _notificationSound = value;
+          });
+        }
+      } else {
+        await prefs.setString('bjo_ringtone_sound', value);
+
+        if (mounted) {
+          setState(() {
+            _ringtoneSound = value;
+          });
+        }
+      }
+    }
+
+    Future<void> _previewSound(String asset) async {
+      try {
+        await _soundPreviewPlayer.stop();
+        await _soundPreviewPlayer.play(
+          AssetSource('sounds/$asset'),
+        );
+      } catch (e) {
+        debugPrint('[BJO SOUND PREVIEW] ERROR: $e');
+      }
+    }
+
+    Future<void> _showSoundPicker({
+      required String type,
+      required String title,
+    }) async {
+      final isNotification = type == 'notification';
+
+      final asset = isNotification
+          ? 'bjo_notification.wav'
+          : 'bjo_ringtone.wav';
+
+      final name = isNotification
+          ? "B'Jo Notification"
+          : "B'Jo Ringtone";
+
+      final current = isNotification
+          ? _notificationSound
+          : _ringtoneSound;
+
+      final selected = await showModalBottomSheet<String>(
+        context: context,
+        backgroundColor: m8White,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+        ),
+        builder: (sheetContext) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: m8Blue.withOpacity(.25),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.music_note_rounded,
+                        color: m8Blue,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: Color(0xFF102A43),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Card(
+                    elevation: 0,
+                    color: m8Blue.withOpacity(.06),
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: m8Blue,
+                        child: Icon(
+                          Icons.music_note_rounded,
+                          color: m8White,
+                        ),
+                      ),
+                      title: Text(
+                        name,
+                        style: const TextStyle(
+                          color: Color(0xFF102A43),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      subtitle: Text(asset),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            tooltip: 'Putar',
+                            onPressed: () {
+                              _previewSound(asset);
+                            },
+                            icon: const Icon(
+                              Icons.play_circle_fill_rounded,
+                              color: m8Blue,
+                              size: 30,
+                            ),
+                          ),
+                          Radio<String>(
+                            value: asset,
+                            groupValue: current,
+                            onChanged: (value) {
+                              if (value != null) {
+                                Navigator.pop(
+                                  sheetContext,
+                                  value,
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.pop(
+                          sheetContext,
+                          asset,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+
+      if (selected != null) {
+        await _saveSoundChoice(
+          type: type,
+          value: selected,
+        );
+      }
+    }
+
+    Widget _buildSoundChoiceTile({
+      required IconData icon,
+      required String title,
+      required String subtitle,
+      required String type,
+    }) {
+      return Card(
+        child: ListTile(
+          leading: Icon(
+            icon,
+            color: m8Blue,
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          subtitle: Text(subtitle),
+          trailing: const Icon(
+            Icons.chevron_right_rounded,
+            color: m8Blue,
+          ),
+          onTap: () {
+            _showSoundPicker(
+              type: type,
+              title: title,
+            );
+          },
+        ),
+      );
+    }
+
 
   Widget _bjoNotificationSwitch({
     required IconData icon,
@@ -14703,6 +14913,29 @@ class _SettingsDetailPageState
             key: 'bjo_notif_vibration',
             update: () => _notifVibration = !_notifVibration,
           ),
+            const SizedBox(height: 8),
+
+            _buildSoundChoiceTile(
+              icon: Icons.notifications_active_outlined,
+              title: 'Nada Notifikasi',
+              subtitle:
+                  _notificationSound == 'bjo_notification.wav'
+                      ? "B'Jo Notification"
+                      : _notificationSound,
+              type: 'notification',
+            ),
+
+            const SizedBox(height: 8),
+
+            _buildSoundChoiceTile(
+              icon: Icons.ring_volume_outlined,
+              title: 'Nada Dering',
+              subtitle:
+                  _ringtoneSound == 'bjo_ringtone.wav'
+                      ? "B'Jo Ringtone"
+                      : _ringtoneSound,
+              type: 'ringtone',
+            ),
 
           const SizedBox(height: 20),
 
@@ -14758,6 +14991,12 @@ class _SettingsDetailPageState
     );
   }
 
+
+    @override
+    void dispose() {
+      _soundPreviewPlayer.dispose();
+      super.dispose();
+    }
 
   @override
   Widget build(BuildContext context) {
