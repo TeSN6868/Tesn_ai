@@ -10604,6 +10604,7 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
           ),
         ),
       ),
+            ],
     );
   }
 }
