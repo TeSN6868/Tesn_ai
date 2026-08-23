@@ -10146,12 +10146,9 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: AspectRatio(
-          aspectRatio: 9 / 16,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
+      body: Stack(
+          fit: StackFit.expand,
+          children: [
             if (backgroundUrl.isNotEmpty)
               Image.network(
                 backgroundUrl,
@@ -10603,11 +10600,12 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
             ],
           ),
         ),
-      ),
-            ],
+      ],
+        ),
     );
   }
 }
+
 // ============================================================
 // B'JO ACTIVE SESSIONS
 // ============================================================
