@@ -3211,6 +3211,105 @@ export default {
       }
 
       const body = await request.json();
+
+      // ------------------------------------------------------------
+      // SEND CONTACT REQUEST
+      // POST /api/contact-requests
+      // body: { m8_pin }
+      // ------------------------------------------------------------
+      if (body.m8_pin != null) {
+        const m8Pin = String(body.m8_pin || "").trim();
+
+        if (!m8Pin) {
+          return json({
+            success: false,
+            error: "M8 PIN wajib diisi.",
+          }, 400);
+        }
+
+        await ensureContactTables();
+
+        const me = await env.DB.prepare(`
+          SELECT id, m8_pin
+          FROM users
+          WHERE id = ?
+          LIMIT 1
+        `).bind(session.user_id).first();
+
+        if (me && String(me.m8_pin || "").trim() === m8Pin) {
+          return json({
+            success: false,
+            error: "Tidak dapat menambahkan diri sendiri.",
+          }, 400);
+        }
+
+        const target = await env.DB.prepare(`
+          SELECT id, m8_pin, active
+          FROM users
+          WHERE m8_pin = ?
+          LIMIT 1
+        `).bind(m8Pin).first();
+
+        if (!target || Number(target.active) !== 1) {
+          return json({
+            success: false,
+            error: "Pengguna dengan M8 PIN tersebut tidak ditemukan.",
+          }, 404);
+        }
+
+        const existingContact = await env.DB.prepare(`
+          SELECT id
+          FROM contacts
+          WHERE owner_user_id = ?
+            AND contact_user_id = ?
+          LIMIT 1
+        `).bind(session.user_id, target.id).first();
+
+        if (existingContact) {
+          return json({
+            success: true,
+            already_contact: true,
+            message: "Pengguna tersebut sudah ada di kontak.",
+          });
+        }
+
+        const existingRequest = await env.DB.prepare(`
+          SELECT id, status
+          FROM contact_requests
+          WHERE requester_user_id = ?
+            AND target_user_id = ?
+          ORDER BY id DESC
+          LIMIT 1
+        `).bind(session.user_id, target.id).first();
+
+        if (existingRequest && existingRequest.status === "pending") {
+          return json({
+            success: true,
+            request_pending: true,
+            message: "Permintaan kontak sudah terkirim.",
+          });
+        }
+
+        await env.DB.prepare(`
+          INSERT INTO contact_requests (
+            requester_user_id,
+            target_user_id,
+            status,
+            created_at
+          )
+          VALUES (?, ?, 'pending', unixepoch())
+        `).bind(session.user_id, target.id).run();
+
+        return json({
+          success: true,
+          request_pending: true,
+          message: "Permintaan kontak terkirim.",
+        }, 201);
+      }
+
+      // ------------------------------------------------------------
+      // ACCEPT / REJECT CONTACT REQUEST
+      // ------------------------------------------------------------
       const requestId = Number(body.request_id);
       const action = String(body.action || "").trim().toLowerCase();
 
