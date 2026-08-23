@@ -5812,7 +5812,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         }
       });
     }
-  }
 
   Future<void> startVoiceRecording() async {
     if (_isRecordingVoice || sending) return;
