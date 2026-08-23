@@ -8544,7 +8544,22 @@ class _StoryPageState extends State<StoryPage> {
               )
             : const Icon(Icons.add_rounded),
       ),
-      body: RefreshIndicator(
+      body: Container(
+        // MOMENTS_GRADIENT_WRAPPER
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1769AA),
+              Color(0xFF5FA4D5),
+              Color(0xFFDCEAF3),
+              Color(0xFFFFFFFF),
+            ],
+            stops: [0.0, 0.35, 0.70, 1.0],
+          ),
+        ),
+        child: RefreshIndicator(
         onRefresh: _loadPosts,
         child: loading
             ? const Center(child: CircularProgressIndicator())
@@ -8568,6 +8583,7 @@ class _StoryPageState extends State<StoryPage> {
                   );
                 },
               ),
+      )
       ),
     );
   }
@@ -10130,9 +10146,12 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-          fit: StackFit.expand,
-          children: [
+      body: Center(
+        child: AspectRatio(
+          aspectRatio: 9 / 16,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
             if (backgroundUrl.isNotEmpty)
               Image.network(
                 backgroundUrl,
@@ -10584,8 +10603,7 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
             ],
           ),
         ),
-      ],
-        ),
+      ),
     );
   }
 }
