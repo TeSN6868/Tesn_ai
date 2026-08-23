@@ -4599,56 +4599,53 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                 ],
                 const SizedBox(height: 20),
 
-                SizedBox(
-                  height: 52,
-                  child: OutlinedButton.icon(
-                    onPressed:
-                        (_checkingContact ||
-                                _contactBusy ||
-                                _isContact ||
-                                _requestPending)
-                            ? null
-                            : _sendContactRequest,
-                    icon: _contactBusy
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.2,
-                              color: m8Blue,
-                            ),
-                          )
-                        : Icon(
-                            _isContact
-                                ? Icons.check_circle_rounded
-                                : _requestPending
-                                    ? Icons.schedule_rounded
-                                    : Icons.person_add_alt_1_rounded,
-                          ),
-                    label: Text(
-                      _checkingContact
-                          ? 'MEMERIKSA KONTAK...'
-                          : _contactBusy
-                              ? 'MENGIRIM PERMINTAAN...'
-                              : _isContact
-                                  ? 'SUDAH MENJADI KONTAK'
+                if (pin.isNotEmpty && pin != widget.myPin) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: FilledButton.icon(
+                      onPressed:
+                          (_checkingContact ||
+                                  _contactBusy ||
+                                  _isContact ||
+                                  _requestPending)
+                              ? null
+                              : _sendContactRequest,
+                      icon: _contactBusy
+                          ? const SizedBox(
+                              width: 19,
+                              height: 19,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: m8White,
+                              ),
+                            )
+                          : Icon(
+                              _isContact
+                                  ? Icons.check_circle_rounded
                                   : _requestPending
-                                      ? 'PERMINTAAN TERKIRIM'
-                                      : 'TAMBAHKAN KE KONTAK',
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: m8BlueDark,
-                      side: BorderSide(
-                        color: _isContact
-                            ? m8Blue.withValues(alpha: 0.25)
-                            : m8Blue,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(17),
+                                      ? Icons.hourglass_top_rounded
+                                      : Icons.person_add_alt_1_rounded,
+                            ),
+                      label: Text(
+                        _checkingContact
+                            ? 'MEMERIKSA KONTAK...'
+                            : _contactBusy
+                                ? 'MENYIMPAN...'
+                                : _isContact
+                                    ? 'TERSIMPAN DI KONTAK'
+                                    : _requestPending
+                                        ? 'PERMINTAAN TERKIRIM'
+                                        : 'SIMPAN KE KONTAK',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                ],
+
 
                 const SizedBox(height: 10),
 
