@@ -2966,7 +2966,7 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
   }
 
   Future<void> _loadContacts() async {
-    if (!mounted) return;
+    if (!mounted || _loading) return;
 
     setState(() => _loading = true);
 
@@ -2976,26 +2976,33 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
         headers: {
           'Authorization': 'Bearer ${widget.token}',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 &&
           data['success'] == true &&
           data['contacts'] is List) {
-        _contacts = (data['contacts'] as List)
+        final loadedContacts = (data['contacts'] as List)
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
+
+        if (mounted) {
+          setState(() {
+            _contacts = loadedContacts;
+          });
+        }
       } else {
-        _contacts = [];
+        debugPrint(
+          'BJo contacts ${response.statusCode}: ${response.body}',
+        );
       }
     } catch (e) {
       debugPrint('BJo contacts error: $e');
-      _contacts = [];
-    }
-
-    if (mounted) {
-      setState(() => _loading = false);
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -3053,16 +3060,45 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
       );
 
       if (response.statusCode == 200 && mounted) {
-        await _loadContacts();
+        setState(() {
+          _contacts.removeWhere(
+            (item) =>
+                item['m8_pin']?.toString().trim() == pin,
+          );
+        });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Kontak dihapus.'),
           ),
         );
+      } else if (mounted) {
+        String message = 'Gagal menghapus kontak.';
+
+        try {
+          final data = jsonDecode(response.body);
+
+          if (data['error'] != null) {
+            message = data['error'].toString();
+          }
+        } catch (_) {}
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+          ),
+        );
       }
     } catch (e) {
       debugPrint('Delete contact error: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tidak dapat menghapus kontak.'),
+          ),
+        );
+      }
     }
   }
 
@@ -5675,13 +5711,15 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   Future<void> _initializeChatStatus() async {
     await loadMessages();
-    await markMessagesAsDelivered();
-    await markMessagesAsRead();
 
-    if (mounted) {
-      await loadMessages();
+    if (!mounted) return;
 
-      _chatInitializing = false;
+    _chatInitializing = false;
+
+    // Status delivery/read dijalankan di belakang.
+    // Tidak boleh menghambat tampilan chat.
+    markMessagesAsDelivered();
+    markMessagesAsRead();
 
       typingPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
         if (mounted) {
@@ -5689,7 +5727,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         }
       });
 
-      messagePollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      messagePollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
         if (mounted && !_chatInitializing) {
           loadMessages();
         }
@@ -6125,10 +6163,35 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         _chatScrollController.offset) <
                     120;
 
-            setState(() {
-              messages = loadedMessages;
-              loading = false;
-            });
+            // Hindari rebuild seluruh chat bila data tidak berubah.
+            bool changed = messages.length != loadedMessages.length;
+
+            if (!changed) {
+              for (var i = 0; i < messages.length; i++) {
+                final oldId = messages[i]['id']?.toString();
+                final newId = loadedMessages[i]['id']?.toString();
+
+                if (oldId != newId ||
+                    messages[i]['message']?.toString() !=
+                        loadedMessages[i]['message']?.toString() ||
+                    messages[i]['sender_pin']?.toString() !=
+                        loadedMessages[i]['sender_pin']?.toString()) {
+                  changed = true;
+                  break;
+                }
+              }
+            }
+
+            if (changed || loading) {
+              setState(() {
+                messages = loadedMessages;
+                loading = false;
+              });
+            } else if (loading) {
+              setState(() {
+                loading = false;
+              });
+            }
 
             if (wasNearBottom) {
               _scrollChatToBottom();
@@ -6481,7 +6544,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           'sender_pin': widget.myPin,
           'message': messageText,
         }),
-      );
+      ).timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
 
