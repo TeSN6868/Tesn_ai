@@ -10295,8 +10295,8 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => SettingsPage(
-                                token: token,
-                                user: user,
+                                token: widget.token,
+                                user: widget.user,
                               ),
                             ),
                           );
@@ -10598,8 +10598,8 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => BJoProfileMediaPage(
-                                    user: user,
-                                    token: token,
+                                    user: widget.user,
+                                    token: widget.token,
                                   ),
                                 ),
                               );
@@ -10609,8 +10609,8 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) => BJoProfilePage(
-                                        user: user,
-                                        token: token,
+                                        user: widget.user,
+                                        token: widget.token,
                                       ),
                                     ),
                                   );
