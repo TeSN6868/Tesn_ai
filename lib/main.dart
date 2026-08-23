@@ -4297,6 +4297,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
   bool _loadingProfile = true;
   bool _checkingContact = true;
   bool _isContact = false;
+  bool _requestPending = false;
   bool _contactBusy = false;
   late Map<String, dynamic> _profile;
 
@@ -4338,6 +4339,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
         if (mounted) {
           setState(() {
             _isContact = data['is_contact'] == true;
+            _requestPending = data['request_pending'] == true;
           });
         }
       }
@@ -4350,7 +4352,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
     }
   }
 
-  Future<void> _addContact() async {
+  Future<void> _sendContactRequest() async {
     final pin = _profile['m8_pin']?.toString().trim() ?? '';
 
     if (pin.isEmpty || pin == widget.myPin || _contactBusy) {
@@ -4361,7 +4363,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('$apiBase/api/contacts'),
+        Uri.parse('$apiBase/api/contact-requests'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${widget.token}',
@@ -4378,27 +4380,21 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
           data['success'] != true) {
         throw Exception(
           data['error']?.toString() ??
-              'Tidak dapat menambahkan kontak.',
+              'Tidak dapat mengirim permintaan kontak.',
         );
       }
 
       if (!mounted) return;
 
       setState(() {
-        _isContact = true;
+        _requestPending = true;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Kontak berhasil ditambahkan.'),
+          content: Text('Permintaan kontak terkirim.'),
         ),
       );
-
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      if (mounted) {
-        Navigator.pop(context, true);
-      }
     } catch (e) {
       if (!mounted) return;
 
@@ -4632,9 +4628,10 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                     onPressed:
                         (_checkingContact ||
                                 _contactBusy ||
-                                _isContact)
+                                _isContact ||
+                                _requestPending)
                             ? null
-                            : _addContact,
+                            : _sendContactRequest,
                     icon: _contactBusy
                         ? const SizedBox(
                             width: 20,
@@ -4647,16 +4644,20 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                         : Icon(
                             _isContact
                                 ? Icons.check_circle_rounded
-                                : Icons.person_add_alt_1_rounded,
+                                : _requestPending
+                                    ? Icons.schedule_rounded
+                                    : Icons.person_add_alt_1_rounded,
                           ),
                     label: Text(
                       _checkingContact
                           ? 'MEMERIKSA KONTAK...'
                           : _contactBusy
-                              ? 'MENAMBAHKAN...'
+                              ? 'MENGIRIM PERMINTAAN...'
                               : _isContact
-                                  ? 'SUDAH DI KONTAK'
-                                  : 'TAMBAH KE KONTAK',
+                                  ? 'SUDAH MENJADI KONTAK'
+                                  : _requestPending
+                                      ? 'PERMINTAAN TERKIRIM'
+                                      : 'TAMBAHKAN KE KONTAK',
                     ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: m8BlueDark,
