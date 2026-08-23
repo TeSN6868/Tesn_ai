@@ -1374,7 +1374,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 2, 18, 12),
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -1395,8 +1395,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
+                Center(
                   child: Text(
                     'Welcome back, ${widget.user['name']?.toString().trim().isNotEmpty == true ? widget.user['name'].toString().trim() : 'M8 User'} 👋',
                     style: const TextStyle(
