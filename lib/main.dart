@@ -2258,14 +2258,12 @@ class _BJoMainShellState extends State<BJoMainShell> {
             child: Container(
               color: currentIndex == 3 ? m8BlueDark : m8WhiteSoft,
               child: RepaintBoundary(
-                  child: _buildPage(currentIndex),
-                )
-                ),
+                child: _buildPage(currentIndex),
+              ),
             ),
           ),
         ],
       ),
-
       bottomNavigationBar: NavigationBar(
         backgroundColor: m8Blue,
         indicatorColor: m8BlueDark,
@@ -2279,547 +2277,50 @@ class _BJoMainShellState extends State<BJoMainShell> {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.auto_awesome_motion_outlined, color: m8WhiteSoft),
-            selectedIcon: Icon(Icons.auto_awesome_motion, color: m8White),
+            icon: Icon(
+              Icons.auto_awesome_motion_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.auto_awesome_motion,
+              color: m8White,
+            ),
             label: 'Moments',
           ),
-                      NavigationDestination(
-              icon: Icon(
-                Icons.navigation_outlined,
-                color: m8WhiteSoft,
-              ),
-              selectedIcon: Icon(
-                Icons.navigation,
-                color: m8White,
-              ),
-              label: 'Navigation',
+          NavigationDestination(
+            icon: Icon(
+              Icons.navigation_outlined,
+              color: m8WhiteSoft,
             ),
-NavigationDestination(
-            icon: Icon(Icons.call_outlined, color: m8WhiteSoft),
-            selectedIcon: Icon(Icons.call, color: m8White),
+            selectedIcon: Icon(
+              Icons.navigation,
+              color: m8White,
+            ),
+            label: 'Navigation',
+          ),
+          NavigationDestination(
+            icon: Icon(
+              Icons.call_outlined,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.call,
+              color: m8White,
+            ),
             label: 'Call',
           ),
           NavigationDestination(
-            icon: Icon(Icons.check_circle_outline, color: m8WhiteSoft),
-            selectedIcon: Icon(Icons.check_circle, color: m8White),
+            icon: Icon(
+              Icons.check_circle_outline,
+              color: m8WhiteSoft,
+            ),
+            selectedIcon: Icon(
+              Icons.check_circle,
+              color: m8White,
+            ),
             label: 'Pad',
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ============================================================
-// B'JO BERANDA
-// ============================================================
-// B'JO GROUPS PAGE
-// ============================================================
-
-class BJoGroupsPage extends StatefulWidget {
-  final String token;
-  final String myPin;
-
-  const BJoGroupsPage({super.key, required this.token, required this.myPin});
-
-  @override
-  State<BJoGroupsPage> createState() => _BJoGroupsPageState();
-}
-
-class _BJoGroupsPageState extends State<BJoGroupsPage> {
-  bool loading = true;
-  List<Map<String, dynamic>> groups = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadGroups();
-  }
-
-  Future<void> _loadGroups() async {
-    if (mounted) {
-      setState(() {
-        loading = true;
-      });
-    }
-
-    try {
-      final response = await http.get(
-        Uri.parse(
-          '$apiBase/api/groups?m8_pin=${Uri.encodeComponent(widget.myPin)}',
-        ),
-        headers: {'Authorization': 'Bearer ${widget.token}'},
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Gagal mengambil daftar grup.');
-      }
-
-      final data = jsonDecode(response.body);
-      final list = data['groups'];
-
-      if (list is List) {
-        groups = list.map((e) => Map<String, dynamic>.from(e)).toList();
-      } else {
-        groups = [];
-      }
-    } catch (e) {
-      debugPrint('BJoGroupsPage error: $e');
-
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal memuat grup: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          loading = false;
-        });
-      }
-    }
-  }
-
-  void _openGroup(Map<String, dynamic> group) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => M8GroupChatPage(
-          token: widget.token,
-          myPin: widget.myPin,
-          group: group,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (loading) {
-      return const Center(child: CircularProgressIndicator(color: m8White));
-    }
-
-    if (groups.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: _loadGroups,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(24, 80, 24, 40),
-          children: const [
-            Icon(Icons.groups_rounded, size: 78, color: m8White),
-            SizedBox(height: 20),
-            Text(
-              "Belum ada grup",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: m8White,
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              "Grup B'Jo yang kamu ikuti akan muncul di sini.",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: m8BlueLight, fontSize: 14),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadGroups,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 30),
-        itemCount: groups.length,
-        itemBuilder: (context, index) {
-          final group = groups[index];
-
-          final name = group['name']?.toString().trim().isNotEmpty == true
-              ? group['name'].toString()
-              : "Grup B'Jo";
-
-          final description = group['description']?.toString().trim() ?? '';
-
-          final memberCount = group['member_count']?.toString() ?? '0';
-
-          final photoUrl = group['photo_url']?.toString().trim() ?? '';
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              color: m8White,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: m8Blue.withValues(alpha: 0.18)),
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 6,
-              ),
-              leading: CircleAvatar(
-                radius: 27,
-                backgroundColor: m8BlueDark,
-                backgroundImage: photoUrl.isNotEmpty
-                    ? NetworkImage(photoUrl)
-                    : null,
-                child: photoUrl.isEmpty
-                    ? const Icon(Icons.groups_rounded, color: m8White, size: 28)
-                    : null,
-              ),
-              title: Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: m8BlueDark,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 15,
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  description.isNotEmpty
-                      ? '$memberCount anggota • $description'
-                      : '$memberCount anggota',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: m8TextMuted, fontSize: 12),
-                ),
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
-              onTap: () => _openGroup(group),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-
-
-
-class _BjoBatikHeaderPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8
-      ..color = Colors.white.withValues(alpha: 0.16);
-
-    const spacing = 34.0;
-
-    for (double x = -spacing; x < size.width + spacing; x += spacing) {
-      for (double y = -spacing; y < size.height + spacing; y += spacing) {
-        final path = Path();
-
-        path.moveTo(x, y + 9);
-        path.quadraticBezierTo(
-          x + 8,
-          y,
-          x + 17,
-          y + 9,
-        );
-        path.quadraticBezierTo(
-          x + 8,
-          y + 18,
-          x,
-          y + 9,
-        );
-
-        path.moveTo(x + 17, y + 9);
-        path.quadraticBezierTo(
-          x + 25,
-          y,
-          x + 34,
-          y + 9,
-        );
-        path.quadraticBezierTo(
-          x + 25,
-          y + 18,
-          x + 17,
-          y + 9,
-        );
-
-        canvas.drawPath(path, paint);
-      }
-    }
-
-    final dotPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.11);
-
-    for (double x = 10; x < size.width; x += 34) {
-      for (double y = 8; y < size.height; y += 34) {
-        canvas.drawCircle(
-          Offset(x, y),
-          1.3,
-          dotPaint,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class HomePage extends StatefulWidget {
-  final String token;
-  final Map<String, dynamic> user;
-
-  const HomePage({super.key, required this.token, required this.user});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int currentIndex = 0;
-
-  final M8CallService _incomingCallService = M8CallService();
-  final AudioPlayer _incomingRingtonePlayer = AudioPlayer();
-
-  Future<void> _startIncomingRingtone() async {
-    try {
-      await _incomingRingtonePlayer.stop();
-
-      final prefs = await SharedPreferences.getInstance();
-      const asset = 'sounds/bjo_ringtone.wav';
-
-      await _incomingRingtonePlayer.setReleaseMode(ReleaseMode.loop);
-      await _incomingRingtonePlayer.setVolume(1.0);
-      await _incomingRingtonePlayer.play(AssetSource(asset));
-
-      debugPrint("B'Jo RINGTONE: $asset");
-    } catch (e) {
-      debugPrint('B\'Jo RINGTONE ERROR: $e');
-    }
-  }
-
-  Future<void> _stopIncomingRingtone() async {
-    try {
-      await _incomingRingtonePlayer.stop();
-      debugPrint('M8 RINGTONE: STOP');
-    } catch (e) {
-      debugPrint('M8 RINGTONE STOP ERROR: $e');
-    }
-  }
-
-  Timer? _incomingCallTimer;
-  String? _lastIncomingCallId;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _incomingCallTimer = Timer.periodic(
-      const Duration(seconds: 2),
-      (_) => _checkIncomingCalls(),
-    );
-
-    _checkIncomingCalls();
-  }
-
-  Future<void> _checkIncomingCalls() async {
-    try {
-      final calls = await _incomingCallService.getIncomingCalls(pin);
-
-      if (!mounted || calls.isEmpty) return;
-
-      final call = calls.first;
-      final incomingId = call['id']?.toString();
-
-      if (incomingId == null || incomingId == _lastIncomingCallId) {
-        return;
-      }
-
-      _lastIncomingCallId = incomingId;
-
-      final callerPin = call['caller_pin']?.toString() ?? '';
-      final callType = call['call_type']?.toString() ?? 'voice';
-      final isVideoCall = callType == 'video';
-
-      if (callerPin.isEmpty) return;
-
-      await _startIncomingRingtone();
-
-      bool? accepted;
-
-      try {
-        accepted = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) {
-            return AlertDialog(
-              title: const Text('Panggilan masuk'),
-              content: Text('Ada panggilan masuk dari PIN $callerPin.'),
-              actions: [
-                TextButton(
-                  onPressed: () async {
-                    try {
-                      await _incomingCallService.rejectCall(
-                        incomingCallId: incomingId,
-                        calleePin: pin,
-                      );
-                    } finally {
-                      if (dialogContext.mounted) {
-                        Navigator.of(dialogContext).pop(false);
-                      }
-                    }
-                  },
-                  child: const Text('Tolak'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop(true);
-                  },
-                  child: const Text('Terima'),
-                ),
-              ],
-            );
-          },
-        );
-      } finally {
-        // WAJIB: ringtone dihentikan dalam kondisi apa pun.
-        await _stopIncomingRingtone();
-      }
-
-      if (!mounted || accepted != true) return;
-
-      final callService = M8CallService();
-
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => VoiceCallPage(
-            myPin: pin,
-            otherPin: callerPin,
-            call: callService,
-            incomingCallId: incomingId,
-            videoCall: isVideoCall,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint('M8 INCOMING CALL ERROR: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    _incomingCallTimer?.cancel();
-    _incomingCallTimer = null;
-
-    // Hentikan ringtone incoming call secepat mungkin.
-    _incomingRingtonePlayer.stop();
-
-    _incomingRingtonePlayer.dispose();
-
-    super.dispose();
-  }
-
-  String get name => widget.user['name']?.toString() ?? 'M8 User';
-
-  String get pin => widget.user['m8_pin']?.toString() ?? '';
-
-  void logout() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (_) => false,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final pages = [
-      ChatsPage(token: widget.token, myPin: pin),
-      const CallsPage(),
-      BJoProfilePage(
-        user: widget.user,
-        token: widget.token,
-      ),
-    ];
-
-    return Scaffold(
-      backgroundColor: m8WhiteSoft,
-      
-      body: M8DenimBackground(child: pages[currentIndex]),
-      
-    );
-  }
-}
-
-// ============================================================
-// SETTINGS
-// ============================================================
-
-class _BJoHomeLineAction extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _BJoHomeLineAction({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 38,
-              child: Icon(
-                icon,
-                color: m8Blue,
-                size: 23,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Color(0xFF102A43),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF81909B),
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Color(0xFF9AA7B0),
-              size: 14,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -7903,6 +7404,588 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         "${two(date.hour)}:${two(date.minute)}";
   }
 
+
+  // ============================================================
+  // B'Jo Smart Chat v1
+  // Smart Search + Chat Summary + B'Jo Memory
+  // ============================================================
+
+  String _smartMessageText(Map<String, dynamic> msg) {
+    final raw = msg["message"]?.toString() ?? "";
+
+    if (raw == "__M8_HI__") return "HI 👋";
+    if (raw.startsWith("__M8_IMAGE_URL__:")) return "[Foto]";
+    if (raw.startsWith("__BJO_VOICE_URL__:")) return "[Voice note]";
+
+    return raw;
+  }
+
+  String _smartSender(Map<String, dynamic> msg) {
+    final sender = msg["sender_pin"]?.toString() ?? "";
+    return sender == widget.myPin ? "Kamu" : sender;
+  }
+
+  String _smartTime(Map<String, dynamic> msg) {
+    final raw = msg["timestamp"]?.toString() ??
+        msg["created_at"]?.toString() ??
+        "";
+
+    if (raw.isEmpty) return "";
+
+    try {
+      final millis = int.tryParse(raw);
+
+      final date = millis != null
+          ? DateTime.fromMillisecondsSinceEpoch(millis).toLocal()
+          : DateTime.parse(raw).toLocal();
+
+      final hh = date.hour.toString().padLeft(2, "0");
+      final mm = date.minute.toString().padLeft(2, "0");
+
+      return "$hh:$mm";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  Future<void> _openSmartSearch() async {
+    final controller = TextEditingController();
+    List<Map<String, dynamic>> results = [];
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final query = controller.text.trim().toLowerCase();
+
+            if (query.isEmpty) {
+              results = [];
+            } else {
+              final terms = query
+                  .split(RegExp(r"\s+"))
+                  .where((e) => e.isNotEmpty)
+                  .toList();
+
+              results = messages.where((msg) {
+                final text = _smartMessageText(msg).toLowerCase();
+                final sender = _smartSender(msg).toLowerCase();
+
+                return terms.every(
+                  (term) =>
+                      text.contains(term) || sender.contains(term),
+                );
+              }).toList();
+            }
+
+            return AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.search_rounded),
+                  SizedBox(width: 8),
+                  Text("Smart Search"),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 430,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      onChanged: (_) => setDialogState(() {}),
+                      decoration: InputDecoration(
+                        hintText: "Cari isi percakapan...",
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: controller.text.isEmpty
+                            ? null
+                            : IconButton(
+                                onPressed: () {
+                                  controller.clear();
+                                  setDialogState(() {});
+                                },
+                                icon: const Icon(Icons.clear),
+                              ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: query.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "Cari kata, PIN, atau isi pesan.",
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                          : results.isEmpty
+                              ? const Center(
+                                  child: Text("Tidak ditemukan."),
+                                )
+                              : ListView.separated(
+                                  itemCount: results.length,
+                                  separatorBuilder: (_, __) =>
+                                      const Divider(height: 1),
+                                  itemBuilder: (_, index) {
+                                    final msg = results[index];
+
+                                    return ListTile(
+                                      leading: const Icon(
+                                        Icons.chat_bubble_outline,
+                                      ),
+                                      title: Text(
+                                        _smartMessageText(msg),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      subtitle: Text(
+                                        "${_smartSender(msg)} • ${_smartTime(msg)}",
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(dialogContext);
+
+                                        final target =
+                                            messages.indexOf(msg);
+
+                                        if (target >= 0 &&
+                                            _chatScrollController
+                                                .hasClients) {
+                                          final max =
+                                              _chatScrollController
+                                                  .position
+                                                  .maxScrollExtent;
+
+                                          final offset =
+                                              (target * 72.0)
+                                                  .clamp(0.0, max);
+
+                                          _chatScrollController.animateTo(
+                                            offset,
+                                            duration: const Duration(
+                                              milliseconds: 350,
+                                            ),
+                                            curve: Curves.easeOut,
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
+                                ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text("Tutup"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    controller.dispose();
+  }
+
+  Future<void> _openChatSummary() async {
+    final texts = messages
+        .map(_smartMessageText)
+        .where(
+          (e) =>
+              e.trim().isNotEmpty &&
+              e != "[Foto]" &&
+              e != "[Voice note]",
+        )
+        .toList();
+
+    if (texts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Belum ada teks untuk diringkas."),
+        ),
+      );
+      return;
+    }
+
+    final recent = texts.length > 50
+        ? texts.sublist(texts.length - 50)
+        : texts;
+
+    const stopWords = {
+      "yang",
+      "dan",
+      "atau",
+      "dengan",
+      "untuk",
+      "dari",
+      "ini",
+      "itu",
+      "aku",
+      "kamu",
+      "saya",
+      "kita",
+      "ada",
+      "tidak",
+      "sudah",
+      "akan",
+      "bisa",
+      "kalau",
+      "jadi",
+      "juga",
+      "saja",
+    };
+
+    final words = <String, int>{};
+
+    for (final text in recent) {
+      final cleaned = text
+          .toLowerCase()
+          .replaceAll(RegExp(r"[^a-zA-Z0-9À-ÿ\s]"), " ");
+
+      for (final word in cleaned.split(RegExp(r"\s+"))) {
+        if (word.length < 4 || stopWords.contains(word)) continue;
+        words[word] = (words[word] ?? 0) + 1;
+      }
+    }
+
+    final top = words.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final topics = top.take(6).map((e) => e.key).join(", ");
+
+    final latest = recent.length > 8
+        ? recent.sublist(recent.length - 8)
+        : recent;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.auto_awesome_rounded),
+              SizedBox(width: 8),
+              Text("Ringkasan B'Jo"),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "$other • ${recent.length} pesan teks",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (topics.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Topik yang sering muncul",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(topics),
+                ],
+                const SizedBox(height: 16),
+                const Text(
+                  "Percakapan terbaru",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  latest.map((e) => "• $e").join("\n"),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Tutup"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _rememberMessage(Map<String, dynamic> msg) async {
+    final text = _smartMessageText(msg);
+
+    if (text.isEmpty ||
+        text == "[Foto]" ||
+        text == "[Voice note]") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Pesan ini belum bisa disimpan."),
+        ),
+      );
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = "bjo_memory_$chatId";
+    final list = prefs.getStringList(key) ?? <String>[];
+
+    final timestamp = msg["timestamp"]?.toString() ??
+        msg["created_at"]?.toString() ??
+        DateTime.now().millisecondsSinceEpoch.toString();
+
+    final duplicate = list.any((item) {
+      try {
+        final data = jsonDecode(item);
+
+        return data is Map &&
+            data["message"]?.toString() == text &&
+            data["timestamp"]?.toString() == timestamp;
+      } catch (_) {
+        return false;
+      }
+    });
+
+    if (!duplicate) {
+      list.add(
+        jsonEncode({
+          "message": text,
+          "sender": _smartSender(msg),
+          "timestamp": timestamp,
+          "saved_at": DateTime.now().toIso8601String(),
+        }),
+      );
+
+      await prefs.setStringList(key, list);
+    }
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          duplicate
+              ? "Pesan sudah ada di B'Jo Memory."
+              : "❤️ Disimpan ke B'Jo Memory.",
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openBjoMemory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = "bjo_memory_$chatId";
+    final stored = prefs.getStringList(key) ?? <String>[];
+
+    final memories = <Map<String, dynamic>>[];
+
+    for (final item in stored.reversed) {
+      try {
+        final data = jsonDecode(item);
+
+        if (data is Map) {
+          memories.add(Map<String, dynamic>.from(data));
+        }
+      } catch (_) {}
+    }
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.favorite_rounded),
+              SizedBox(width: 8),
+              Text("B'Jo Memory"),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 420,
+            child: memories.isEmpty
+                ? const Center(
+                    child: Text(
+                      "Belum ada Memory.\n\n"
+                      "Tekan lama pesan penting untuk\n"
+                      "menyimpannya ke B'Jo Memory.",
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: memories.length,
+                    separatorBuilder: (_, __) =>
+                        const Divider(height: 1),
+                    itemBuilder: (_, index) {
+                      final memory = memories[index];
+
+                      return ListTile(
+                        leading: const Icon(
+                          Icons.favorite_border_rounded,
+                        ),
+                        title: Text(
+                          memory["message"]?.toString() ?? "",
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          memory["sender"]?.toString() ?? "",
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Tutup"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  Future<void> _showSmartMessageActions(
+    Map<String, dynamic> msg,
+    bool mine,
+  ) async {
+    final text = _smartMessageText(msg);
+
+    if (text.trim().isEmpty) return;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: m8White,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(22),
+        ),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 10, 8, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: m8Blue.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: m8Blue.withValues(alpha: 0.12),
+                    child: Icon(
+                      Icons.favorite_border_rounded,
+                      color: m8Blue,
+                    ),
+                  ),
+                  title: const Text(
+                    "Ingat di B'Jo",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    "Simpan pesan penting ke B'Jo Memory",
+                  ),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await _rememberMessage(msg);
+                  },
+                ),
+
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: m8Blue.withValues(alpha: 0.12),
+                    child: Icon(
+                      Icons.copy_rounded,
+                      color: m8Blue,
+                    ),
+                  ),
+                  title: const Text(
+                    "Salin pesan",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+
+                    await Clipboard.setData(
+                      ClipboardData(text: text),
+                    );
+
+                    if (!mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Pesan disalin."),
+                      ),
+                    );
+                  },
+                ),
+
+                if (mine &&
+                    !text.startsWith("[Foto]") &&
+                    !text.startsWith("[Voice note]"))
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          m8Blue.withValues(alpha: 0.12),
+                      child: Icon(
+                        Icons.edit_outlined,
+                        color: m8Blue,
+                      ),
+                    ),
+                    title: const Text(
+                      "Edit pesan",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      editMessage(msg);
+                    },
+                  ),
+
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor:
+                        m8Blue.withValues(alpha: 0.12),
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: m8Blue,
+                    ),
+                  ),
+                  title: const Text("Batal"),
+                  onTap: () => Navigator.pop(sheetContext),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final p1 = widget.chat["participant_1_pin"]?.toString() ?? "";
@@ -8092,7 +8175,28 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ],
                 ),
               ),
+
               PopupMenuItem<String>(
+                value: 'summary',
+                child: Row(
+                  children: [
+                    Icon(Icons.auto_awesome_rounded),
+                    SizedBox(width: 12),
+                    Text('Ringkas percakapan'),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'memory',
+                child: Row(
+                  children: [
+                    Icon(Icons.favorite_border_rounded),
+                    SizedBox(width: 12),
+                    Text("B'Jo Memory"),
+                  ],
+                ),
+              ),
+PopupMenuItem<String>(
                 value: 'mute',
                 child: Row(
                   children: [
@@ -8215,16 +8319,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       ? Alignment.centerRight
                                       : Alignment.centerLeft,
                                   child: GestureDetector(
-                                    onLongPress:
-                                        mine &&
-                                            !text.startsWith(
-                                              "__M8_IMAGE_BASE64__:",
-                                            ) &&
-                                            !text.startsWith(
-                                              "__M8_IMAGE_URL__:",
-                                            )
-                                        ? () => editMessage(msg)
-                                        : null,
+                                    onLongPress: () =>
+                                        _showSmartMessageActions(
+                                          msg,
+                                          mine,
+                                        ),
                                     child: Container(
                                       constraints: BoxConstraints(
                                         maxWidth:
