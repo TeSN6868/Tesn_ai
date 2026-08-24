@@ -1771,6 +1771,183 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     super.dispose();
   }
 
+
+  // ============================================================
+  // B'JO REAL DESTINATION SEARCH + ROUTING
+  // ============================================================
+
+  List<LatLng> _routePoints = [];
+  bool _searchingDestination = false;
+  String? _navigationError;
+
+  Future<void> _searchDestination(String query) async {
+    final destination = query.trim();
+
+    if (destination.isEmpty) {
+      _destinationFocusNode.requestFocus();
+      return;
+    }
+
+    setState(() {
+      _searchingDestination = true;
+      _navigationError = null;
+      _routePoints = [];
+    });
+
+    try {
+      final uri = Uri.https(
+        'nominatim.openstreetmap.org',
+        '/search',
+        {
+          'q': destination,
+          'format': 'jsonv2',
+          'limit': '1',
+          'countrycodes': 'id',
+        },
+      );
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'User-Agent': "BJo/1.0 navigation",
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Pencarian tujuan gagal (${response.statusCode}).',
+        );
+      }
+
+      final data = jsonDecode(response.body);
+
+      if (data is! List || data.isEmpty) {
+        throw Exception(
+          'Tujuan tidak ditemukan. Coba masukkan nama tempat atau alamat yang lebih lengkap.',
+        );
+      }
+
+      final result = data.first;
+
+      final lat = double.tryParse('${result['lat']}');
+      final lng = double.tryParse('${result['lon']}');
+
+      if (lat == null || lng == null) {
+        throw Exception('Koordinat tujuan tidak valid.');
+      }
+
+      await _loadRealRoute(
+        destinationLat: lat,
+        destinationLng: lng,
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _searchingDestination = false;
+        _navigationError = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  Future<void> _loadRealRoute({
+    required double destinationLat,
+    required double destinationLng,
+  }) async {
+    final startLat = _currentLat;
+    final startLng = _currentLng;
+
+    final uri = Uri.https(
+      'router.project-osrm.org',
+      '/route/v1/driving/$startLng,$startLat;$destinationLng,$destinationLat',
+      {
+        'overview': 'full',
+        'geometries': 'geojson',
+        'steps': 'false',
+      },
+    );
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'User-Agent': 'BJo/1.0 navigation',
+        'Accept': 'application/json',
+      },
+    ).timeout(const Duration(seconds: 20));
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Server rute tidak dapat dihubungi (${response.statusCode}).',
+      );
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (data['code'] != 'Ok') {
+      throw Exception(
+        'Rute menuju tujuan tidak ditemukan.',
+      );
+    }
+
+    final routes = data['routes'];
+
+    if (routes is! List || routes.isEmpty) {
+      throw Exception('Tidak ada rute yang tersedia.');
+    }
+
+    final route = routes.first;
+
+    final geometry = route['geometry'];
+
+    if (geometry == null ||
+        geometry['coordinates'] is! List) {
+      throw Exception('Garis rute tidak tersedia.');
+    }
+
+    final coordinates = geometry['coordinates'] as List;
+
+    final points = <LatLng>[];
+
+    for (final item in coordinates) {
+      if (item is! List || item.length < 2) continue;
+
+      final lng = (item[0] as num).toDouble();
+      final lat = (item[1] as num).toDouble();
+
+      points.add(LatLng(lat, lng));
+    }
+
+    if (points.length < 2) {
+      throw Exception('Rute terlalu pendek atau tidak valid.');
+    }
+
+    final distanceMeters =
+        (route['distance'] as num?)?.toDouble() ?? 0;
+
+    final durationSeconds =
+        (route['duration'] as num?)?.toDouble() ?? 0;
+
+    if (!mounted) return;
+
+    setState(() {
+      _destinationLat = destinationLat;
+      _destinationLng = destinationLng;
+
+      _routePoints = points;
+
+      _distanceKm = distanceMeters / 1000;
+
+      _durationMinutes =
+          (durationSeconds / 60).ceil();
+
+      _destinationSelected = true;
+
+      _searchingDestination = false;
+      _navigationError = null;
+    });
+  }
+
   Future<void> _initLiveGps() async {
     try {
       final serviceEnabled =
@@ -1896,6 +2073,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                   destinationLat: _destinationLat,
                   destinationLng: _destinationLng,
                   destinationSelected: _destinationSelected,
+                    routePoints: _routePoints,
                 ),
               ),
             ),
@@ -2051,29 +2229,88 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                     ),
                   ),
                   onSubmitted: (value) {
-                    final destination = value.trim();
-
-                    if (destination.isEmpty) {
-                      _destinationFocusNode.requestFocus();
-                      return;
-                    }
-
-                    setState(() {
-                      _destinationSelected = true;
-                      _destinationLat = _currentLat + 0.018;
-                      _destinationLng = _currentLng + 0.024;
-                      _distanceKm = 3.4;
-                      _durationMinutes = 11;
-                    });
-
                     FocusScope.of(context).unfocus();
+                    _searchDestination(value);
                   },
                 ),
               ),
             ),
 
           // ============================================================
-          // INFO RUTE
+                      if (_searchingDestination)
+              Positioned(
+                left: 16,
+                right: 16,
+                top: MediaQuery.of(context).padding.top + 146,
+                child: Material(
+                  color: m8White,
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(14),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: m8Blue,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            "Mencari tujuan dan menghitung rute...",
+                            style: TextStyle(
+                              color: m8BlueDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            if (_navigationError != null)
+              Positioned(
+                left: 16,
+                right: 16,
+                top: MediaQuery.of(context).padding.top + 146,
+                child: Material(
+                  color: m8White,
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.error_outline_rounded,
+                          color: m8BlueDark,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _navigationError!,
+                            style: const TextStyle(
+                              color: m8BlueDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+// INFO RUTE
           // ============================================================
           if (_destinationSelected)
             Positioned(
@@ -2186,6 +2423,7 @@ class _BJoNavigationMapPainter extends CustomPainter {
   final double? destinationLat;
   final double? destinationLng;
   final bool destinationSelected;
+  final List<LatLng> routePoints;
 
   _BJoNavigationMapPainter({
     required this.currentLat,
@@ -2193,6 +2431,7 @@ class _BJoNavigationMapPainter extends CustomPainter {
     required this.destinationLat,
     required this.destinationLng,
     required this.destinationSelected,
+    required this.routePoints,
   });
 
   @override
@@ -2272,48 +2511,93 @@ class _BJoNavigationMapPainter extends CustomPainter {
       size.height * .53,
     );
 
-    // Rute simulasi.
-    if (destinationSelected) {
-      final destination = Offset(
-        size.width * .72,
-        size.height * .30,
-      );
+    // Rute nyata hasil OSRM.
+      if (destinationSelected && routePoints.length >= 2) {
+        final routePaint = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 7
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..color = m8Blue;
 
-      final routePaint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 7
-        ..strokeCap = StrokeCap.round
-        ..color = m8Blue;
+        double minLat = routePoints.first.latitude;
+        double maxLat = routePoints.first.latitude;
+        double minLng = routePoints.first.longitude;
+        double maxLng = routePoints.first.longitude;
 
-      final route = Path()
-        ..moveTo(current.dx, current.dy)
-        ..quadraticBezierTo(
-          size.width * .52,
-          size.height * .42,
-          destination.dx,
-          destination.dy,
+        for (final point in routePoints) {
+          if (point.latitude < minLat) minLat = point.latitude;
+          if (point.latitude > maxLat) maxLat = point.latitude;
+          if (point.longitude < minLng) minLng = point.longitude;
+          if (point.longitude > maxLng) maxLng = point.longitude;
+        }
+
+        final latRange = (maxLat - minLat).abs();
+        final lngRange = (maxLng - minLng).abs();
+
+        final safeLatRange = latRange < 0.001 ? 0.001 : latRange;
+        final safeLngRange = lngRange < 0.001 ? 0.001 : lngRange;
+
+        const padding = 54.0;
+
+        final availableWidth = size.width - (padding * 2);
+        final availableHeight = size.height - (padding * 2);
+
+        final scaleX = availableWidth / safeLngRange;
+        final scaleY = availableHeight / safeLatRange;
+        final scale = scaleX < scaleY ? scaleX : scaleY;
+
+        final routeWidth = safeLngRange * scale;
+        final routeHeight = safeLatRange * scale;
+
+        final offsetX = (size.width - routeWidth) / 2;
+        final offsetY = (size.height - routeHeight) / 2;
+
+        Offset project(LatLng point) {
+          final x =
+              offsetX + ((point.longitude - minLng) * scale);
+
+          final y =
+              offsetY + ((maxLat - point.latitude) * scale);
+
+          return Offset(x, y);
+        }
+
+        final route = Path();
+
+        for (int i = 0; i < routePoints.length; i++) {
+          final point = project(routePoints[i]);
+
+          if (i == 0) {
+            route.moveTo(point.dx, point.dy);
+          } else {
+            route.lineTo(point.dx, point.dy);
+          }
+        }
+
+        canvas.drawPath(route, routePaint);
+
+        // Marker tujuan mengikuti titik akhir rute nyata.
+        final destination = project(routePoints.last);
+
+        final destinationPaint = Paint()
+          ..style = PaintingStyle.fill
+          ..color = const Color(0xFF0B4F71);
+
+        canvas.drawCircle(
+          destination,
+          13,
+          destinationPaint,
         );
 
-      canvas.drawPath(route, routePaint);
+        canvas.drawCircle(
+          destination,
+          6,
+          Paint()..color = m8White,
+        );
+      }
 
-      final destinationPaint = Paint()
-        ..style = PaintingStyle.fill
-        ..color = const Color(0xFF0B4F71);
-
-      canvas.drawCircle(
-        destination,
-        13,
-        destinationPaint,
-      );
-
-      canvas.drawCircle(
-        destination,
-        6,
-        Paint()..color = m8White,
-      );
-    }
-
-    // Marker posisi pengguna.
+// Marker posisi pengguna.
     canvas.drawCircle(
       current,
       17,
