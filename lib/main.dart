@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-import 'dart:math';
+import 'dart:math' as math;
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -2308,6 +2308,37 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     );
   }
 
+
+  int _nearestRoutePointIndex(
+    double latitude,
+    double longitude,
+  ) {
+    if (_routePoints.isEmpty) {
+      return 0;
+    }
+
+    var nearestIndex = 0;
+    var nearestDistance = double.infinity;
+
+    for (var i = 0; i < _routePoints.length; i++) {
+      final point = _routePoints[i];
+
+      final distance = _distanceBetweenMeters(
+        latitude,
+        longitude,
+        point.latitude,
+        point.longitude,
+      );
+
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestIndex = i;
+      }
+    }
+
+    return nearestIndex;
+  }
+
   void _updateNextManeuver() {
     if (!_navigationActive || _maneuvers.isEmpty) {
       return;
@@ -2319,8 +2350,6 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
       _currentLng,
     );
 
-    _routeNearestPointIndex =
-        nearestRouteIndex;
 
     while (_currentManeuverIndex <
         _maneuvers.length) {
@@ -2801,7 +2830,7 @@ Future<void> _requestRoute() async {
     }
 
     if (_routing) {
-      _showMessage('B'Jo masih menghitung rute.');
+      _showMessage("B'Jo masih menghitung rute.");
       return;
     }
 
