@@ -3035,22 +3035,6 @@ Future<void> _requestRoute() async {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.navigation_rounded,
-                    color: m8White,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text(
-                      "B'Jo Navigation",
-                      style: TextStyle(
-                        color: m8White,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
                   IconButton(
                     tooltip: _locationPermissionDenied
                         ? "Izin lokasi ditolak"
@@ -3183,186 +3167,164 @@ Future<void> _requestRoute() async {
               ),
             ),
 
-          Positioned(
-            left: 12,
-            right: 12,
-            bottom: 72,
-            child: SafeArea(
-              top: false,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: m8White.withOpacity(0.94),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: const [
-                    BoxShadow(
-                      blurRadius: 9,
-                      offset: Offset(0, 3),
-                      color: Color(0x26000000),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.directions_car_rounded,
-                      color: m8BlueDark,
-                      size: 19,
-                    ),
-                    const SizedBox(width: 7),
-                    const Text(
-                      'Kendaraan',
-                      style: TextStyle(
-                        color: m8BlueDark,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const Spacer(),
-                    ChoiceChip(
-                      label: const Text('🚗 Mobil'),
-                      selected: _vehicleMode == 'car',
-                      onSelected: _navigationActive
-                          ? null
-                          : (_) {
-                              setState(() {
-                                _vehicleMode = 'car';
-                              });
-                              if (_destinationLat != null &&
-                                  _destinationLng != null) {
-                                _requestRoute();
-                              }
-                            },
-                    ),
-                    const SizedBox(width: 5),
-                    ChoiceChip(
-                      label: const Text('🏍️ Motor'),
-                      selected: _vehicleMode == 'motor',
-                      onSelected: _navigationActive
-                          ? null
-                          : (_) {
-                              setState(() {
-                                _vehicleMode = 'motor';
-                              });
-                              if (_destinationLat != null &&
-                                  _destinationLng != null) {
-                                _requestRoute();
-                              }
-                            },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
 
-          if (_destinationLat != null &&
-              _destinationLng != null &&
-              _routePoints.length >= 2)
-            Positioned(
-              left: 12,
-              right: 12,
-              bottom: 12,
-              child: SafeArea(
-                top: false,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 11,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: m8White.withOpacity(0.94),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: const [
-                      BoxShadow(
-                        blurRadius: 10,
-                        offset: Offset(0, 3),
-                        color: Color(0x30000000),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: m8Blue,
-                          borderRadius: BorderRadius.circular(9),
+            if (_destinationLat != null &&
+                _destinationLng != null &&
+                _routePoints.length >= 2)
+              Positioned(
+                left: 8,
+                right: 8,
+                bottom: 68,
+                child: SafeArea(
+                  top: false,
+                  child: Container(
+                    height: 44,
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: m8White.withOpacity(0.96),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: const [
+                        BoxShadow(
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                          color: Color(0x22000000),
                         ),
-                        child: const Icon(
-                          Icons.route_rounded,
-                          color: m8White,
-                          size: 19,
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.directions_car_rounded,
+                          color: m8BlueDark,
+                          size: 17,
                         ),
-                      ),
-                      const SizedBox(width: 9),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${_distanceKm?.toStringAsFixed(1) ?? '-'} km'
-                              ' • '
-                              '${_durationMinutes ?? '-'} menit',
-                              style: const TextStyle(
-                                color: m8BlueDark,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            Text(
-                              _navigationActive
-                                  ? "Navigasi B'Jo aktif • "
-                                      "${_vehicleMode == 'motor' ? 'Motor' : 'Mobil'}"
-                                  : "Rute • "
-                                      "${_vehicleMode == 'motor' ? 'Motor' : 'Mobil'}",
-                              style: const TextStyle(
-                                color: m8BlueDark,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        height: 34,
-                        child: FilledButton.icon(
-                          onPressed: (_navigationActive || _routing)
+
+                        const SizedBox(width: 2),
+
+                        ChoiceChip(
+                          label: const Text(
+                            '🚗',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          selected: _vehicleMode == 'car',
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          padding: EdgeInsets.zero,
+                          labelPadding:
+                              const EdgeInsets.symmetric(horizontal: 4),
+                          onSelected: _navigationActive
                               ? null
-                              : _startNavigation,
-                          icon: Icon(
-                            _navigationActive
-                                ? Icons.navigation_rounded
-                                : Icons.play_arrow_rounded,
-                            size: 17,
+                              : (_) {
+                                  setState(() {
+                                    _vehicleMode = 'car';
+                                  });
+                                  if (_destinationLat != null &&
+                                      _destinationLng != null) {
+                                    _requestRoute();
+                                  }
+                                },
+                        ),
+
+                        const SizedBox(width: 2),
+
+                        ChoiceChip(
+                          label: const Text(
+                            '🏍️',
+                            style: TextStyle(fontSize: 12),
                           ),
-                          label: Text(
-                            _navigationActive ? 'Aktif' : 'Mulai',
-                          ),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
+                          selected: _vehicleMode == 'motor',
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          padding: EdgeInsets.zero,
+                          labelPadding:
+                              const EdgeInsets.symmetric(horizontal: 4),
+                          onSelected: _navigationActive
+                              ? null
+                              : (_) {
+                                  setState(() {
+                                    _vehicleMode = 'motor';
+                                  });
+                                  if (_destinationLat != null &&
+                                      _destinationLng != null) {
+                                    _requestRoute();
+                                  }
+                                },
+                        ),
+
+                        const SizedBox(width: 6),
+
+                        Container(
+                          width: 1,
+                          height: 22,
+                          color: m8BlueDark.withOpacity(0.14),
+                        ),
+
+                        const SizedBox(width: 6),
+
+                        Expanded(
+                          child: Text(
+                            '${_distanceKm?.toStringAsFixed(1) ?? '-'} km'
+                            ' • '
+                            '${_durationMinutes ?? '-'} mnt',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: m8BlueDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
                             ),
-                            visualDensity:
-                                VisualDensity.compact,
                           ),
                         ),
-                      ),
-                    ],
+
+                        const SizedBox(width: 4),
+
+                        SizedBox(
+                          height: 29,
+                          child: FilledButton(
+                            onPressed:
+                                (_navigationActive || _routing)
+                                    ? null
+                                    : _startNavigation,
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              minimumSize: Size.zero,
+                              visualDensity:
+                                  VisualDensity.compact,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _navigationActive
+                                      ? Icons.navigation_rounded
+                                      : Icons.play_arrow_rounded,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  _navigationActive
+                                      ? 'Aktif'
+                                      : 'Mulai',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-          Positioned(
+Positioned(
             right: 16,
             bottom: _destinationLat != null &&
                     _destinationLng != null &&
@@ -3454,15 +3416,6 @@ Future<void> _requestRoute() async {
                             ),
                           ),
                           const SizedBox(height: 3),
-                          Text(
-                            "B'Jo Navigation • "
-                            "${_vehicleMode == 'motor' ? 'Motor' : 'Mobil'}",
-                            style: TextStyle(
-                              color: m8White.withOpacity(0.78),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                         ],
                       ),
                     ),
