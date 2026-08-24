@@ -7749,7 +7749,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         }
       });
 
-      messagePollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      messagePollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
         if (mounted && !_chatInitializing) {
           loadMessages();
         }
@@ -8150,10 +8150,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     'M8 NOTIFICATION: pesan baru dari $sender id=$messageId',
                   );
 
-                  await M8NotificationService.showChatNotification(
+                  M8NotificationService.showChatNotification(
                     sender: sender,
                     message: notificationMessage,
-                  );
+                    ).catchError((_) {});
                 }
 
                 if (sender != widget.myPin &&
@@ -8163,7 +8163,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
                   debugPrint('M8 HEY CHAT: HI BARU dari $sender id=$messageId');
 
-                  await _playChatHey();
+                  _playChatHey();
                 }
               }
             } else {
