@@ -1753,12 +1753,38 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
   bool _routing = false;
   bool _navigationActive = false;
 
+  // Mode kendaraan navigasi B'Jo.
+  // Routing engine saat ini masih memakai jalan kendaraan,
+  // tetapi state kendaraan sudah dipisahkan agar siap
+  // untuk routing profile mobil/motor.
+  String _vehicleMode = 'car';
+
   double? _destinationLat;
   double? _destinationLng;
   double? _distanceKm;
   int? _durationMinutes;
 
   String? _destinationName;
+
+  // B'Jo turn-by-turn navigation.
+  List<Map<String, dynamic>> _maneuvers = const [];
+  int _currentManeuverIndex = 0;
+  String _nextInstruction = 'Siap untuk navigasi';
+  double _nextManeuverDistanceMeters = 0;
+  double _currentGpsHeading = -1;
+  // B'Jo Intersection Guard.
+  // Maneuver hanya boleh dianggap selesai setelah kendaraan
+  // benar-benar melewati segmen rute setelah persimpangan.
+  List<int> _maneuverRouteIndex = const [];
+  bool _intersectionGuardActive = false;
+  double _intersectionDistanceMeters = 0;
+  // B'Jo Branch Guard.
+  // Maneuver tidak boleh dianggap selesai sebelum kendaraan
+  // benar-benar masuk ke cabang rute yang benar.
+  bool _branchGuardActive = false;
+  double _branchHeadingDifference = 0;
+  double _branchRouteDistanceMeters = double.infinity;
+
 
   List<LatLng> _routePoints = const [];
 
@@ -1843,6 +1869,8 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
           setState(() {
             _currentLat = position.latitude;
             _currentLng = position.longitude;
+            _currentGpsHeading =
+                position.heading.isFinite ? position.heading : -1;
             _locationReady = true;
           });
 
@@ -1851,6 +1879,12 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
               LatLng(position.latitude, position.longitude),
               16,
             );
+          }
+
+          // Perbarui instruksi turn-by-turn berdasarkan
+          // posisi GPS terbaru.
+          if (_navigationActive) {
+            _updateNextManeuver();
           }
 
           if (_destinationLat != null && _destinationLng != null) {
@@ -1904,6 +1938,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     setState(() {
       _searching = true;
       _navigationActive = false;
+      _followingGps = true;
     });
 
     try {
@@ -1977,8 +2012,491 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     }
   }
 
-  Future<void> _requestRoute() async {
+
+  double _distanceBetweenMeters(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    const earthRadius = 6371000.0;
+
+    final dLat = (lat2 - lat1) * math.pi / 180.0;
+    final dLon = (lon2 - lon1) * math.pi / 180.0;
+
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1 * math.pi / 180.0) *
+            math.cos(lat2 * math.pi / 180.0) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+
+    final c = 2 * math.atan2(
+      math.sqrt(a),
+      math.sqrt(1 - a),
+    );
+
+    return earthRadius * c;
+  }
+
+  String _maneuverInstruction(Map<String, dynamic> maneuver) {
+    final instruction =
+        '${maneuver['verbal_pre_transition_instruction'] ?? ''}'.trim();
+
+    if (instruction.isNotEmpty) {
+      return instruction;
+    }
+
+    final fallback =
+        '${maneuver['instruction'] ?? 'Lanjutkan perjalanan'}'.trim();
+
+    return fallback.isEmpty ? 'Lanjutkan perjalanan' : fallback;
+  }
+
+
+  int? _maneuverRouteIndexAt(int maneuverIndex) {
+    if (maneuverIndex < 0 ||
+        maneuverIndex >= _maneuverRouteIndex.length) {
+      return null;
+    }
+
+    return _maneuverRouteIndex[maneuverIndex];
+  }
+
+  double _bearingBetween(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    final phi1 = lat1 * math.pi / 180.0;
+    final phi2 = lat2 * math.pi / 180.0;
+    final deltaLon = (lon2 - lon1) * math.pi / 180.0;
+
+    final y = math.sin(deltaLon) * math.cos(phi2);
+    final x =
+        math.cos(phi1) * math.sin(phi2) -
+        math.sin(phi1) *
+            math.cos(phi2) *
+            math.cos(deltaLon);
+
+    final bearing =
+        math.atan2(y, x) * 180.0 / math.pi;
+
+    return (bearing + 360.0) % 360.0;
+  }
+
+  double _headingDifference(
+    double heading1,
+    double heading2,
+  ) {
+    var difference = (heading1 - heading2).abs();
+
+    if (difference > 180) {
+      difference = 360 - difference;
+    }
+
+    return difference;
+  }
+
+  bool _maneuverIsPassed(
+    int maneuverIndex,
+    int nearestRouteIndex,
+    double gpsHeading,
+  ) {
+    final routeIndex =
+        _maneuverRouteIndexAt(maneuverIndex);
+
+    if (routeIndex == null ||
+        _routePoints.length < 2) {
+      return false;
+    }
+
+    // Jangan menyelesaikan maneuver ketika kendaraan
+    // baru mendekati titik persimpangan.
+    const minimumPassedPoints = 4;
+
+    if (nearestRouteIndex <
+        routeIndex + minimumPassedPoints) {
+      return false;
+    }
+
+    // Pastikan kendaraan bergerak searah dengan
+    // segmen rute SETELAH persimpangan.
+    final afterIndex = math.min(
+      _routePoints.length - 1,
+      routeIndex + 5,
+    );
+
+    if (afterIndex <= routeIndex) {
+      return true;
+    }
+
+    final routeBearing = _bearingBetween(
+      _routePoints[routeIndex].latitude,
+      _routePoints[routeIndex].longitude,
+      _routePoints[afterIndex].latitude,
+      _routePoints[afterIndex].longitude,
+    );
+
+    if (gpsHeading < 0 || gpsHeading > 360) {
+      // Tanpa heading, route index tetap menjadi
+      // bukti utama bahwa kendaraan telah melewati
+      // titik maneuver.
+      return true;
+    }
+
+    final difference = _headingDifference(
+      gpsHeading,
+      routeBearing,
+    );
+
+    return difference <= 70;
+  }
+
+  bool _isNearCriticalIntersection(
+    int maneuverIndex,
+  ) {
+    final routeIndex =
+        _maneuverRouteIndexAt(maneuverIndex);
+
+    if (routeIndex == null ||
+        _routePoints.isEmpty) {
+      return false;
+    }
+
+    final maneuverPoint =
+        _routePoints[
+          math.min(
+            routeIndex,
+            _routePoints.length - 1,
+          )
+        ];
+
+    final distance = _distanceBetweenMeters(
+      _currentLat,
+      _currentLng,
+      maneuverPoint.latitude,
+      maneuverPoint.longitude,
+    );
+
+    _intersectionDistanceMeters = distance;
+
+    // Zona kritis persimpangan:
+    // 60 m sebelum sampai titik persimpangan.
+    return distance <= 60;
+  }
+
+
+  bool _isOnCorrectBranch(
+    int maneuverIndex,
+    int nearestRouteIndex,
+    double gpsHeading,
+  ) {
+    final routeIndex =
+        _maneuverRouteIndexAt(maneuverIndex);
+
+    if (routeIndex == null ||
+        _routePoints.length < 2) {
+      return false;
+    }
+
+    /*
+     * Ambil beberapa titik setelah persimpangan.
+     *
+     * Satu titik saja tidak cukup karena dua cabang jalan
+     * dapat sangat berdekatan pada area persimpangan.
+     */
+    final afterStart = math.min(
+      _routePoints.length - 1,
+      routeIndex + 4,
+    );
+
+    final afterEnd = math.min(
+      _routePoints.length - 1,
+      routeIndex + 10,
+    );
+
+    if (afterEnd <= afterStart) {
+      return true;
+    }
+
+    /*
+     * Kendaraan harus sudah benar-benar melewati
+     * titik awal cabang.
+     */
+    if (nearestRouteIndex < afterStart) {
+      return false;
+    }
+
+    final routeBearing = _bearingBetween(
+      _routePoints[afterStart].latitude,
+      _routePoints[afterStart].longitude,
+      _routePoints[afterEnd].latitude,
+      _routePoints[afterEnd].longitude,
+    );
+
+    if (gpsHeading < 0 || gpsHeading > 360) {
+      /*
+       * Heading GPS belum valid.
+       *
+       * Jangan langsung menganggap cabang benar.
+       * Kendaraan harus lebih jauh masuk ke polyline.
+       */
+      return nearestRouteIndex >= afterStart + 3;
+    }
+
+    _branchHeadingDifference =
+        _headingDifference(
+      gpsHeading,
+      routeBearing,
+    );
+
+    /*
+     * 55 derajat sengaja dibuat lebih ketat.
+     *
+     * Ini membantu membedakan cabang yang arahnya
+     * berbeda pada persimpangan.
+     */
+    return _branchHeadingDifference <= 55;
+  }
+
+  bool _shouldHoldAtIntersection(
+    int maneuverIndex,
+    int nearestRouteIndex,
+    double gpsHeading,
+  ) {
+    final routeIndex =
+        _maneuverRouteIndexAt(maneuverIndex);
+
+    if (routeIndex == null ||
+        _routePoints.isEmpty) {
+      return false;
+    }
+
+    final maneuverPoint = _routePoints[
+      math.min(
+        routeIndex,
+        _routePoints.length - 1,
+      )
+    ];
+
+    _branchRouteDistanceMeters =
+        _distanceBetweenMeters(
+      _currentLat,
+      _currentLng,
+      maneuverPoint.latitude,
+      maneuverPoint.longitude,
+    );
+
+    /*
+     * Zona kritis:
+     *
+     * 60 meter dari titik persimpangan.
+     *
+     * Selama kendaraan belum terbukti masuk
+     * ke cabang rute yang benar, maneuver dikunci.
+     */
+    if (_branchRouteDistanceMeters > 60) {
+      return false;
+    }
+
+    return !_isOnCorrectBranch(
+      maneuverIndex,
+      nearestRouteIndex,
+      gpsHeading,
+    );
+  }
+
+  void _updateNextManeuver() {
+    if (!_navigationActive || _maneuvers.isEmpty) {
+      return;
+    }
+
+    final nearestRouteIndex =
+        _nearestRoutePointIndex(
+      _currentLat,
+      _currentLng,
+    );
+
+    _routeNearestPointIndex =
+        nearestRouteIndex;
+
+    while (_currentManeuverIndex <
+        _maneuvers.length) {
+
+      final maneuver =
+          _maneuvers[_currentManeuverIndex];
+
+      final lat =
+          (maneuver['_lat'] as num?)?.toDouble();
+
+      final lon =
+          (maneuver['_lon'] as num?)?.toDouble();
+
+      if (lat == null || lon == null) {
+        _currentManeuverIndex++;
+        continue;
+      }
+
+      final distance =
+          _distanceBetweenMeters(
+        _currentLat,
+        _currentLng,
+        lat,
+        lon,
+      );
+
+      _nextManeuverDistanceMeters =
+          distance;
+
+      _nextInstruction =
+          _maneuverInstruction(maneuver);
+
+      _intersectionGuardActive =
+          _isNearCriticalIntersection(
+        _currentManeuverIndex,
+      );
+
+      /*
+       * ========================================================
+       * B'JO BRANCH GUARD
+       * ========================================================
+       *
+       * Jangan menyelesaikan maneuver hanya karena GPS
+       * sudah dekat dengan titik persimpangan.
+       *
+       * Kendaraan harus:
+       *
+       * 1. melewati titik maneuver;
+       * 2. masuk ke segmen rute setelah persimpangan;
+       * 3. mempunyai heading sesuai dengan cabang rute.
+       */
+
+      if (_currentManeuverIndex <
+          _maneuvers.length - 1) {
+
+        final passed =
+            _maneuverIsPassed(
+          _currentManeuverIndex,
+          nearestRouteIndex,
+          _currentGpsHeading,
+        );
+
+        final correctBranch =
+            _isOnCorrectBranch(
+          _currentManeuverIndex,
+          nearestRouteIndex,
+          _currentGpsHeading,
+        );
+
+        final hold =
+            _shouldHoldAtIntersection(
+          _currentManeuverIndex,
+          nearestRouteIndex,
+          _currentGpsHeading,
+        );
+
+        _branchGuardActive = hold;
+
+        /*
+         * Pindah ke maneuver berikutnya HANYA jika:
+         *
+         * - maneuver sudah dilewati;
+         * - kendaraan masuk cabang rute yang benar;
+         * - tidak sedang berada dalam zona persimpangan
+         *   yang belum terkonfirmasi.
+         */
+        if (passed &&
+            correctBranch &&
+            !hold) {
+          _currentManeuverIndex++;
+          continue;
+        }
+
+        /*
+         * Jika cabang belum terkonfirmasi,
+         * pertahankan instruksi maneuver sekarang.
+         */
+        if (!correctBranch || hold) {
+          return;
+        }
+      }
+
+      return;
+    }
+
+    _nextManeuverDistanceMeters = 0;
+
+    _nextInstruction =
+        'Anda sudah mendekati tujuan.';
+
+    _intersectionGuardActive = false;
+    _branchGuardActive = false;
+  }
+
+
+  String _formatManeuverDistance(double meters) {
+    if (meters < 1000) {
+      return '${meters.round()} m';
+    }
+
+    return '${(meters / 1000).toStringAsFixed(1)} km';
+  }
+
+  IconData _maneuverIcon(Map<String, dynamic>? maneuver) {
+    if (maneuver == null) {
+      return Icons.navigation_rounded;
+    }
+
+    final type = (maneuver['type'] as num?)?.toInt() ?? 0;
+
+    switch (type) {
+      case 10:
+      case 11:
+      case 12:
+        return Icons.turn_right_rounded;
+
+      case 15:
+      case 16:
+      case 17:
+        return Icons.turn_left_rounded;
+
+      case 1:
+      case 2:
+      case 3:
+        return Icons.straight_rounded;
+
+      case 4:
+      case 5:
+        return Icons.u_turn_left_rounded;
+
+      case 6:
+      case 7:
+        return Icons.u_turn_right_rounded;
+
+      case 8:
+      case 9:
+        return Icons.roundabout_right_rounded;
+
+      default:
+        return Icons.navigation_rounded;
+    }
+  }
+
+Future<void> _requestRoute() async {
     if (_destinationLat == null || _destinationLng == null) {
+      return;
+    }
+
+    if (!_locationReady) {
+      await _initLiveGps();
+      if (!_locationReady) {
+        return;
+      }
+    }
+
+    if (_routing) {
       return;
     }
 
@@ -1987,82 +2505,185 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     });
 
     try {
-      final uri = Uri.https(
-        'router.project-osrm.org',
-        '/route/v1/driving/'
-            '${_currentLng.toStringAsFixed(6)},'
-            '${_currentLat.toStringAsFixed(6)};'
-            '${_destinationLng!.toStringAsFixed(6)},'
-            '${_destinationLat!.toStringAsFixed(6)}',
-        {
-          'overview': 'full',
-          'geometries': 'geojson',
-          'steps': 'true',
-        },
-      );
+      final costing =
+          _vehicleMode == 'motor' ? 'motorcycle' : 'auto';
 
-      final response = await http.get(
-        uri,
+      final requestBody = {
+        'locations': [
+          {
+            'lat': _currentLat,
+            'lon': _currentLng,
+          },
+          {
+            'lat': _destinationLat!,
+            'lon': _destinationLng!,
+          },
+        ],
+        'costing': costing,
+        'units': 'kilometers',
+        'directions_type': 'instructions',
+        'shape_format': 'geojson',
+      };
+
+      final response = await http.post(
+        Uri.parse('https://valhalla1.openstreetmap.de/route'),
         headers: const {
           'Accept': 'application/json',
-          'User-Agent': 'BJo-Navigation/1.0',
+          'Content-Type': 'application/json',
+          'X-Client-Id': 'BJo-Navigation',
         },
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Routing gagal (${response.statusCode})');
+        throw Exception(
+          'Routing gagal (${response.statusCode})',
+        );
       }
 
       final data = jsonDecode(response.body);
 
       if (data is! Map ||
-          data['routes'] is! List ||
-          (data['routes'] as List).isEmpty) {
-        throw Exception('Rute jalan tidak ditemukan.');
+          data['trip'] is! Map) {
+        throw Exception(
+          'Respons routing tidak valid.',
+        );
       }
 
-      final route = Map<String, dynamic>.from(
-        (data['routes'] as List).first,
+      final trip = Map<String, dynamic>.from(
+        data['trip'],
       );
 
-      final geometry = route['geometry'];
+      final summary = trip['summary'];
 
-      if (geometry is! Map || geometry['coordinates'] is! List) {
-        throw Exception('Jalur rute tidak tersedia.');
+      if (summary is! Map) {
+        throw Exception(
+          'Informasi rute tidak tersedia.',
+        );
       }
 
-      final points = <LatLng>[];
+      final shape = trip['legs'] is List &&
+              (trip['legs'] as List).isNotEmpty
+          ? (trip['legs'] as List).first
+          : null;
 
-      for (final item in geometry['coordinates']) {
-        if (item is List && item.length >= 2) {
-          final lng = (item[0] as num).toDouble();
-          final lat = (item[1] as num).toDouble();
-          points.add(LatLng(lat, lng));
+      if (shape is! Map) {
+        throw Exception(
+          'Jalur rute tidak tersedia.',
+        );
+      }
+
+      /*
+       * Valhalla dapat mengembalikan shape dalam polyline.
+       * Karena kita meminta geojson, ambil shape/geometry
+       * yang tersedia dari leg.
+       */
+      dynamic geometry = shape['shape'];
+
+      List<LatLng> points = [];
+
+      if (geometry is Map &&
+          geometry['coordinates'] is List) {
+        for (final item in geometry['coordinates']) {
+          if (item is List && item.length >= 2) {
+            final lng = (item[0] as num).toDouble();
+            final lat = (item[1] as num).toDouble();
+            points.add(LatLng(lat, lng));
+          }
         }
       }
 
-      if (points.length < 2) {
-        throw Exception('Jalur rute terlalu pendek.');
+      /*
+       * Beberapa konfigurasi Valhalla mengembalikan
+       * shape sebagai encoded polyline walaupun shape_format
+       * diminta geojson. Fallback sederhana menggunakan
+       * encoded polyline6.
+       */
+      if (points.length < 2 && geometry is String) {
+        points = _decodePolyline6(geometry);
       }
 
-      final distanceMeters =
-          (route['distance'] as num?)?.toDouble() ?? 0;
+      if (points.length < 2) {
+        throw Exception(
+          'Jalur rute terlalu pendek atau tidak tersedia.',
+        );
+      }
 
-      final durationSeconds =
-          (route['duration'] as num?)?.toDouble() ?? 0;
+      // ========================================================
+      // B'Jo TURN-BY-TURN
+      // Ambil maneuver dari Valhalla dan hubungkan
+      // setiap maneuver dengan titik polyline rute.
+      // ========================================================
+      final parsedManeuvers = <Map<String, dynamic>>[];
+
+      final rawManeuvers = shape['maneuvers'];
+
+      if (rawManeuvers is List) {
+        for (final raw in rawManeuvers) {
+          if (raw is! Map) continue;
+
+          final maneuver = Map<String, dynamic>.from(raw);
+
+          final beginShapeIndex =
+              (maneuver['begin_shape_index'] as num?)?.toInt();
+
+          if (beginShapeIndex != null &&
+              beginShapeIndex >= 0 &&
+              beginShapeIndex < points.length) {
+            final point = points[beginShapeIndex];
+
+            maneuver['_lat'] = point.latitude;
+            maneuver['_lon'] = point.longitude;
+            maneuver['_routeIndex'] = beginShapeIndex;
+          }
+
+          parsedManeuvers.add(maneuver);
+        }
+      }
+
+      final distanceKm =
+          (summary['length'] as num?)?.toDouble() ?? 0;
+
+      final timeSeconds =
+          (summary['time'] as num?)?.toDouble() ?? 0;
 
       if (!mounted) return;
 
       setState(() {
         _routePoints = points;
-        _distanceKm = distanceMeters / 1000;
-        _durationMinutes = (durationSeconds / 60).ceil();
+        _distanceKm = distanceKm;
+        _durationMinutes =
+            (timeSeconds / 60).ceil();
+
+        // Simpan instruksi turn-by-turn dari Valhalla.
+        _maneuvers = parsedManeuvers;
+        _maneuverRouteIndex = parsedManeuvers
+            .map(
+              (maneuver) =>
+                  (maneuver['_routeIndex'] as num?)
+                      ?.toInt() ??
+                  0,
+            )
+            .toList(growable: false);
+        _currentManeuverIndex = 0;
+        _intersectionGuardActive = false;
+        _intersectionDistanceMeters = 0;
+
+        _nextInstruction = parsedManeuvers.isNotEmpty
+            ? _maneuverInstruction(parsedManeuvers.first)
+            : 'Lanjutkan perjalanan';
+        _nextManeuverDistanceMeters = 0;
+
         _routing = false;
       });
 
+      if (_navigationActive) {
+        _updateNextManeuver();
+      }
+
       _mapController.move(
         LatLng(_currentLat, _currentLng),
-        14,
+        _navigationActive ? 17 : 14,
       );
     } catch (e) {
       if (!mounted) return;
@@ -2072,8 +2693,86 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
         _routePoints = const [];
       });
 
-      _showMessage('Rute belum dapat dibuat: $e');
+      _showMessage(
+        'Rute ${_vehicleMode == 'motor' ? 'motor' : 'mobil'} '
+        'belum dapat dibuat: $e',
+      );
     }
+  }
+
+  List<LatLng> _decodePolyline6(String encoded) {
+    final result = <LatLng>[];
+
+    int index = 0;
+    int lat = 0;
+    int lng = 0;
+
+    while (index < encoded.length) {
+      int shift = 0;
+      int resultValue = 0;
+
+      while (true) {
+        if (index >= encoded.length) {
+          return result;
+        }
+
+        final byte =
+            encoded.codeUnitAt(index++) - 63;
+
+        resultValue |=
+            (byte & 0x1f) << shift;
+
+        shift += 5;
+
+        if (byte < 0x20) {
+          break;
+        }
+      }
+
+      final deltaLat =
+          (resultValue & 1) != 0
+              ? ~(resultValue >> 1)
+              : (resultValue >> 1);
+
+      lat += deltaLat;
+
+      shift = 0;
+      resultValue = 0;
+
+      while (true) {
+        if (index >= encoded.length) {
+          return result;
+        }
+
+        final byte =
+            encoded.codeUnitAt(index++) - 63;
+
+        resultValue |=
+            (byte & 0x1f) << shift;
+
+        shift += 5;
+
+        if (byte < 0x20) {
+          break;
+        }
+      }
+
+      final deltaLng =
+          (resultValue & 1) != 0
+              ? ~(resultValue >> 1)
+              : (resultValue >> 1);
+
+      lng += deltaLng;
+
+      result.add(
+        LatLng(
+          lat / 1000000.0,
+          lng / 1000000.0,
+        ),
+      );
+    }
+
+    return result;
   }
 
   Future<void> _updateRouteFromCurrentPosition() async {
@@ -2087,25 +2786,61 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     await _requestRoute();
   }
 
-  void _startNavigation() {
+  Future<void> _startNavigation() async {
     if (_destinationLat == null ||
-        _destinationLng == null ||
-        _routePoints.length < 2) {
-      _showMessage('Tunggu sampai rute tersedia.');
+        _destinationLng == null) {
+      _showMessage('Tentukan tujuan terlebih dahulu.');
+      return;
+    }
+
+    if (!_locationReady) {
+      await _initLiveGps();
+      if (!_locationReady) {
+        return;
+      }
+    }
+
+    if (_routing) {
+      _showMessage('B'Jo masih menghitung rute.');
+      return;
+    }
+
+    /*
+     * Selalu hitung ulang dari posisi GPS terbaru
+     * sebelum navigasi benar-benar dimulai.
+     */
+    await _requestRoute();
+
+    if (!mounted || _routePoints.length < 2) {
+      _showMessage('Rute belum tersedia.');
       return;
     }
 
     setState(() {
       _navigationActive = true;
       _followingGps = true;
+      _currentManeuverIndex = 0;
+      _branchGuardActive = false;
+      _branchHeadingDifference = 0;
+      _branchRouteDistanceMeters = double.infinity;
+      _intersectionGuardActive = false;
+      _intersectionDistanceMeters = 0;
     });
+
+    // Tampilkan maneuver pertama segera setelah navigasi dimulai.
+    _updateNextManeuver();
 
     _mapController.move(
       LatLng(_currentLat, _currentLng),
       17,
     );
 
-    _showMessage('Navigasi B\'Jo aktif.');
+    final vehicle =
+        _vehicleMode == 'motor' ? 'Motor' : 'Mobil';
+
+    _showMessage(
+      "Navigasi B'Jo aktif • $vehicle",
+    );
   }
 
   void _clearDestination() {
@@ -2116,6 +2851,15 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
       _distanceKm = null;
       _durationMinutes = null;
       _routePoints = const [];
+      _maneuvers = const [];
+      _maneuverRouteIndex = const [];
+      _intersectionGuardActive = false;
+      _intersectionDistanceMeters = 0;
+      _currentGpsHeading = -1;
+      _branchGuardActive = false;
+      _branchHeadingDifference = 0;
+      _branchRouteDistanceMeters = double.infinity;
+
       _navigationActive = false;
     });
 
@@ -2410,6 +3154,82 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
               ),
             ),
 
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 72,
+            child: SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: m8White.withOpacity(0.94),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: const [
+                    BoxShadow(
+                      blurRadius: 9,
+                      offset: Offset(0, 3),
+                      color: Color(0x26000000),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.directions_car_rounded,
+                      color: m8BlueDark,
+                      size: 19,
+                    ),
+                    const SizedBox(width: 7),
+                    const Text(
+                      'Kendaraan',
+                      style: TextStyle(
+                        color: m8BlueDark,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    ChoiceChip(
+                      label: const Text('🚗 Mobil'),
+                      selected: _vehicleMode == 'car',
+                      onSelected: _navigationActive
+                          ? null
+                          : (_) {
+                              setState(() {
+                                _vehicleMode = 'car';
+                              });
+                              if (_destinationLat != null &&
+                                  _destinationLng != null) {
+                                _requestRoute();
+                              }
+                            },
+                    ),
+                    const SizedBox(width: 5),
+                    ChoiceChip(
+                      label: const Text('🏍️ Motor'),
+                      selected: _vehicleMode == 'motor',
+                      onSelected: _navigationActive
+                          ? null
+                          : (_) {
+                              setState(() {
+                                _vehicleMode = 'motor';
+                              });
+                              if (_destinationLat != null &&
+                                  _destinationLng != null) {
+                                _requestRoute();
+                              }
+                            },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           if (_destinationLat != null &&
               _destinationLng != null &&
               _routePoints.length >= 2)
@@ -2469,8 +3289,10 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                             ),
                             Text(
                               _navigationActive
-                                  ? "Navigasi B'Jo aktif"
-                                  : "Rute jalan",
+                                  ? "Navigasi B'Jo aktif • "
+                                      "${_vehicleMode == 'motor' ? 'Motor' : 'Mobil'}"
+                                  : "Rute • "
+                                      "${_vehicleMode == 'motor' ? 'Motor' : 'Mobil'}",
                               style: const TextStyle(
                                 color: m8BlueDark,
                                 fontSize: 10,
@@ -2484,7 +3306,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                       SizedBox(
                         height: 34,
                         child: FilledButton.icon(
-                          onPressed: _navigationActive
+                          onPressed: (_navigationActive || _routing)
                               ? null
                               : _startNavigation,
                           icon: Icon(
@@ -2535,38 +3357,84 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
           if (_navigationActive)
             Positioned(
               top: MediaQuery.of(context).padding.top + 158,
-              left: 16,
-              right: 16,
+              left: 12,
+              right: 12,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                  horizontal: 14,
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
                   color: m8Blue,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(17),
                   boxShadow: const [
                     BoxShadow(
-                      blurRadius: 12,
+                      blurRadius: 14,
+                      offset: Offset(0, 4),
                       color: Color(0x44000000),
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
-                      Icons.navigation_rounded,
-                      color: m8White,
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        "NAVIGASI B'JO AKTIF",
-                        style: TextStyle(
-                          color: m8White,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: .4,
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: m8White,
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Icon(
+                        _maneuverIcon(
+                          _maneuvers.isNotEmpty &&
+                                  _currentManeuverIndex <
+                                      _maneuvers.length
+                              ? _maneuvers[_currentManeuverIndex]
+                              : null,
                         ),
+                        color: m8BlueDark,
+                        size: 29,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _formatManeuverDistance(
+                              _nextManeuverDistanceMeters,
+                            ),
+                            style: const TextStyle(
+                              color: m8White,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _nextInstruction,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: m8White,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            "B'Jo Navigation • "
+                            "${_vehicleMode == 'motor' ? 'Motor' : 'Mobil'}",
+                            style: TextStyle(
+                              color: m8White.withOpacity(0.78),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
