@@ -2164,6 +2164,26 @@ class _BJoMainShellState extends State<BJoMainShell> {
     return page;
   }
 
+  void _selectTab(int index) {
+    if (!mounted || index == currentIndex) {
+      return;
+    }
+
+    debugPrint(
+      'BJO_NAV: $currentIndex -> $index START ${DateTime.now().toIso8601String()}',
+    );
+
+    setState(() {
+      currentIndex = index;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      debugPrint(
+        'BJO_NAV: $index FRAME_DONE ${DateTime.now().toIso8601String()}',
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2237,12 +2257,9 @@ class _BJoMainShellState extends State<BJoMainShell> {
           Expanded(
             child: Container(
               color: currentIndex == 3 ? m8BlueDark : m8WhiteSoft,
-              child: IndexedStack(
-                  index: currentIndex,
-                  children: List.generate(
-                    5,
-                    (index) => _buildPage(index),
-                  ),
+              child: RepaintBoundary(
+                  child: _buildPage(currentIndex),
+                )
                 ),
             ),
           ),
@@ -2254,11 +2271,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         indicatorColor: m8BlueDark,
         surfaceTintColor: Colors.transparent,
         selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
+        onDestinationSelected: _selectTab,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined, color: m8WhiteSoft),
