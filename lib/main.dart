@@ -12131,9 +12131,11 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
 
     if (raw.isEmpty) return '';
 
-    // Cache-busting agar cover terbaru selalu tampil.
+    // Cache-busting kuat: jangan bergantung pada field timestamp
+    // yang tidak dikirim oleh API /api/profile.
     final separator = raw.contains('?') ? '&' : '?';
-    return '$raw${separator}v=${widget.user['profile_background_updated_at'] ?? ''}';
+    final cacheKey = raw.hashCode.abs();
+    return '$raw${separator}bjo_cover=$cacheKey';
   }
 
   String get username {
@@ -12145,6 +12147,48 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
   String get bio {
     final v = widget.user['bio']?.toString().trim();
     return v ?? '';
+  }
+
+  Future<void> _reloadOwnProfile() async {
+    final pin = widget.user['m8_pin']?.toString().trim() ?? '';
+
+    if (pin.isEmpty) {
+      if (mounted) setState(() {});
+      return;
+    }
+
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+              '$apiBase/api/profile?m8_pin=${Uri.encodeQueryComponent(pin)}',
+            ),
+            headers: {
+              'Authorization': 'Bearer ${widget.token}',
+              'Cache-Control': 'no-cache',
+            },
+          )
+          .timeout(const Duration(seconds: 20));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 &&
+          data['success'] == true &&
+          data['user'] is Map) {
+        final latest = Map<String, dynamic>.from(data['user']);
+
+        widget.user.addAll(latest);
+
+        if (mounted) {
+          setState(() {});
+        }
+      } else {
+        if (mounted) setState(() {});
+      }
+    } catch (e) {
+      debugPrint('BJo profile refresh error: $e');
+      if (mounted) setState(() {});
+    }
   }
 
   @override
@@ -12562,7 +12606,7 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                                 );
 
                                 if (changed == true && context.mounted) {
-                                  setState(() {});
+                                  await _reloadOwnProfile();
                                 }
                               },
                               icon: const Icon(Icons.edit_rounded, size: 19),

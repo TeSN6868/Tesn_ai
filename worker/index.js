@@ -143,7 +143,9 @@ export default {
         await env.MEDIA.put(key, body, {
           httpMetadata: {
             contentType,
-            cacheControl: "public, max-age=31536000, immutable",
+            // Jangan immutable 1 tahun karena media profil dapat diganti.
+            // Cache tetap digunakan, tetapi browser/CDN dapat memvalidasi versi baru.
+            cacheControl: "public, max-age=300, must-revalidate",
           },
         });
 
