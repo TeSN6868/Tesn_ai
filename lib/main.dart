@@ -1543,6 +1543,191 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+class _HomePageState extends State<HomePage> {
+  int currentIndex = 0;
+
+  final M8CallService _incomingCallService = M8CallService();
+  final AudioPlayer _incomingRingtonePlayer = AudioPlayer();
+
+  Future<void> _startIncomingRingtone() async {
+    try {
+      await _incomingRingtonePlayer.stop();
+
+      final prefs = await SharedPreferences.getInstance();
+      final selected = prefs.getString('m8_selected_ringtone') ?? "B'Jo Tone 01";
+
+      const ringtoneAssets = <String, String>{
+        "B'Jo Tone 01": 'sounds/m8_ringtone_02.wav',
+        "B'Jo Tone 02": 'sounds/m8_ringtone_03.wav',
+        "B'Jo Tone 03": 'sounds/m8_ringtone_04.wav',
+        "B'Jo Tone 04": 'sounds/m8_ringtone_05.wav',
+        "B'Jo Tone 05": 'sounds/m8_ringtone_06.wav',
+      };
+
+      final asset = ringtoneAssets[selected] ?? 'sounds/m8_ringtone_02.wav';
+
+      await _incomingRingtonePlayer.setReleaseMode(ReleaseMode.loop);
+      await _incomingRingtonePlayer.setVolume(1.0);
+      await _incomingRingtonePlayer.play(AssetSource(asset));
+
+      debugPrint("B'Jo RINGTONE: $selected -> $asset");
+    } catch (e) {
+      debugPrint('B\'Jo RINGTONE ERROR: $e');
+    }
+  }
+
+  Future<void> _stopIncomingRingtone() async {
+    try {
+      await _incomingRingtonePlayer.stop();
+      debugPrint('M8 RINGTONE: STOP');
+    } catch (e) {
+      debugPrint('M8 RINGTONE STOP ERROR: $e');
+    }
+  }
+
+  Timer? _incomingCallTimer;
+  String? _lastIncomingCallId;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _incomingCallTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => _checkIncomingCalls(),
+    );
+
+    _checkIncomingCalls();
+  }
+
+  Future<void> _checkIncomingCalls() async {
+    try {
+      final calls = await _incomingCallService.getIncomingCalls(pin);
+
+      if (!mounted || calls.isEmpty) return;
+
+      final call = calls.first;
+      final incomingId = call['id']?.toString();
+
+      if (incomingId == null || incomingId == _lastIncomingCallId) {
+        return;
+      }
+
+      _lastIncomingCallId = incomingId;
+
+      final callerPin = call['caller_pin']?.toString() ?? '';
+      final callType = call['call_type']?.toString() ?? 'voice';
+      final isVideoCall = callType == 'video';
+
+      if (callerPin.isEmpty) return;
+
+      await _startIncomingRingtone();
+
+      bool? accepted;
+
+      try {
+        accepted = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: const Text('Panggilan masuk'),
+              content: Text('Ada panggilan masuk dari PIN $callerPin.'),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    try {
+                      await _incomingCallService.rejectCall(
+                        incomingCallId: incomingId,
+                        calleePin: pin,
+                      );
+                    } finally {
+                      if (dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop(false);
+                      }
+                    }
+                  },
+                  child: const Text('Tolak'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                  child: const Text('Terima'),
+                ),
+              ],
+            );
+          },
+        );
+      } finally {
+        // WAJIB: ringtone dihentikan dalam kondisi apa pun.
+        await _stopIncomingRingtone();
+      }
+
+      if (!mounted || accepted != true) return;
+
+      final callService = M8CallService();
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => VoiceCallPage(
+            myPin: pin,
+            otherPin: callerPin,
+            call: callService,
+            incomingCallId: incomingId,
+            videoCall: isVideoCall,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('M8 INCOMING CALL ERROR: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _incomingCallTimer?.cancel();
+    _incomingCallTimer = null;
+
+    // Hentikan ringtone incoming call secepat mungkin.
+    _incomingRingtonePlayer.stop();
+
+    _incomingRingtonePlayer.dispose();
+
+    super.dispose();
+  }
+
+  String get name => widget.user['name']?.toString() ?? 'M8 User';
+
+  String get pin => widget.user['m8_pin']?.toString() ?? '';
+
+  void logout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (_) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      ChatsPage(token: widget.token, myPin: pin),
+      const CallsPage(),
+      BJoProfilePage(
+        user: widget.user,
+        token: widget.token,
+      ),
+    ];
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+
+      body: M8DenimBackground(child: pages[currentIndex]),
+
+    );
+  }
+}
+
 class BJoNavigationPage extends StatefulWidget {
   const BJoNavigationPage({super.key});
 
@@ -7771,7 +7956,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${otherName.isNotEmpty ? otherName : otherPin} • ${recent.length} pesan teks",
+                  "${widget.chat["other_user"] is Map && (widget.chat["other_user"]["name"]?.toString().trim().isNotEmpty == true) ? widget.chat["other_user"]["name"].toString().trim() : (widget.chat["other_user"] is Map ? (widget.chat["other_user"]["m8_pin"]?.toString() ?? "Kontak") : "Kontak")} • ${recent.length} pesan teks",
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                   ),
