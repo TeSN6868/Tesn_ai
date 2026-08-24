@@ -12123,11 +12123,17 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
   }
 
   String get backgroundUrl {
-    return (widget.user['profile_background_url'] ??
+    final raw = (widget.user['profile_background_url'] ??
             widget.user['background_url'] ??
             '')
         .toString()
         .trim();
+
+    if (raw.isEmpty) return '';
+
+    // Cache-busting agar cover terbaru selalu tampil.
+    final separator = raw.contains('?') ? '&' : '?';
+    return '$raw${separator}v=${widget.user['profile_background_updated_at'] ?? ''}';
   }
 
   String get username {
@@ -13208,7 +13214,17 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     }
 
     if (currentBackgroundUrl.isNotEmpty) {
-      return NetworkImage(currentBackgroundUrl);
+      final version =
+          widget.user['profile_background_updated_at']?.toString() ?? '';
+
+      final separator =
+          currentBackgroundUrl.contains('?') ? '&' : '?';
+
+      final cacheBustedUrl = version.isEmpty
+          ? currentBackgroundUrl
+          : '$currentBackgroundUrl${separator}v=$version';
+
+      return NetworkImage(cacheBustedUrl);
     }
 
     return null;
@@ -13591,6 +13607,8 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
         }
 
         widget.user['profile_background_url'] = backgroundUrl;
+        widget.user['profile_background_updated_at'] =
+            DateTime.now().millisecondsSinceEpoch;
       }
 
       if (!mounted) return;
