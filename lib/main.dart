@@ -1938,6 +1938,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                       style: TextStyle(
                         color: m8White,
                         fontSize: 20,
+                      color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -2117,6 +2118,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                             style: TextStyle(
                               color: m8BlueDark,
                               fontSize: 20,
+                              color: Colors.white,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -2508,6 +2510,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         title: Text(
           title,
           style: const TextStyle(
+            color: Colors.white,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -2559,6 +2562,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
                     style: const TextStyle(
                       color: m8White,
                       fontSize: 12,
+                      color: Colors.white,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.15,
                     ),
@@ -3103,6 +3107,7 @@ class _ChatsPageState extends State<ChatsPage> {
                     style: TextStyle(
                       color: selected ? m8White : bjoChatNavy,
                       fontSize: 11,
+                      color: Colors.white,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -3299,6 +3304,7 @@ class _ChatsPageState extends State<ChatsPage> {
                             style: const TextStyle(
                               color: m8White,
                               fontSize: 10,
+                              color: Colors.white,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -3378,6 +3384,7 @@ class _ChatsPageState extends State<ChatsPage> {
                     style: const TextStyle(
                       color: m8Text,
                       fontSize: 15,
+                      color: Colors.white,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -3492,6 +3499,7 @@ Widget buildEmptyMessenger() {
               'Belum ada percakapan',
               style: TextStyle(
                 fontSize: 19,
+                color: Colors.white,
                 fontWeight: FontWeight.w800,
                 color: m8Text,
               ),
@@ -4515,6 +4523,7 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
                               'Pengguna tidak ditemukan.',
                               style: TextStyle(
                                 color: m8TextMuted,
+                      color: Colors.white,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -4588,6 +4597,7 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
                                                 pin,
                                                 style: const TextStyle(
                                                   color: m8Blue,
+                                                  color: Colors.white,
                                                   fontWeight: FontWeight.w800,
                                                   fontSize: 12,
                                                 ),
@@ -5156,6 +5166,7 @@ class _M8GroupInfoPage extends StatelessWidget {
                   style: const TextStyle(
                     color: m8White,
                     fontSize: 21,
+                    color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -5217,6 +5228,7 @@ class _M8GroupInfoPage extends StatelessWidget {
               style: const TextStyle(
                 color: m8TextMuted,
                 fontSize: 12,
+                color: Colors.white,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
               ),
@@ -5289,6 +5301,7 @@ class _M8GroupInfoPage extends StatelessWidget {
                                       : '?',
                                   style: const TextStyle(
                                     color: m8White,
+                                    color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 )
@@ -5303,6 +5316,7 @@ class _M8GroupInfoPage extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: m8Text,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -5559,6 +5573,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
               hintText: 'Masukkan PIN M8',
               labelStyle: const TextStyle(
                 color: m8White,
+                      color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
               hintStyle: TextStyle(color: m8White.withValues(alpha: 0.65)),
@@ -5743,6 +5758,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
               data['error']?.toString() ?? 'Gagal mengubah nama grup.',
               style: const TextStyle(
                 color: m8White,
+                      color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -5917,6 +5933,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                   style: const TextStyle(
                     color: m8BlueDark,
                     fontSize: 11,
+                    color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -6010,6 +6027,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: bjoPearlWhite,
+                        color: Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
@@ -6063,6 +6081,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                   'Belum ada pesan',
                                   style: TextStyle(
                                     color: m8Text,
+                                    color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 18,
                                   ),
@@ -6171,6 +6190,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                             'Lampiran',
                                             style: TextStyle(
                                               fontSize: 19,
+                                              color: Colors.white,
                                               fontWeight: FontWeight.w800,
                                               color: m8Text,
                                             ),
@@ -6666,6 +6686,7 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
                         ? m8White.withValues(alpha: 0.82)
                         : m8TextMuted,
                     fontSize: 9,
+                      color: Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -7894,7 +7915,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text("Tutup"),
+                  child: const Text(
+                    "Tutup",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -7907,65 +7934,73 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Future<void> _openChatSummary() async {
-    final p1 = widget.chat["participant_1_pin"]?.toString() ?? "";
-    final p2 = widget.chat["participant_2_pin"]?.toString() ?? "";
-    final other = p1 == widget.myPin ? p2 : p1;
+    final recent = <String>[];
 
-    final rawOtherUser = widget.chat["other_user"];
-    final otherUser = rawOtherUser is Map
-        ? Map<String, dynamic>.from(rawOtherUser)
-        : <String, dynamic>{};
+    for (final msg in messages) {
+      final text = _smartMessageText(msg);
+      if (text.isNotEmpty &&
+          text != "[Foto]" &&
+          text != "[Voice note]") {
+        recent.add(text);
+      }
+    }
 
-    final otherName =
-        otherUser["name"]?.toString().trim() ?? "";
-
-    final otherPin =
-        otherUser["m8_pin"]?.toString().trim().isNotEmpty == true
-            ? otherUser["m8_pin"].toString().trim()
-            : other;
-
-    final texts = messages
-        .map(_smartMessageText)
-        .where(
-          (e) =>
-              e.trim().isNotEmpty &&
-              e != "[Foto]" &&
-              e != "[Voice note]",
-        )
-        .toList();
-
-    if (texts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Belum ada teks untuk diringkas."),
+    if (recent.isEmpty) {
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: m8Blue,
+          surfaceTintColor: Colors.transparent,
+          title: const Text(
+            "Ringkasan B'Jo",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          content: const Text(
+            "Belum ada cukup pesan untuk membuat ringkasan.",
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "Tutup",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
         ),
       );
       return;
     }
 
-    final recent = texts.length > 50
-        ? texts.sublist(texts.length - 50)
-        : texts;
-
-    const stopWords = {
+    final stopWords = <String>{
       "yang",
       "dan",
-      "atau",
-      "dengan",
       "untuk",
       "dari",
+      "dengan",
       "ini",
       "itu",
-      "aku",
-      "kamu",
-      "saya",
-      "kita",
+      "atau",
       "ada",
-      "tidak",
-      "sudah",
       "akan",
+      "saya",
+      "kamu",
+      "aku",
+      "kita",
+      "mereka",
+      "sudah",
+      "belum",
       "bisa",
-      "kalau",
       "jadi",
       "juga",
       "saja",
@@ -7997,11 +8032,22 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: m8Blue,
+          surfaceTintColor: Colors.transparent,
           title: const Row(
             children: [
-              Icon(Icons.auto_awesome_rounded),
+              Icon(
+                Icons.auto_awesome_rounded,
+                color: Colors.white,
+              ),
               SizedBox(width: 8),
-              Text("Ringkasan B'Jo"),
+              Text(
+                "Ringkasan B'Jo",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ],
           ),
           content: SingleChildScrollView(
@@ -8011,6 +8057,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 Text(
                   "${widget.chat["other_user"] is Map && (widget.chat["other_user"]["name"]?.toString().trim().isNotEmpty == true) ? widget.chat["other_user"]["name"].toString().trim() : (widget.chat["other_user"] is Map ? (widget.chat["other_user"]["m8_pin"]?.toString() ?? "Kontak") : "Kontak")} • ${recent.length} pesan teks",
                   style: const TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -8019,22 +8066,32 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   const Text(
                     "Topik yang sering muncul",
                     style: TextStyle(
+                      color: Colors.white,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(topics),
+                  Text(
+                    topics,
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
                 const SizedBox(height: 16),
                 const Text(
                   "Percakapan terbaru",
                   style: TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 5),
                 Text(
                   latest.map((e) => "• $e").join("\n"),
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
@@ -8042,7 +8099,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Tutup"),
+              child: const Text(
+                "Tutup",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         );
