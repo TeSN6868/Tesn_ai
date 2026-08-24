@@ -35,9 +35,7 @@ Future<void> _m8StartCallRinging() async {
     await _m8CallSoundPlayer.stop();
     await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.loop);
     await _m8CallSoundPlayer.setVolume(1.0);
-    await _m8CallSoundPlayer.play(
-      AssetSource('sounds/bjo_ringtone.wav'),
-    );
+    await _m8CallSoundPlayer.play(AssetSource('sounds/bjo_ringtone.wav'));
 
     debugPrint('[M8 CALL SOUND] RINGING START');
   } catch (e) {
@@ -100,11 +98,8 @@ const bjoChatBubble = Color(0xFFDCEBFA);
 const bjoChatNavy = Color(0xFF12304A);
 const bjoPearlWhite = Color(0xFFF8FBFF);
 
-
 const m8Text = Color(0xFF172331);
 const m8TextMuted = Color(0xFF6D7B87);
-
-
 
 class _BJoMapPicker extends StatefulWidget {
   final LatLng initialLocation;
@@ -128,8 +123,6 @@ class _BJoMapPickerState extends State<_BJoMapPicker> {
     selectedLocation = widget.initialLocation;
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -150,8 +143,7 @@ class _BJoMapPickerState extends State<_BJoMapPicker> {
           ),
           children: [
             TileLayer(
-              urlTemplate:
-                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'com.bjo.messenger',
             ),
             MarkerLayer(
@@ -388,10 +380,7 @@ class BJoSession {
         return null;
       }
 
-      return {
-        'token': token,
-        'user': Map<String, dynamic>.from(decoded),
-      };
+      return {'token': token, 'user': Map<String, dynamic>.from(decoded)};
     } catch (_) {
       await clear();
       return null;
@@ -467,11 +456,9 @@ class _BJoStartupPageState extends State<BJoStartupPage> {
         ),
       );
     } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const LoginPage(),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
     }
   }
 
@@ -621,19 +608,13 @@ class _LoginPageState extends State<LoginPage> {
 
         final loginUser = Map<String, dynamic>.from(data['user']);
 
-        await BJoSession.save(
-          token: token,
-          user: loginUser,
-        );
+        await BJoSession.save(token: token, user: loginUser);
 
         if (!mounted) return;
 
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => BJoMainShell(
-              token: token,
-              user: loginUser,
-            ),
+            builder: (_) => BJoMainShell(token: token, user: loginUser),
           ),
         );
       } else {
@@ -672,11 +653,7 @@ class _LoginPageState extends State<LoginPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: <Color>[
-              m8BlueDark,
-              m8Blue,
-              Color(0xFF0E5C91),
-            ],
+            colors: <Color>[m8BlueDark, m8Blue, Color(0xFF0E5C91)],
             stops: <double>[0.0, 0.48, 1.0],
           ),
         ),
@@ -869,8 +846,9 @@ class _LoginPageState extends State<LoginPage> {
                               style: FilledButton.styleFrom(
                                 backgroundColor: m8Blue,
                                 foregroundColor: m8White,
-                                disabledBackgroundColor:
-                                    m8Blue.withValues(alpha: 0.55),
+                                disabledBackgroundColor: m8Blue.withValues(
+                                  alpha: 0.55,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(17),
                                 ),
@@ -907,8 +885,7 @@ class _LoginPageState extends State<LoginPage> {
                                   : () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (_) =>
-                                              const RegisterPage(),
+                                          builder: (_) => const RegisterPage(),
                                         ),
                                       );
                                     },
@@ -1027,9 +1004,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
         Navigator.of(context).pop();
       } else {
-        showMessage(
-          data['error']?.toString() ?? "Pendaftaran B'Jo gagal",
-        );
+        showMessage(data['error']?.toString() ?? "Pendaftaran B'Jo gagal");
       }
     } catch (_) {
       if (!mounted) return;
@@ -1086,11 +1061,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     color: m8Blue.withValues(alpha: 0.10),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.key_rounded,
-                    color: m8Blue,
-                    size: 32,
-                  ),
+                  child: const Icon(Icons.key_rounded, color: m8Blue, size: 32),
                 ),
 
                 const SizedBox(height: 18),
@@ -1180,11 +1151,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: const Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Icon(
-                        Icons.info_outline_rounded,
-                        color: m8Blue,
-                        size: 19,
-                      ),
+                      Icon(Icons.info_outline_rounded, color: m8Blue, size: 19),
                       SizedBox(width: 9),
                       Expanded(
                         child: Text(
@@ -1231,9 +1198,9 @@ class _RegisterPageState extends State<RegisterPage> {
               ],
             ),
           ),
-      );
+        );
       },
-      );
+    );
 
     if (!mounted || proceed != true) return;
 
@@ -1245,6 +1212,7 @@ class _RegisterPageState extends State<RegisterPage> {
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
+
   @override
   void dispose() {
     nameController.dispose();
@@ -1300,10 +1268,7 @@ class _RegisterPageState extends State<RegisterPage> {
         foregroundColor: m8White,
         title: const Text(
           "Daftar B'Jo",
-          style: TextStyle(
-            color: m8White,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(color: m8White, fontWeight: FontWeight.w900),
         ),
       ),
       body: Container(
@@ -1311,11 +1276,7 @@ class _RegisterPageState extends State<RegisterPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              m8Blue,
-              Color(0xFFB9D9EA),
-              m8White,
-            ],
+            colors: [m8Blue, Color(0xFFB9D9EA), m8White],
             stops: [0.0, 0.45, 1.0],
           ),
         ),
@@ -1593,7 +1554,6 @@ class _RegisterPageState extends State<RegisterPage> {
 // B'JO MAIN SHELL
 // ============================================================
 
-
 // ============================================================
 // B'JO NAVIGATION
 // GPS / GNSS + SATELLITE MAP + LIVE ROUTING
@@ -1618,32 +1578,12 @@ class _BjoBatikHeaderPainter extends CustomPainter {
         final path = Path();
 
         path.moveTo(x, y + 9);
-        path.quadraticBezierTo(
-          x + 8,
-          y,
-          x + 17,
-          y + 9,
-        );
-        path.quadraticBezierTo(
-          x + 8,
-          y + 18,
-          x,
-          y + 9,
-        );
+        path.quadraticBezierTo(x + 8, y, x + 17, y + 9);
+        path.quadraticBezierTo(x + 8, y + 18, x, y + 9);
 
         path.moveTo(x + 17, y + 9);
-        path.quadraticBezierTo(
-          x + 25,
-          y,
-          x + 34,
-          y + 9,
-        );
-        path.quadraticBezierTo(
-          x + 25,
-          y + 18,
-          x + 17,
-          y + 9,
-        );
+        path.quadraticBezierTo(x + 25, y, x + 34, y + 9);
+        path.quadraticBezierTo(x + 25, y + 18, x + 17, y + 9);
 
         canvas.drawPath(path, paint);
       }
@@ -1655,11 +1595,7 @@ class _BjoBatikHeaderPainter extends CustomPainter {
 
     for (double x = 10; x < size.width; x += 34) {
       for (double y = 8; y < size.height; y += 34) {
-        canvas.drawCircle(
-          Offset(x, y),
-          1.3,
-          dotPaint,
-        );
+        canvas.drawCircle(Offset(x, y), 1.3, dotPaint);
       }
     }
   }
@@ -1689,7 +1625,8 @@ class _HomePageState extends State<HomePage> {
       await _incomingRingtonePlayer.stop();
 
       final prefs = await SharedPreferences.getInstance();
-      final selected = prefs.getString('m8_selected_ringtone') ?? "B'Jo Tone 01";
+      final selected =
+          prefs.getString('m8_selected_ringtone') ?? "B'Jo Tone 01";
 
       const ringtoneAssets = <String, String>{
         "B'Jo Tone 01": 'sounds/m8_ringtone_02.wav',
@@ -1848,17 +1785,13 @@ class _HomePageState extends State<HomePage> {
     final pages = [
       ChatsPage(token: widget.token, myPin: pin),
       const CallsPage(),
-      BJoProfilePage(
-        user: widget.user,
-        token: widget.token,
-      ),
+      BJoProfilePage(user: widget.user, token: widget.token),
     ];
 
     return Scaffold(
       backgroundColor: m8WhiteSoft,
 
       body: M8DenimBackground(child: pages[currentIndex]),
-
     );
   }
 }
@@ -1872,8 +1805,7 @@ class BJoNavigationPage extends StatefulWidget {
 
 class _BJoNavigationPageState extends State<BJoNavigationPage> {
   final MapController _mapController = MapController();
-  final TextEditingController _destinationController =
-      TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
   final FocusNode _destinationFocusNode = FocusNode();
 
   StreamSubscription<Position>? _positionSubscription;
@@ -1920,7 +1852,6 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
   double _branchHeadingDifference = 0;
   double _branchRouteDistanceMeters = double.infinity;
 
-
   List<LatLng> _routePoints = const [];
 
   @override
@@ -1939,8 +1870,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
 
   Future<void> _initLiveGps() async {
     try {
-      final serviceEnabled =
-          await Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) {
         if (!mounted) return;
@@ -1985,56 +1915,53 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
         _followingGps = true;
       });
 
-      _mapController.move(
-        LatLng(_currentLat, _currentLng),
-        16,
-      );
+      _mapController.move(LatLng(_currentLat, _currentLng), 16);
 
       await _positionSubscription?.cancel();
 
-      _positionSubscription = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 5,
-        ),
-      ).listen(
-        (position) {
-          if (!mounted) return;
+      _positionSubscription =
+          Geolocator.getPositionStream(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: 5,
+            ),
+          ).listen(
+            (position) {
+              if (!mounted) return;
 
-          setState(() {
-            _currentLat = position.latitude;
-            _currentLng = position.longitude;
-            _currentGpsHeading =
-                position.heading.isFinite ? position.heading : -1;
-            _locationReady = true;
-          });
+              setState(() {
+                _currentLat = position.latitude;
+                _currentLng = position.longitude;
+                _currentGpsHeading = position.heading.isFinite
+                    ? position.heading
+                    : -1;
+                _locationReady = true;
+              });
 
-          if (_followingGps) {
-            _mapController.move(
-              LatLng(position.latitude, position.longitude),
-              16,
-            );
-          }
+              if (_followingGps) {
+                _mapController.move(
+                  LatLng(position.latitude, position.longitude),
+                  16,
+                );
+              }
 
-          // Perbarui instruksi turn-by-turn berdasarkan
-          // posisi GPS terbaru.
-          if (_navigationActive) {
-            _updateNextManeuver();
-          }
+              // Perbarui instruksi turn-by-turn berdasarkan
+              // posisi GPS terbaru.
+              if (_navigationActive) {
+                _updateNextManeuver();
+              }
 
-
-
-if (_destinationLat != null && _destinationLng != null) {
-            _updateRouteFromCurrentPosition();
-          }
-        },
-        onError: (_) {
-          if (!mounted) return;
-          setState(() {
-            _locationReady = false;
-          });
-        },
-      );
+              if (_destinationLat != null && _destinationLng != null) {
+                _updateRouteFromCurrentPosition();
+              }
+            },
+            onError: (_) {
+              if (!mounted) return;
+              setState(() {
+                _locationReady = false;
+              });
+            },
+          );
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -2056,10 +1983,7 @@ if (_destinationLat != null && _destinationLng != null) {
       _followingGps = true;
     });
 
-    _mapController.move(
-      LatLng(_currentLat, _currentLng),
-      16,
-    );
+    _mapController.move(LatLng(_currentLat, _currentLng), 16);
   }
 
   Future<void> _searchDestination(String value) async {
@@ -2079,17 +2003,13 @@ if (_destinationLat != null && _destinationLng != null) {
     });
 
     try {
-      final uri = Uri.https(
-        'nominatim.openstreetmap.org',
-        '/search',
-        {
-          'q': query,
-          'format': 'jsonv2',
-          'limit': '5',
-          'countrycodes': 'id',
-          'addressdetails': '1',
-        },
-      );
+      final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
+        'q': query,
+        'format': 'jsonv2',
+        'limit': '5',
+        'countrycodes': 'id',
+        'addressdetails': '1',
+      });
 
       final response = await http.get(
         uri,
@@ -2132,10 +2052,7 @@ if (_destinationLat != null && _destinationLng != null) {
         _searching = false;
       });
 
-      _mapController.move(
-        LatLng(lat, lon),
-        15,
-      );
+      _mapController.move(LatLng(lat, lon), 15);
 
       await _requestRoute();
     } catch (e) {
@@ -2148,7 +2065,6 @@ if (_destinationLat != null && _destinationLng != null) {
       _showMessage('Tidak dapat mencari tujuan: $e');
     }
   }
-
 
   double _distanceBetweenMeters(
     double lat1,
@@ -2168,44 +2084,34 @@ if (_destinationLat != null && _destinationLng != null) {
             math.sin(dLon / 2) *
             math.sin(dLon / 2);
 
-    final c = 2 * math.atan2(
-      math.sqrt(a),
-      math.sqrt(1 - a),
-    );
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
 
     return earthRadius * c;
   }
 
   String _maneuverInstruction(Map<String, dynamic> maneuver) {
-    final instruction =
-        '${maneuver['verbal_pre_transition_instruction'] ?? ''}'.trim();
+    final instruction = '${maneuver['verbal_pre_transition_instruction'] ?? ''}'
+        .trim();
 
     if (instruction.isNotEmpty) {
       return instruction;
     }
 
-    final fallback =
-        '${maneuver['instruction'] ?? 'Lanjutkan perjalanan'}'.trim();
+    final fallback = '${maneuver['instruction'] ?? 'Lanjutkan perjalanan'}'
+        .trim();
 
     return fallback.isEmpty ? 'Lanjutkan perjalanan' : fallback;
   }
 
-
   int? _maneuverRouteIndexAt(int maneuverIndex) {
-    if (maneuverIndex < 0 ||
-        maneuverIndex >= _maneuverRouteIndex.length) {
+    if (maneuverIndex < 0 || maneuverIndex >= _maneuverRouteIndex.length) {
       return null;
     }
 
     return _maneuverRouteIndex[maneuverIndex];
   }
 
-  double _bearingBetween(
-    double lat1,
-    double lon1,
-    double lat2,
-    double lon2,
-  ) {
+  double _bearingBetween(double lat1, double lon1, double lat2, double lon2) {
     final phi1 = lat1 * math.pi / 180.0;
     final phi2 = lat2 * math.pi / 180.0;
     final deltaLon = (lon2 - lon1) * math.pi / 180.0;
@@ -2213,20 +2119,14 @@ if (_destinationLat != null && _destinationLng != null) {
     final y = math.sin(deltaLon) * math.cos(phi2);
     final x =
         math.cos(phi1) * math.sin(phi2) -
-        math.sin(phi1) *
-            math.cos(phi2) *
-            math.cos(deltaLon);
+        math.sin(phi1) * math.cos(phi2) * math.cos(deltaLon);
 
-    final bearing =
-        math.atan2(y, x) * 180.0 / math.pi;
+    final bearing = math.atan2(y, x) * 180.0 / math.pi;
 
     return (bearing + 360.0) % 360.0;
   }
 
-  double _headingDifference(
-    double heading1,
-    double heading2,
-  ) {
+  double _headingDifference(double heading1, double heading2) {
     var difference = (heading1 - heading2).abs();
 
     if (difference > 180) {
@@ -2241,11 +2141,9 @@ if (_destinationLat != null && _destinationLng != null) {
     int nearestRouteIndex,
     double gpsHeading,
   ) {
-    final routeIndex =
-        _maneuverRouteIndexAt(maneuverIndex);
+    final routeIndex = _maneuverRouteIndexAt(maneuverIndex);
 
-    if (routeIndex == null ||
-        _routePoints.length < 2) {
+    if (routeIndex == null || _routePoints.length < 2) {
       return false;
     }
 
@@ -2253,17 +2151,13 @@ if (_destinationLat != null && _destinationLng != null) {
     // baru mendekati titik persimpangan.
     const minimumPassedPoints = 4;
 
-    if (nearestRouteIndex <
-        routeIndex + minimumPassedPoints) {
+    if (nearestRouteIndex < routeIndex + minimumPassedPoints) {
       return false;
     }
 
     // Pastikan kendaraan bergerak searah dengan
     // segmen rute SETELAH persimpangan.
-    final afterIndex = math.min(
-      _routePoints.length - 1,
-      routeIndex + 5,
-    );
+    final afterIndex = math.min(_routePoints.length - 1, routeIndex + 5);
 
     if (afterIndex <= routeIndex) {
       return true;
@@ -2283,32 +2177,20 @@ if (_destinationLat != null && _destinationLng != null) {
       return true;
     }
 
-    final difference = _headingDifference(
-      gpsHeading,
-      routeBearing,
-    );
+    final difference = _headingDifference(gpsHeading, routeBearing);
 
     return difference <= 70;
   }
 
-  bool _isNearCriticalIntersection(
-    int maneuverIndex,
-  ) {
-    final routeIndex =
-        _maneuverRouteIndexAt(maneuverIndex);
+  bool _isNearCriticalIntersection(int maneuverIndex) {
+    final routeIndex = _maneuverRouteIndexAt(maneuverIndex);
 
-    if (routeIndex == null ||
-        _routePoints.isEmpty) {
+    if (routeIndex == null || _routePoints.isEmpty) {
       return false;
     }
 
     final maneuverPoint =
-        _routePoints[
-          math.min(
-            routeIndex,
-            _routePoints.length - 1,
-          )
-        ];
+        _routePoints[math.min(routeIndex, _routePoints.length - 1)];
 
     final distance = _distanceBetweenMeters(
       _currentLat,
@@ -2324,17 +2206,14 @@ if (_destinationLat != null && _destinationLng != null) {
     return distance <= 60;
   }
 
-
   bool _isOnCorrectBranch(
     int maneuverIndex,
     int nearestRouteIndex,
     double gpsHeading,
   ) {
-    final routeIndex =
-        _maneuverRouteIndexAt(maneuverIndex);
+    final routeIndex = _maneuverRouteIndexAt(maneuverIndex);
 
-    if (routeIndex == null ||
-        _routePoints.length < 2) {
+    if (routeIndex == null || _routePoints.length < 2) {
       return false;
     }
 
@@ -2344,15 +2223,9 @@ if (_destinationLat != null && _destinationLng != null) {
      * Satu titik saja tidak cukup karena dua cabang jalan
      * dapat sangat berdekatan pada area persimpangan.
      */
-    final afterStart = math.min(
-      _routePoints.length - 1,
-      routeIndex + 4,
-    );
+    final afterStart = math.min(_routePoints.length - 1, routeIndex + 4);
 
-    final afterEnd = math.min(
-      _routePoints.length - 1,
-      routeIndex + 10,
-    );
+    final afterEnd = math.min(_routePoints.length - 1, routeIndex + 10);
 
     if (afterEnd <= afterStart) {
       return true;
@@ -2383,11 +2256,7 @@ if (_destinationLat != null && _destinationLng != null) {
       return nearestRouteIndex >= afterStart + 3;
     }
 
-    _branchHeadingDifference =
-        _headingDifference(
-      gpsHeading,
-      routeBearing,
-    );
+    _branchHeadingDifference = _headingDifference(gpsHeading, routeBearing);
 
     /*
      * 55 derajat sengaja dibuat lebih ketat.
@@ -2403,23 +2272,16 @@ if (_destinationLat != null && _destinationLng != null) {
     int nearestRouteIndex,
     double gpsHeading,
   ) {
-    final routeIndex =
-        _maneuverRouteIndexAt(maneuverIndex);
+    final routeIndex = _maneuverRouteIndexAt(maneuverIndex);
 
-    if (routeIndex == null ||
-        _routePoints.isEmpty) {
+    if (routeIndex == null || _routePoints.isEmpty) {
       return false;
     }
 
-    final maneuverPoint = _routePoints[
-      math.min(
-        routeIndex,
-        _routePoints.length - 1,
-      )
-    ];
+    final maneuverPoint =
+        _routePoints[math.min(routeIndex, _routePoints.length - 1)];
 
-    _branchRouteDistanceMeters =
-        _distanceBetweenMeters(
+    _branchRouteDistanceMeters = _distanceBetweenMeters(
       _currentLat,
       _currentLng,
       maneuverPoint.latitude,
@@ -2438,18 +2300,10 @@ if (_destinationLat != null && _destinationLng != null) {
       return false;
     }
 
-    return !_isOnCorrectBranch(
-      maneuverIndex,
-      nearestRouteIndex,
-      gpsHeading,
-    );
+    return !_isOnCorrectBranch(maneuverIndex, nearestRouteIndex, gpsHeading);
   }
 
-
-  int _nearestRoutePointIndex(
-    double latitude,
-    double longitude,
-  ) {
+  int _nearestRoutePointIndex(double latitude, double longitude) {
     if (_routePoints.isEmpty) {
       return 0;
     }
@@ -2481,46 +2335,32 @@ if (_destinationLat != null && _destinationLng != null) {
       return;
     }
 
-    final nearestRouteIndex =
-        _nearestRoutePointIndex(
-      _currentLat,
-      _currentLng,
-    );
+    final nearestRouteIndex = _nearestRoutePointIndex(_currentLat, _currentLng);
 
+    while (_currentManeuverIndex < _maneuvers.length) {
+      final maneuver = _maneuvers[_currentManeuverIndex];
 
-    while (_currentManeuverIndex <
-        _maneuvers.length) {
+      final lat = (maneuver['_lat'] as num?)?.toDouble();
 
-      final maneuver =
-          _maneuvers[_currentManeuverIndex];
-
-      final lat =
-          (maneuver['_lat'] as num?)?.toDouble();
-
-      final lon =
-          (maneuver['_lon'] as num?)?.toDouble();
+      final lon = (maneuver['_lon'] as num?)?.toDouble();
 
       if (lat == null || lon == null) {
         _currentManeuverIndex++;
         continue;
       }
 
-      final distance =
-          _distanceBetweenMeters(
+      final distance = _distanceBetweenMeters(
         _currentLat,
         _currentLng,
         lat,
         lon,
       );
 
-      _nextManeuverDistanceMeters =
-          distance;
+      _nextManeuverDistanceMeters = distance;
 
-      _nextInstruction =
-          _maneuverInstruction(maneuver);
+      _nextInstruction = _maneuverInstruction(maneuver);
 
-      _intersectionGuardActive =
-          _isNearCriticalIntersection(
+      _intersectionGuardActive = _isNearCriticalIntersection(
         _currentManeuverIndex,
       );
 
@@ -2539,25 +2379,20 @@ if (_destinationLat != null && _destinationLng != null) {
        * 3. mempunyai heading sesuai dengan cabang rute.
        */
 
-      if (_currentManeuverIndex <
-          _maneuvers.length - 1) {
-
-        final passed =
-            _maneuverIsPassed(
+      if (_currentManeuverIndex < _maneuvers.length - 1) {
+        final passed = _maneuverIsPassed(
           _currentManeuverIndex,
           nearestRouteIndex,
           _currentGpsHeading,
         );
 
-        final correctBranch =
-            _isOnCorrectBranch(
+        final correctBranch = _isOnCorrectBranch(
           _currentManeuverIndex,
           nearestRouteIndex,
           _currentGpsHeading,
         );
 
-        final hold =
-            _shouldHoldAtIntersection(
+        final hold = _shouldHoldAtIntersection(
           _currentManeuverIndex,
           nearestRouteIndex,
           _currentGpsHeading,
@@ -2573,9 +2408,7 @@ if (_destinationLat != null && _destinationLng != null) {
          * - tidak sedang berada dalam zona persimpangan
          *   yang belum terkonfirmasi.
          */
-        if (passed &&
-            correctBranch &&
-            !hold) {
+        if (passed && correctBranch && !hold) {
           _currentManeuverIndex++;
           continue;
         }
@@ -2594,13 +2427,11 @@ if (_destinationLat != null && _destinationLng != null) {
 
     _nextManeuverDistanceMeters = 0;
 
-    _nextInstruction =
-        'Anda sudah mendekati tujuan.';
+    _nextInstruction = 'Anda sudah mendekati tujuan.';
 
     _intersectionGuardActive = false;
     _branchGuardActive = false;
   }
-
 
   String _formatManeuverDistance(double meters) {
     if (meters < 1000) {
@@ -2650,7 +2481,7 @@ if (_destinationLat != null && _destinationLng != null) {
     }
   }
 
-Future<void> _requestRoute() async {
+  Future<void> _requestRoute() async {
     if (_destinationLat == null || _destinationLng == null) {
       return;
     }
@@ -2671,19 +2502,12 @@ Future<void> _requestRoute() async {
     });
 
     try {
-      final costing =
-          _vehicleMode == 'motor' ? 'motorcycle' : 'auto';
+      final costing = _vehicleMode == 'motor' ? 'motorcycle' : 'auto';
 
       final requestBody = {
         'locations': [
-          {
-            'lat': _currentLat,
-            'lon': _currentLng,
-          },
-          {
-            'lat': _destinationLat!,
-            'lon': _destinationLng!,
-          },
+          {'lat': _currentLat, 'lon': _currentLng},
+          {'lat': _destinationLat!, 'lon': _destinationLng!},
         ],
         'costing': costing,
         'units': 'kilometers',
@@ -2702,41 +2526,29 @@ Future<void> _requestRoute() async {
       );
 
       if (response.statusCode != 200) {
-        throw Exception(
-          'Routing gagal (${response.statusCode})',
-        );
+        throw Exception('Routing gagal (${response.statusCode})');
       }
 
       final data = jsonDecode(response.body);
 
-      if (data is! Map ||
-          data['trip'] is! Map) {
-        throw Exception(
-          'Respons routing tidak valid.',
-        );
+      if (data is! Map || data['trip'] is! Map) {
+        throw Exception('Respons routing tidak valid.');
       }
 
-      final trip = Map<String, dynamic>.from(
-        data['trip'],
-      );
+      final trip = Map<String, dynamic>.from(data['trip']);
 
       final summary = trip['summary'];
 
       if (summary is! Map) {
-        throw Exception(
-          'Informasi rute tidak tersedia.',
-        );
+        throw Exception('Informasi rute tidak tersedia.');
       }
 
-      final shape = trip['legs'] is List &&
-              (trip['legs'] as List).isNotEmpty
+      final shape = trip['legs'] is List && (trip['legs'] as List).isNotEmpty
           ? (trip['legs'] as List).first
           : null;
 
       if (shape is! Map) {
-        throw Exception(
-          'Jalur rute tidak tersedia.',
-        );
+        throw Exception('Jalur rute tidak tersedia.');
       }
 
       /*
@@ -2748,8 +2560,7 @@ Future<void> _requestRoute() async {
 
       List<LatLng> points = [];
 
-      if (geometry is Map &&
-          geometry['coordinates'] is List) {
+      if (geometry is Map && geometry['coordinates'] is List) {
         for (final item in geometry['coordinates']) {
           if (item is List && item.length >= 2) {
             final lng = (item[0] as num).toDouble();
@@ -2770,9 +2581,7 @@ Future<void> _requestRoute() async {
       }
 
       if (points.length < 2) {
-        throw Exception(
-          'Jalur rute terlalu pendek atau tidak tersedia.',
-        );
+        throw Exception('Jalur rute terlalu pendek atau tidak tersedia.');
       }
 
       // ========================================================
@@ -2790,8 +2599,8 @@ Future<void> _requestRoute() async {
 
           final maneuver = Map<String, dynamic>.from(raw);
 
-          final beginShapeIndex =
-              (maneuver['begin_shape_index'] as num?)?.toInt();
+          final beginShapeIndex = (maneuver['begin_shape_index'] as num?)
+              ?.toInt();
 
           if (beginShapeIndex != null &&
               beginShapeIndex >= 0 &&
@@ -2807,29 +2616,21 @@ Future<void> _requestRoute() async {
         }
       }
 
-      final distanceKm =
-          (summary['length'] as num?)?.toDouble() ?? 0;
+      final distanceKm = (summary['length'] as num?)?.toDouble() ?? 0;
 
-      final timeSeconds =
-          (summary['time'] as num?)?.toDouble() ?? 0;
+      final timeSeconds = (summary['time'] as num?)?.toDouble() ?? 0;
 
       if (!mounted) return;
 
       setState(() {
         _routePoints = points;
         _distanceKm = distanceKm;
-        _durationMinutes =
-            (timeSeconds / 60).ceil();
+        _durationMinutes = (timeSeconds / 60).ceil();
 
         // Simpan instruksi turn-by-turn dari Valhalla.
         _maneuvers = parsedManeuvers;
         _maneuverRouteIndex = parsedManeuvers
-            .map(
-              (maneuver) =>
-                  (maneuver['_routeIndex'] as num?)
-                      ?.toInt() ??
-                  0,
-            )
+            .map((maneuver) => (maneuver['_routeIndex'] as num?)?.toInt() ?? 0)
             .toList(growable: false);
         _currentManeuverIndex = 0;
         _intersectionGuardActive = false;
@@ -2882,11 +2683,9 @@ Future<void> _requestRoute() async {
           return result;
         }
 
-        final byte =
-            encoded.codeUnitAt(index++) - 63;
+        final byte = encoded.codeUnitAt(index++) - 63;
 
-        resultValue |=
-            (byte & 0x1f) << shift;
+        resultValue |= (byte & 0x1f) << shift;
 
         shift += 5;
 
@@ -2895,10 +2694,9 @@ Future<void> _requestRoute() async {
         }
       }
 
-      final deltaLat =
-          (resultValue & 1) != 0
-              ? ~(resultValue >> 1)
-              : (resultValue >> 1);
+      final deltaLat = (resultValue & 1) != 0
+          ? ~(resultValue >> 1)
+          : (resultValue >> 1);
 
       lat += deltaLat;
 
@@ -2910,11 +2708,9 @@ Future<void> _requestRoute() async {
           return result;
         }
 
-        final byte =
-            encoded.codeUnitAt(index++) - 63;
+        final byte = encoded.codeUnitAt(index++) - 63;
 
-        resultValue |=
-            (byte & 0x1f) << shift;
+        resultValue |= (byte & 0x1f) << shift;
 
         shift += 5;
 
@@ -2923,19 +2719,13 @@ Future<void> _requestRoute() async {
         }
       }
 
-      final deltaLng =
-          (resultValue & 1) != 0
-              ? ~(resultValue >> 1)
-              : (resultValue >> 1);
+      final deltaLng = (resultValue & 1) != 0
+          ? ~(resultValue >> 1)
+          : (resultValue >> 1);
 
       lng += deltaLng;
 
-      result.add(
-        LatLng(
-          lat / 1000000.0,
-          lng / 1000000.0,
-        ),
-      );
+      result.add(LatLng(lat / 1000000.0, lng / 1000000.0));
     }
 
     return result;
@@ -2953,8 +2743,7 @@ Future<void> _requestRoute() async {
   }
 
   Future<void> _startNavigation() async {
-    if (_destinationLat == null ||
-        _destinationLng == null) {
+    if (_destinationLat == null || _destinationLng == null) {
       _showMessage('Tentukan tujuan terlebih dahulu.');
       return;
     }
@@ -2996,17 +2785,11 @@ Future<void> _requestRoute() async {
     // Tampilkan maneuver pertama segera setelah navigasi dimulai.
     _updateNextManeuver();
 
-    _mapController.move(
-      LatLng(_currentLat, _currentLng),
-      17,
-    );
+    _mapController.move(LatLng(_currentLat, _currentLng), 17);
 
-    final vehicle =
-        _vehicleMode == 'motor' ? 'Motor' : 'Mobil';
+    final vehicle = _vehicleMode == 'motor' ? 'Motor' : 'Mobil';
 
-    _showMessage(
-      "Navigasi B'Jo aktif • $vehicle",
-    );
+    _showMessage("Navigasi B'Jo aktif • $vehicle");
   }
 
   void _clearDestination() {
@@ -3031,10 +2814,7 @@ Future<void> _requestRoute() async {
 
     _destinationController.clear();
 
-    _mapController.move(
-      LatLng(_currentLat, _currentLng),
-      16,
-    );
+    _mapController.move(LatLng(_currentLat, _currentLng), 16);
   }
 
   void _showMessage(String message) {
@@ -3043,10 +2823,7 @@ Future<void> _requestRoute() async {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
       );
   }
 
@@ -3104,15 +2881,9 @@ Future<void> _requestRoute() async {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: m8Blue,
-                          border: Border.all(
-                            color: m8White,
-                            width: 3,
-                          ),
+                          border: Border.all(color: m8White, width: 3),
                           boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 7,
-                              color: Color(0x55000000),
-                            ),
+                            BoxShadow(blurRadius: 7, color: Color(0x55000000)),
                           ],
                         ),
                         child: const Icon(
@@ -3122,13 +2893,9 @@ Future<void> _requestRoute() async {
                         ),
                       ),
                     ),
-                    if (_destinationLat != null &&
-                        _destinationLng != null)
+                    if (_destinationLat != null && _destinationLng != null)
                       Marker(
-                        point: LatLng(
-                          _destinationLat!,
-                          _destinationLng!,
-                        ),
+                        point: LatLng(_destinationLat!, _destinationLng!),
                         width: 42,
                         height: 50,
                         child: const Icon(
@@ -3170,9 +2937,7 @@ Future<void> _requestRoute() async {
                 ),
                 decoration: InputDecoration(
                   hintText: "Cari tujuan atau alamat",
-                  hintStyle: TextStyle(
-                    color: m8BlueDark.withOpacity(0.65),
-                  ),
+                  hintStyle: TextStyle(color: m8BlueDark.withOpacity(0.65)),
                   prefixIcon: const Icon(
                     Icons.search_rounded,
                     color: m8BlueDark,
@@ -3183,16 +2948,13 @@ Future<void> _requestRoute() async {
                           child: SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
                           ),
                         )
                       : IconButton(
                           tooltip: "Cari tujuan",
-                          onPressed: () => _searchDestination(
-                            _destinationController.text,
-                          ),
+                          onPressed: () =>
+                              _searchDestination(_destinationController.text),
                           icon: const Icon(
                             Icons.arrow_forward_rounded,
                             color: m8BlueDark,
@@ -3210,10 +2972,7 @@ Future<void> _requestRoute() async {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
-                    borderSide: const BorderSide(
-                      color: m8Blue,
-                      width: 2,
-                    ),
+                    borderSide: const BorderSide(color: m8Blue, width: 2),
                   ),
                 ),
                 onSubmitted: _searchDestination,
@@ -3222,83 +2981,75 @@ Future<void> _requestRoute() async {
           ),
 
           Positioned(
-    left: 12,
-    right: 12,
-    bottom: 68,
-    child: SafeArea(
-      top: false,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ChoiceChip(
-            label: const Text(
-              '🚗',
-              style: TextStyle(fontSize: 16),
-            ),
-            selected: _vehicleMode == 'car',
-            visualDensity: VisualDensity.compact,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            onSelected: _navigationActive
-                ? null
-                : (_) {
-                    setState(() {
-                      _vehicleMode = 'car';
-                    });
-                    if (_destinationLat != null &&
-                        _destinationLng != null) {
-                      _requestRoute();
-                    }
-                  },
-          ),
-          const SizedBox(width: 8),
-          ChoiceChip(
-            label: const Text(
-              '🏍️',
-              style: TextStyle(fontSize: 16),
-            ),
-            selected: _vehicleMode == 'motor',
-            visualDensity: VisualDensity.compact,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            onSelected: _navigationActive
-                ? null
-                : (_) {
-                    setState(() {
-                      _vehicleMode = 'motor';
-                    });
-                    if (_destinationLat != null &&
-                        _destinationLng != null) {
-                      _requestRoute();
-                    }
-                  },
-          ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 44,
-            height: 40,
-            child: OutlinedButton(
-              onPressed: (_routing || _navigationActive)
-                  ? null
-                  : _startNavigation,
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(11),
-                ),
-              ),
-              child: const Icon(
-                Icons.directions_rounded,
-                size: 20,
+            left: 12,
+            right: 12,
+            bottom: 68,
+            child: SafeArea(
+              top: false,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ChoiceChip(
+                    label: const Text('🚗', style: TextStyle(fontSize: 16)),
+                    selected: _vehicleMode == 'car',
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onSelected: _navigationActive
+                        ? null
+                        : (_) {
+                            setState(() {
+                              _vehicleMode = 'car';
+                            });
+                            if (_destinationLat != null &&
+                                _destinationLng != null) {
+                              _requestRoute();
+                            }
+                          },
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('🏍️', style: TextStyle(fontSize: 16)),
+                    selected: _vehicleMode == 'motor',
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onSelected: _navigationActive
+                        ? null
+                        : (_) {
+                            setState(() {
+                              _vehicleMode = 'motor';
+                            });
+                            if (_destinationLat != null &&
+                                _destinationLng != null) {
+                              _requestRoute();
+                            }
+                          },
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 44,
+                    height: 40,
+                    child: OutlinedButton(
+                      onPressed: (_routing || _navigationActive)
+                          ? null
+                          : _startNavigation,
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                      ),
+                      child: const Icon(Icons.directions_rounded, size: 20),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
-    ),
-  ),
-Positioned(
+          Positioned(
             right: 16,
-            bottom: _destinationLat != null &&
+            bottom:
+                _destinationLat != null &&
                     _destinationLng != null &&
                     _routePoints.length >= 2
                 ? 255
@@ -3350,8 +3101,7 @@ Positioned(
                       child: Icon(
                         _maneuverIcon(
                           _maneuvers.isNotEmpty &&
-                                  _currentManeuverIndex <
-                                      _maneuvers.length
+                                  _currentManeuverIndex < _maneuvers.length
                               ? _maneuvers[_currentManeuverIndex]
                               : null,
                         ),
@@ -3362,8 +3112,7 @@ Positioned(
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
@@ -3396,36 +3145,34 @@ Positioned(
               ),
             ),
 
-Positioned(
-    top: MediaQuery.of(context).padding.top + 12,
-    right: 12,
-    child: SizedBox(
-        width: 52,
-        height: 44,
-        child: FilledButton(
-            onPressed: (_routing ||
-                    _navigationActive ||
-                    _destinationLat == null ||
-                    _destinationLng == null)
-                ? null
-                : _startNavigation,
-            style: FilledButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                shape: RoundedRectangleBorder(
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12,
+            right: 12,
+            child: SizedBox(
+              width: 52,
+              height: 44,
+              child: FilledButton(
+                onPressed:
+                    (_routing ||
+                        _navigationActive ||
+                        _destinationLat == null ||
+                        _destinationLng == null)
+                    ? null
+                    : _startNavigation,
+                style: FilledButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-            ),
-            child: const Text(
-                'Mulai',
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                child: const Text(
+                  'Mulai',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
                 ),
+              ),
             ),
-        ),
-    ),
-),
+          ),
         ],
       ),
     );
@@ -3437,16 +3184,11 @@ Positioned(
 // ============================================================
 // ============================================================
 
-
 class BJoMainShell extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
 
-  const BJoMainShell({
-    super.key,
-    required this.token,
-    required this.user,
-  });
+  const BJoMainShell({super.key, required this.token, required this.user});
 
   @override
   State<BJoMainShell> createState() => _BJoMainShellState();
@@ -3491,9 +3233,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
   }
 
   String get myPin =>
-      widget.user['m8_pin']?.toString() ??
-      widget.user['pin']?.toString() ??
-      '';
+      widget.user['m8_pin']?.toString() ?? widget.user['pin']?.toString() ?? '';
 
   String get title {
     switch (currentIndex) {
@@ -3524,16 +3264,11 @@ class _BJoMainShellState extends State<BJoMainShell> {
 
     switch (index) {
       case 0:
-        page = HomePage(
-          token: widget.token,
-          user: widget.user,
-        );
+        page = HomePage(token: widget.token, user: widget.user);
         break;
 
       case 1:
-        page = StoryPage(
-          user: widget.user,
-        );
+        page = StoryPage(user: widget.user);
         break;
 
       case 2:
@@ -3545,16 +3280,11 @@ class _BJoMainShellState extends State<BJoMainShell> {
         break;
 
       case 4:
-        page = TasksPage(
-          user: widget.user,
-        );
+        page = TasksPage(user: widget.user);
         break;
 
       default:
-        page = HomePage(
-          token: widget.token,
-          user: widget.user,
-        );
+        page = HomePage(token: widget.token, user: widget.user);
     }
 
     _cachedPages[index] = page;
@@ -3589,12 +3319,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         backgroundColor: m8Blue,
         foregroundColor: m8White,
         elevation: 0,
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           IconButton(
             tooltip: "Profil B'Jo",
@@ -3602,10 +3327,8 @@ class _BJoMainShellState extends State<BJoMainShell> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => BJoProfilePage(
-                    user: widget.user,
-                    token: widget.token,
-                  ),
+                  builder: (_) =>
+                      BJoProfilePage(user: widget.user, token: widget.token),
                 ),
               );
             },
@@ -3632,9 +3355,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
               children: [
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: CustomPaint(
-                      painter: _BjoBatikHeaderPainter(),
-                    ),
+                    child: CustomPaint(painter: _BjoBatikHeaderPainter()),
                   ),
                 ),
                 Center(
@@ -3654,9 +3375,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
           Expanded(
             child: Container(
               color: currentIndex == 3 ? m8BlueDark : m8WhiteSoft,
-              child: RepaintBoundary(
-                child: _buildPage(currentIndex),
-              ),
+              child: RepaintBoundary(child: _buildPage(currentIndex)),
             ),
           ),
         ],
@@ -3674,47 +3393,23 @@ class _BJoMainShellState extends State<BJoMainShell> {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.auto_awesome_motion_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.auto_awesome_motion,
-              color: m8White,
-            ),
+            icon: Icon(Icons.auto_awesome_motion_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.auto_awesome_motion, color: m8White),
             label: 'Moments',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.navigation_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.navigation,
-              color: m8White,
-            ),
+            icon: Icon(Icons.navigation_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.navigation, color: m8White),
             label: 'Navigation',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.call_outlined,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.call,
-              color: m8White,
-            ),
+            icon: Icon(Icons.call_outlined, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.call, color: m8White),
             label: 'Call',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.check_circle_outline,
-              color: m8WhiteSoft,
-            ),
-            selectedIcon: Icon(
-              Icons.check_circle,
-              color: m8White,
-            ),
+            icon: Icon(Icons.check_circle_outline, color: m8WhiteSoft),
+            selectedIcon: Icon(Icons.check_circle, color: m8White),
             label: 'Pad',
           ),
         ],
@@ -3765,14 +3460,13 @@ class _ChatsPageState extends State<ChatsPage> {
     super.initState();
     loadMessenger();
 
-    _chatListPollTimer = Timer.periodic(
-      const Duration(seconds: 5),
-      (_) {
-        if (mounted && !_loadingChatsInProgress) {
-          loadChats();
-        }
-      },
-    );
+    // B'Jo: refresh daftar percakapan secara berkala.
+    // Saat ada pesan baru, percakapan akan langsung diperbarui.
+    _chatListPollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (mounted && !_loadingChatsInProgress) {
+        loadChats();
+      }
+    });
   }
 
   @override
@@ -3809,7 +3503,19 @@ class _ChatsPageState extends State<ChatsPage> {
         final list = data['chats'];
 
         if (list is List) {
-          chats = list.map((e) => Map<String, dynamic>.from(e)).toList();
+          final latestChats = list
+              .map<Map<String, dynamic>>(
+                (e) => Map<String, dynamic>.from(e as Map),
+              )
+              .toList();
+
+          if (!mounted) return;
+
+          // Server sudah mengembalikan urutan percakapan terbaru.
+          // SetState memastikan Home/Chat langsung menggambar ulang.
+          setState(() {
+            chats = latestChats;
+          });
         }
       }
     } catch (e) {
@@ -4164,9 +3870,7 @@ class _ChatsPageState extends State<ChatsPage> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 3),
         child: Material(
-          color: selected
-              ? m8Blue
-              : m8White.withValues(alpha: 0.96),
+          color: selected ? m8Blue : m8White.withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(13),
           child: InkWell(
             borderRadius: BorderRadius.circular(13),
@@ -4176,11 +3880,7 @@ class _ChatsPageState extends State<ChatsPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    icon,
-                    size: 20,
-                    color: selected ? m8White : bjoChatNavy,
-                  ),
+                  Icon(icon, size: 20, color: selected ? m8White : bjoChatNavy),
                   const SizedBox(height: 3),
                   Text(
                     label,
@@ -4198,13 +3898,10 @@ class _ChatsPageState extends State<ChatsPage> {
       ),
     );
   }
-  Widget _buildPrivateChatTile(
-    Map<String, dynamic> chat,
-  ) {
-    final p1 =
-        chat['participant_1_pin']?.toString() ?? '';
-    final p2 =
-        chat['participant_2_pin']?.toString() ?? '';
+
+  Widget _buildPrivateChatTile(Map<String, dynamic> chat) {
+    final p1 = chat['participant_1_pin']?.toString() ?? '';
+    final p2 = chat['participant_2_pin']?.toString() ?? '';
 
     final other = p1 == widget.myPin ? p2 : p1;
 
@@ -4212,25 +3909,18 @@ class _ChatsPageState extends State<ChatsPage> {
         ? Map<String, dynamic>.from(chat['other_user'])
         : <String, dynamic>{};
 
-    final name =
-        otherUser['name']?.toString().trim().isNotEmpty == true
-            ? otherUser['name'].toString().trim()
-            : other;
+    final name = otherUser['name']?.toString().trim().isNotEmpty == true
+        ? otherUser['name'].toString().trim()
+        : other;
 
-    final photo =
-        otherUser['profile_photo_url']
-                ?.toString()
-                .trim() ??
-            '';
+    final photo = otherUser['profile_photo_url']?.toString().trim() ?? '';
 
-    final lastMessage =
-        chat['last_message']?.toString().trim() ?? '';
+    final lastMessage = chat['last_message']?.toString().trim() ?? '';
 
     final unreadCount =
         int.tryParse(chat['unread_count']?.toString() ?? '0') ?? 0;
 
-    final lastMessageTime =
-        chat['last_message_time']?.toString() ?? '';
+    final lastMessageTime = chat['last_message_time']?.toString() ?? '';
 
     String formatChatTime(String value) {
       if (value.isEmpty) return '';
@@ -4238,9 +3928,7 @@ class _ChatsPageState extends State<ChatsPage> {
       final timestamp = int.tryParse(value);
       if (timestamp == null) return '';
 
-      final date = DateTime.fromMillisecondsSinceEpoch(
-        timestamp,
-      );
+      final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
 
       final now = DateTime.now();
 
@@ -4286,22 +3974,15 @@ class _ChatsPageState extends State<ChatsPage> {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 10,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         child: Row(
           children: [
-            _buildPremiumAvatar(
-              name: name,
-              photoUrl: photo,
-            ),
+            _buildPremiumAvatar(name: name, photoUrl: photo),
             const SizedBox(width: 14),
 
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
@@ -4324,9 +4005,7 @@ class _ChatsPageState extends State<ChatsPage> {
                         Text(
                           timeText,
                           style: TextStyle(
-                            color: unreadCount > 0
-                                ? m8Blue
-                                : bjoChatNavy,
+                            color: unreadCount > 0 ? m8Blue : bjoChatNavy,
                             fontSize: 11,
                             fontWeight: unreadCount > 0
                                 ? FontWeight.w700
@@ -4348,9 +4027,7 @@ class _ChatsPageState extends State<ChatsPage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: unreadCount > 0
-                                ? m8Text
-                                : bjoChatNavy,
+                            color: unreadCount > 0 ? m8Text : bjoChatNavy,
                             fontSize: 12,
                             fontWeight: unreadCount > 0
                                 ? FontWeight.w600
@@ -4372,14 +4049,11 @@ class _ChatsPageState extends State<ChatsPage> {
                           ),
                           decoration: BoxDecoration(
                             color: m8Blue,
-                            borderRadius:
-                                BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            unreadCount > 99
-                                ? '99+'
-                                : '$unreadCount',
+                            unreadCount > 99 ? '99+' : '$unreadCount',
                             style: const TextStyle(
                               color: m8White,
                               fontSize: 10,
@@ -4407,22 +4081,16 @@ class _ChatsPageState extends State<ChatsPage> {
     );
   }
 
-  Widget _buildGroupChatTile(
-    Map<String, dynamic> group,
-  ) {
-    final name =
-        group['name']?.toString().trim().isNotEmpty == true
-            ? group['name'].toString().trim()
-            : 'Grup B’Jo';
+  Widget _buildGroupChatTile(Map<String, dynamic> group) {
+    final name = group['name']?.toString().trim().isNotEmpty == true
+        ? group['name'].toString().trim()
+        : 'Grup B’Jo';
 
-    final description =
-        group['description']?.toString().trim() ?? '';
+    final description = group['description']?.toString().trim() ?? '';
 
-    final count =
-        group['member_count']?.toString() ?? '0';
+    final count = group['member_count']?.toString() ?? '0';
 
-    final photo =
-        group['photo_url']?.toString().trim() ?? '';
+    final photo = group['photo_url']?.toString().trim() ?? '';
 
     return InkWell(
       onTap: () {
@@ -4438,22 +4106,14 @@ class _ChatsPageState extends State<ChatsPage> {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 10,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         child: Row(
           children: [
-            _buildPremiumAvatar(
-              name: name,
-              photoUrl: photo,
-              group: true,
-            ),
+            _buildPremiumAvatar(name: name, photoUrl: photo, group: true),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
@@ -4472,10 +4132,7 @@ class _ChatsPageState extends State<ChatsPage> {
                         : '$count anggota',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: bjoChatNavy,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: bjoChatNavy, fontSize: 12),
                   ),
                 ],
               ),
@@ -4510,9 +4167,7 @@ class _ChatsPageState extends State<ChatsPage> {
 
   Widget buildGroupList() {
     if (groupsLoading && groups.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (groups.isEmpty) {
@@ -4539,10 +4194,7 @@ class _ChatsPageState extends State<ChatsPage> {
     return RefreshIndicator(
       onRefresh: loadMessenger,
       child: ListView(
-        padding: const EdgeInsets.only(
-          top: 4,
-          bottom: 90,
-        ),
+        padding: const EdgeInsets.only(top: 4, bottom: 90),
         children: [
           ...chats.map(_buildPrivateChatTile),
           ...groups.map(_buildGroupChatTile),
@@ -4551,7 +4203,7 @@ class _ChatsPageState extends State<ChatsPage> {
     );
   }
 
-Widget buildEmptyMessenger() {
+  Widget buildEmptyMessenger() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -4584,11 +4236,7 @@ Widget buildEmptyMessenger() {
             const Text(
               'Mulai percakapan pribadi atau buat grup baru.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: m8TextMuted,
-                fontSize: 13,
-                height: 1.4,
-              ),
+              style: TextStyle(color: m8TextMuted, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
@@ -4602,7 +4250,7 @@ Widget buildEmptyMessenger() {
     );
   }
 
-Widget _buildPremiumAvatar({
+  Widget _buildPremiumAvatar({
     required String name,
     String photoUrl = '',
     bool group = false,
@@ -4610,13 +4258,10 @@ Widget _buildPremiumAvatar({
     return CircleAvatar(
       radius: 25,
       backgroundColor: m8Blue.withValues(alpha: 0.12),
-      backgroundImage:
-          photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+      backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
       child: photoUrl.isEmpty
           ? Icon(
-              group
-                  ? Icons.groups_rounded
-                  : Icons.person_rounded,
+              group ? Icons.groups_rounded : Icons.person_rounded,
               color: m8Blue,
               size: group ? 25 : 23,
             )
@@ -4631,11 +4276,7 @@ Widget _buildPremiumAvatar({
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            m8Blue,
-            Color(0xFFB9D9EA),
-            m8White,
-          ],
+          colors: [m8Blue, Color(0xFFB9D9EA), m8White],
           stops: [0.0, 0.48, 1.0],
         ),
       ),
@@ -4646,9 +4287,7 @@ Widget _buildPremiumAvatar({
             child: Stack(
               children: [
                 if (loading)
-                  const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                  const Center(child: CircularProgressIndicator())
                 else
                   buildAllMessenger(),
 
@@ -4657,9 +4296,7 @@ Widget _buildPremiumAvatar({
                   bottom: 20,
                   child: FloatingActionButton(
                     onPressed: showNewChatMenu,
-                    child: const Icon(
-                      Icons.add_comment_rounded,
-                    ),
+                    child: const Icon(Icons.add_comment_rounded),
                   ),
                 ),
               ],
@@ -4679,11 +4316,9 @@ Widget _buildPremiumAvatar({
 // M8 GROUP CHAT
 // ============================================================
 
-
 // ============================================================
 // B'JO USER SEARCH
 // ============================================================
-
 
 // ============================================================
 // B'JO CONTACTS
@@ -4693,11 +4328,7 @@ class BJoContactsPage extends StatefulWidget {
   final String token;
   final String myPin;
 
-  const BJoContactsPage({
-    super.key,
-    required this.token,
-    required this.myPin,
-  });
+  const BJoContactsPage({super.key, required this.token, required this.myPin});
 
   @override
   State<BJoContactsPage> createState() => _BJoContactsPageState();
@@ -4719,12 +4350,12 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
     setState(() => _loading = true);
 
     try {
-      final response = await http.get(
-        Uri.parse('$apiBase/api/contacts'),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            Uri.parse('$apiBase/api/contacts'),
+            headers: {'Authorization': 'Bearer ${widget.token}'},
+          )
+          .timeout(const Duration(seconds: 10));
 
       final data = jsonDecode(response.body);
 
@@ -4741,9 +4372,7 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
           });
         }
       } else {
-        debugPrint(
-          'BJo contacts ${response.statusCode}: ${response.body}',
-        );
+        debugPrint('BJo contacts ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
       debugPrint('BJo contacts error: $e');
@@ -4758,10 +4387,8 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => BJoUserSearchPage(
-          token: widget.token,
-          myPin: widget.myPin,
-        ),
+        builder: (_) =>
+            BJoUserSearchPage(token: widget.token, myPin: widget.myPin),
       ),
     );
 
@@ -4802,24 +4429,19 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
         Uri.parse(
           '$apiBase/api/contacts?m8_pin=${Uri.encodeQueryComponent(pin)}',
         ),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
+        headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
       if (response.statusCode == 200 && mounted) {
         setState(() {
           _contacts.removeWhere(
-            (item) =>
-                item['m8_pin']?.toString().trim() == pin,
+            (item) => item['m8_pin']?.toString().trim() == pin,
           );
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kontak dihapus.'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Kontak dihapus.')));
       } else if (mounted) {
         String message = 'Gagal menghapus kontak.';
 
@@ -4831,20 +4453,16 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
           }
         } catch (_) {}
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (e) {
       debugPrint('Delete contact error: $e');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tidak dapat menghapus kontak.'),
-          ),
+          const SnackBar(content: Text('Tidak dapat menghapus kontak.')),
         );
       }
     }
@@ -4895,119 +4513,106 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
         onRefresh: _loadContacts,
         color: m8Blue,
         child: _loading
-            ? const Center(
-                child: CircularProgressIndicator(color: m8Blue),
-              )
+            ? const Center(child: CircularProgressIndicator(color: m8Blue))
             : _contacts.isEmpty
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: const [
-                      SizedBox(height: 120),
-                      Icon(
-                        Icons.contacts_outlined,
-                        size: 72,
-                        color: m8Blue,
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 120),
+                  Icon(Icons.contacts_outlined, size: 72, color: m8Blue),
+                  SizedBox(height: 16),
+                  Center(
+                    child: Text(
+                      'Belum ada kontak',
+                      style: TextStyle(
+                        color: m8BlueDark,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
                       ),
-                      SizedBox(height: 16),
-                      Center(
-                        child: Text(
-                          'Belum ada kontak',
-                          style: TextStyle(
-                            color: m8BlueDark,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Center(
-                        child: Text(
-                          'Tambahkan teman dari pencarian pengguna.',
-                          style: TextStyle(color: m8TextMuted),
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-                    itemCount: _contacts.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: 6),
-                    itemBuilder: (context, index) {
-                      final contact = _contacts[index];
-
-                      final name =
-                          contact['name']?.toString().trim().isNotEmpty == true
-                              ? contact['name'].toString().trim()
-                              : 'B’Jo User';
-
-                      final pin =
-                          contact['m8_pin']?.toString().trim() ?? '';
-
-                      final photo =
-                          contact['profile_photo_url']?.toString().trim() ?? '';
-
-                      return Card(
-                        elevation: 0,
-                        color: m8White,
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 5,
-                          ),
-                          leading: CircleAvatar(
-                            radius: 25,
-                            backgroundColor:
-                                m8Blue.withValues(alpha: 0.12),
-                            backgroundImage: photo.isNotEmpty
-                                ? NetworkImage(photo)
-                                : null,
-                            child: photo.isNotEmpty
-                                ? null
-                                : const Icon(
-                                    Icons.person_rounded,
-                                    color: m8Blue,
-                                  ),
-                          ),
-                          title: Text(
-                            name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: m8BlueDark,
-                            ),
-                          ),
-                          subtitle: Text(
-                            'M8 PIN: $pin',
-                            style: const TextStyle(
-                              color: m8TextMuted,
-                              fontSize: 12,
-                            ),
-                          ),
-                          onTap: () => _openContact(contact),
-                          trailing: PopupMenuButton<String>(
-                            onSelected: (value) {
-                              if (value == 'delete') {
-                                _deleteContact(contact);
-                              }
-                            },
-                            itemBuilder: (_) => const [
-                              PopupMenuItem<String>(
-                                value: 'delete',
-                                child: Text('Hapus kontak'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                    ),
                   ),
+                  SizedBox(height: 6),
+                  Center(
+                    child: Text(
+                      'Tambahkan teman dari pencarian pengguna.',
+                      style: TextStyle(color: m8TextMuted),
+                    ),
+                  ),
+                ],
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                itemCount: _contacts.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 6),
+                itemBuilder: (context, index) {
+                  final contact = _contacts[index];
+
+                  final name =
+                      contact['name']?.toString().trim().isNotEmpty == true
+                      ? contact['name'].toString().trim()
+                      : 'B’Jo User';
+
+                  final pin = contact['m8_pin']?.toString().trim() ?? '';
+
+                  final photo =
+                      contact['profile_photo_url']?.toString().trim() ?? '';
+
+                  return Card(
+                    elevation: 0,
+                    color: m8White,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 5,
+                      ),
+                      leading: CircleAvatar(
+                        radius: 25,
+                        backgroundColor: m8Blue.withValues(alpha: 0.12),
+                        backgroundImage: photo.isNotEmpty
+                            ? NetworkImage(photo)
+                            : null,
+                        child: photo.isNotEmpty
+                            ? null
+                            : const Icon(Icons.person_rounded, color: m8Blue),
+                      ),
+                      title: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: m8BlueDark,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'M8 PIN: $pin',
+                        style: const TextStyle(
+                          color: m8TextMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                      onTap: () => _openContact(contact),
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'delete') {
+                            _deleteContact(contact);
+                          }
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Hapus kontak'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }
 }
-
 
 // ============================================================
 // B'JO CONTACT REQUESTS
@@ -5016,18 +4621,13 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
 class BJoContactRequestsPage extends StatefulWidget {
   final String token;
 
-  const BJoContactRequestsPage({
-    super.key,
-    required this.token,
-  });
+  const BJoContactRequestsPage({super.key, required this.token});
 
   @override
-  State<BJoContactRequestsPage> createState() =>
-      _BJoContactRequestsPageState();
+  State<BJoContactRequestsPage> createState() => _BJoContactRequestsPageState();
 }
 
-class _BJoContactRequestsPageState
-    extends State<BJoContactRequestsPage> {
+class _BJoContactRequestsPageState extends State<BJoContactRequestsPage> {
   bool _loading = true;
   String? _busyRequestId;
   List<Map<String, dynamic>> _requests = [];
@@ -5044,12 +4644,12 @@ class _BJoContactRequestsPageState
     setState(() => _loading = true);
 
     try {
-      final response = await http.get(
-        Uri.parse('$apiBase/api/contact-requests'),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$apiBase/api/contact-requests'),
+            headers: {'Authorization': 'Bearer ${widget.token}'},
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
 
@@ -5057,8 +4657,7 @@ class _BJoContactRequestsPageState
           data['success'] != true ||
           data['requests'] is! List) {
         throw Exception(
-          data['error']?.toString() ??
-              'Gagal memuat permintaan kontak.',
+          data['error']?.toString() ?? 'Gagal memuat permintaan kontak.',
         );
       }
 
@@ -5077,11 +4676,7 @@ class _BJoContactRequestsPageState
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString().replaceFirst('Exception: ', ''),
-          ),
-        ),
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     } finally {
       if (mounted) {
@@ -5094,9 +4689,7 @@ class _BJoContactRequestsPageState
     Map<String, dynamic> request,
     String action,
   ) async {
-    final requestId = int.tryParse(
-      request['request_id']?.toString() ?? '',
-    );
+    final requestId = int.tryParse(request['request_id']?.toString() ?? '');
 
     if (requestId == null || _busyRequestId != null) {
       return;
@@ -5107,17 +4700,16 @@ class _BJoContactRequestsPageState
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('$apiBase/api/contact-requests'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.token}',
-        },
-        body: jsonEncode({
-          'request_id': requestId,
-          'action': action,
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            Uri.parse('$apiBase/api/contact-requests'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${widget.token}',
+            },
+            body: jsonEncode({'request_id': requestId, 'action': action}),
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
 
@@ -5125,8 +4717,7 @@ class _BJoContactRequestsPageState
           response.statusCode >= 300 ||
           data['success'] != true) {
         throw Exception(
-          data['error']?.toString() ??
-              'Gagal memproses permintaan kontak.',
+          data['error']?.toString() ?? 'Gagal memproses permintaan kontak.',
         );
       }
 
@@ -5134,9 +4725,7 @@ class _BJoContactRequestsPageState
 
       setState(() {
         _requests.removeWhere(
-          (item) =>
-              item['request_id']?.toString() ==
-              requestId.toString(),
+          (item) => item['request_id']?.toString() == requestId.toString(),
         );
       });
 
@@ -5153,11 +4742,7 @@ class _BJoContactRequestsPageState
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString().replaceFirst('Exception: ', ''),
-          ),
-        ),
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     } finally {
       if (mounted) {
@@ -5176,244 +4761,185 @@ class _BJoContactRequestsPageState
         elevation: 0,
         title: const Text(
           'Permintaan Kontak',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w900),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: _loadRequests,
         color: m8Blue,
         child: _loading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: m8Blue,
-                ),
-              )
+            ? const Center(child: CircularProgressIndicator(color: m8Blue))
             : _requests.isEmpty
-                ? ListView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(),
-                    children: const [
-                      SizedBox(height: 140),
-                      Icon(
-                        Icons.person_add_alt_1_rounded,
-                        size: 68,
-                        color: m8Blue,
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 140),
+                  Icon(Icons.person_add_alt_1_rounded, size: 68, color: m8Blue),
+                  SizedBox(height: 16),
+                  Center(
+                    child: Text(
+                      'Tidak ada permintaan kontak',
+                      style: TextStyle(
+                        color: m8BlueDark,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
                       ),
-                      SizedBox(height: 16),
-                      Center(
-                        child: Text(
-                          'Tidak ada permintaan kontak',
-                          style: TextStyle(
-                            color: m8BlueDark,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Center(
-                        child: Text(
-                          'Permintaan kontak baru akan muncul di sini.',
-                          style: TextStyle(
-                            color: m8TextMuted,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(
-                      12,
-                      12,
-                      12,
-                      24,
                     ),
-                    itemCount: _requests.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final request = _requests[index];
+                  ),
+                  SizedBox(height: 6),
+                  Center(
+                    child: Text(
+                      'Permintaan kontak baru akan muncul di sini.',
+                      style: TextStyle(color: m8TextMuted),
+                    ),
+                  ),
+                ],
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                itemCount: _requests.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final request = _requests[index];
 
-                      final requestId =
-                          request['request_id']?.toString() ?? '';
+                  final requestId = request['request_id']?.toString() ?? '';
 
-                      final name =
-                          request['name']?.toString().trim() ?? '';
+                  final name = request['name']?.toString().trim() ?? '';
 
-                      final pin =
-                          request['m8_pin']?.toString().trim() ?? '';
+                  final pin = request['m8_pin']?.toString().trim() ?? '';
 
-                      final bio =
-                          request['bio']?.toString().trim() ?? '';
+                  final bio = request['bio']?.toString().trim() ?? '';
 
-                      final photo =
-                          request['profile_photo_url']
-                                  ?.toString()
-                                  .trim() ??
-                              '';
+                  final photo =
+                      request['profile_photo_url']?.toString().trim() ?? '';
 
-                      final busy =
-                          _busyRequestId == requestId;
+                  final busy = _busyRequestId == requestId;
 
-                      return Card(
-                        elevation: 0,
-                        color: m8White,
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
+                  return Card(
+                    elevation: 0,
+                    color: m8White,
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 27,
-                                    backgroundColor:
-                                        m8Blue.withValues(alpha: 0.12),
-                                    backgroundImage:
-                                        photo.isNotEmpty
-                                            ? NetworkImage(photo)
-                                            : null,
-                                    child: photo.isEmpty
-                                        ? const Icon(
-                                            Icons.person_rounded,
-                                            color: m8Blue,
-                                            size: 30,
-                                          )
-                                        : null,
-                                  ),
-                                  const SizedBox(width: 13),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          name.isEmpty
-                                              ? 'Pengguna B’Jo'
-                                              : name,
-                                          maxLines: 1,
-                                          overflow:
-                                              TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: m8BlueDark,
-                                            fontWeight:
-                                                FontWeight.w900,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 3),
-                                        Text(
-                                          pin,
-                                          style: const TextStyle(
-                                            color: m8Blue,
-                                            fontSize: 12,
-                                            fontWeight:
-                                                FontWeight.w800,
-                                          ),
-                                        ),
-                                        if (bio.isNotEmpty) ...[
-                                          const SizedBox(height: 3),
-                                          Text(
-                                            bio,
-                                            maxLines: 2,
-                                            overflow:
-                                                TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              color: m8TextMuted,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                              CircleAvatar(
+                                radius: 27,
+                                backgroundColor: m8Blue.withValues(alpha: 0.12),
+                                backgroundImage: photo.isNotEmpty
+                                    ? NetworkImage(photo)
+                                    : null,
+                                child: photo.isEmpty
+                                    ? const Icon(
+                                        Icons.person_rounded,
+                                        color: m8Blue,
+                                        size: 30,
+                                      )
+                                    : null,
                               ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: busy
-                                          ? null
-                                          : () => _handleRequest(
-                                                request,
-                                                'reject',
-                                              ),
-                                      style:
-                                          OutlinedButton.styleFrom(
-                                        foregroundColor:
-                                            m8BlueDark,
-                                        side: const BorderSide(
-                                          color: m8Blue,
-                                        ),
-                                        shape:
-                                            RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(
-                                            14,
-                                          ),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'TOLAK',
-                                        style: TextStyle(
-                                          fontWeight:
-                                              FontWeight.w900,
-                                        ),
+                              const SizedBox(width: 13),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name.isEmpty ? 'Pengguna B’Jo' : name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: m8BlueDark,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 16,
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: busy
-                                          ? null
-                                          : () => _handleRequest(
-                                                request,
-                                                'accept',
-                                              ),
-                                      style:
-                                          ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            m8BlueDark,
-                                        foregroundColor: m8White,
-                                        shape:
-                                            RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(
-                                            14,
-                                          ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      pin,
+                                      style: const TextStyle(
+                                        color: m8Blue,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    if (bio.isNotEmpty) ...[
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        bio,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: m8TextMuted,
+                                          fontSize: 12,
                                         ),
                                       ),
-                                      child: busy
-                                          ? const SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child:
-                                                  CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: m8White,
-                                              ),
-                                            )
-                                          : const Text(
-                                              'TERIMA',
-                                              style: TextStyle(
-                                                fontWeight:
-                                                    FontWeight.w900,
-                                              ),
-                                            ),
-                                    ),
-                                  ),
-                                ],
+                                    ],
+                                  ],
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: busy
+                                      ? null
+                                      : () => _handleRequest(request, 'reject'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: m8BlueDark,
+                                    side: const BorderSide(color: m8Blue),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'TOLAK',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: busy
+                                      ? null
+                                      : () => _handleRequest(request, 'accept'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: m8BlueDark,
+                                    foregroundColor: m8White,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: busy
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: m8White,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'TERIMA',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }
@@ -5434,8 +4960,7 @@ class BJoUserSearchPage extends StatefulWidget {
 }
 
 class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
-  final TextEditingController _searchController =
-      TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   Timer? _searchTimer;
   bool _loading = false;
@@ -5461,10 +4986,7 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
       return;
     }
 
-    _searchTimer = Timer(
-      const Duration(milliseconds: 450),
-      () => _search(q),
-    );
+    _searchTimer = Timer(const Duration(milliseconds: 450), () => _search(q));
   }
 
   Future<void> _search(String q) async {
@@ -5474,12 +4996,8 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
 
     try {
       final response = await http.get(
-        Uri.parse(
-          '$apiBase/api/search/users?q=${Uri.encodeQueryComponent(q)}',
-        ),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
+        Uri.parse('$apiBase/api/search/users?q=${Uri.encodeQueryComponent(q)}'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
       if (response.statusCode != 200) {
@@ -5548,10 +5066,7 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
               onChanged: _searchChanged,
               decoration: InputDecoration(
                 hintText: 'Cari nama atau M8 PIN...',
-                prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  color: m8Blue,
-                ),
+                prefixIcon: const Icon(Icons.search_rounded, color: m8Blue),
                 filled: true,
                 fillColor: m8White,
                 border: OutlineInputBorder(
@@ -5563,153 +5078,138 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
           ),
           Expanded(
             child: _loading
-                ? const Center(
-                    child: CircularProgressIndicator(color: m8Blue),
-                  )
+                ? const Center(child: CircularProgressIndicator(color: m8Blue))
                 : _searchController.text.trim().isEmpty
-                    ? const Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.person_search_rounded,
-                              size: 64,
-                              color: m8Blue,
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              'Cari teman di B’Jo',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: m8BlueDark,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Masukkan nama atau M8 PIN',
-                              style: TextStyle(color: m8TextMuted),
-                            ),
-                          ],
+                ? const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.person_search_rounded,
+                          size: 64,
+                          color: m8Blue,
                         ),
-                      )
-                    : _users.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'Pengguna tidak ditemukan.',
-                              style: TextStyle(
-                                color: m8TextMuted,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(
-                              16, 4, 16, 24,
-                            ),
-                            itemCount: _users.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 8),
-                            itemBuilder: (_, index) {
-                              final user = _users[index];
-                              final name =
-                                  user['name']?.toString().trim() ?? '';
-                              final pin =
-                                  user['m8_pin']?.toString().trim() ?? '';
-                              final bio =
-                                  user['bio']?.toString().trim() ?? '';
-                              final photo =
-                                  user['profile_photo_url']
-                                          ?.toString()
-                                          .trim() ??
-                                      '';
+                        SizedBox(height: 12),
+                        Text(
+                          'Cari teman di B’Jo',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: m8BlueDark,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          'Masukkan nama atau M8 PIN',
+                          style: TextStyle(color: m8TextMuted),
+                        ),
+                      ],
+                    ),
+                  )
+                : _users.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Pengguna tidak ditemukan.',
+                      style: TextStyle(
+                        color: m8TextMuted,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                    itemCount: _users.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final user = _users[index];
+                      final name = user['name']?.toString().trim() ?? '';
+                      final pin = user['m8_pin']?.toString().trim() ?? '';
+                      final bio = user['bio']?.toString().trim() ?? '';
+                      final photo =
+                          user['profile_photo_url']?.toString().trim() ?? '';
 
-                              return Material(
-                                color: m8White,
-                                borderRadius: BorderRadius.circular(18),
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(18),
-                                  onTap: () => _openUser(user),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 27,
-                                          backgroundColor:
-                                              m8Blue.withValues(alpha: 0.10),
-                                          backgroundImage: photo.isNotEmpty
-                                              ? NetworkImage(photo)
-                                              : null,
-                                          child: photo.isEmpty
-                                              ? const Icon(
-                                                  Icons.person_rounded,
-                                                  color: m8Blue,
-                                                  size: 30,
-                                                )
-                                              : null,
+                      return Material(
+                        color: m8White,
+                        borderRadius: BorderRadius.circular(18),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(18),
+                          onTap: () => _openUser(user),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 27,
+                                  backgroundColor: m8Blue.withValues(
+                                    alpha: 0.10,
+                                  ),
+                                  backgroundImage: photo.isNotEmpty
+                                      ? NetworkImage(photo)
+                                      : null,
+                                  child: photo.isEmpty
+                                      ? const Icon(
+                                          Icons.person_rounded,
+                                          color: m8Blue,
+                                          size: 30,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 13),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        name.isEmpty ? 'Pengguna B’Jo' : name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          color: m8Text,
                                         ),
-                                        const SizedBox(width: 13),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                name.isEmpty
-                                                    ? 'Pengguna B’Jo'
-                                                    : name,
-                                                maxLines: 1,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  color: m8Text,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Text(
-                                                pin,
-                                                style: const TextStyle(
-                                                  color: m8Blue,
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              if (bio.isNotEmpty) ...[
-                                                const SizedBox(height: 3),
-                                                Text(
-                                                  bio,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                    color: m8TextMuted,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        pin,
+                                        style: const TextStyle(
+                                          color: m8Blue,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      if (bio.isNotEmpty) ...[
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          bio,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: m8TextMuted,
+                                            fontSize: 12,
                                           ),
                                         ),
-                                        const Icon(
-                                          Icons.chevron_right_rounded,
-                                          color: m8TextMuted,
-                                        ),
                                       ],
-                                    ),
+                                    ],
                                   ),
                                 ),
-                              );
-                            },
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: m8TextMuted,
+                                ),
+                              ],
+                            ),
                           ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 }
-
 
 // ============================================================
 // B'JO PUBLIC USER PROFILE
@@ -5762,19 +5262,18 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
     }
 
     try {
-      final response = await http.get(
-        Uri.parse(
-          '$apiBase/api/contacts/check?m8_pin=${Uri.encodeQueryComponent(pin)}',
-        ),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
-      ).timeout(const Duration(seconds: 20));
+      final response = await http
+          .get(
+            Uri.parse(
+              '$apiBase/api/contacts/check?m8_pin=${Uri.encodeQueryComponent(pin)}',
+            ),
+            headers: {'Authorization': 'Bearer ${widget.token}'},
+          )
+          .timeout(const Duration(seconds: 20));
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200 &&
-          data['success'] == true) {
+      if (response.statusCode == 200 && data['success'] == true) {
         if (mounted) {
           setState(() {
             _isContact = data['is_contact'] == true;
@@ -5801,16 +5300,16 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
     setState(() => _contactBusy = true);
 
     try {
-      final response = await http.post(
-        Uri.parse('$apiBase/api/contact-requests'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.token}',
-        },
-        body: jsonEncode({
-          'm8_pin': pin,
-        }),
-      ).timeout(const Duration(seconds: 20));
+      final response = await http
+          .post(
+            Uri.parse('$apiBase/api/contact-requests'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${widget.token}',
+            },
+            body: jsonEncode({'m8_pin': pin}),
+          )
+          .timeout(const Duration(seconds: 20));
 
       final data = jsonDecode(response.body);
 
@@ -5830,19 +5329,13 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Permintaan kontak terkirim.'),
-        ),
+        const SnackBar(content: Text('Permintaan kontak terkirim.')),
       );
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString().replaceFirst('Exception: ', ''),
-          ),
-        ),
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     } finally {
       if (mounted) {
@@ -5862,14 +5355,14 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
     }
 
     try {
-      final response = await http.get(
-        Uri.parse(
-          '$apiBase/api/profile?m8_pin=${Uri.encodeQueryComponent(pin)}',
-        ),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
-      ).timeout(const Duration(seconds: 20));
+      final response = await http
+          .get(
+            Uri.parse(
+              '$apiBase/api/profile?m8_pin=${Uri.encodeQueryComponent(pin)}',
+            ),
+            headers: {'Authorization': 'Bearer ${widget.token}'},
+          )
+          .timeout(const Duration(seconds: 20));
 
       final data = jsonDecode(response.body);
 
@@ -5892,16 +5385,13 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
   }
 
   Future<void> _startChat() async {
-    final otherPin =
-        _profile['m8_pin']?.toString().trim() ?? '';
+    final otherPin = _profile['m8_pin']?.toString().trim() ?? '';
 
     if (otherPin.isEmpty) return;
 
     if (otherPin == widget.myPin) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Itu adalah akun kamu sendiri.'),
-        ),
+        const SnackBar(content: Text('Itu adalah akun kamu sendiri.')),
       );
       return;
     }
@@ -5915,16 +5405,12 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${widget.token}',
         },
-        body: jsonEncode({
-          'my_pin': widget.myPin,
-          'other_pin': otherPin,
-        }),
+        body: jsonEncode({'my_pin': widget.myPin, 'other_pin': otherPin}),
       );
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode < 200 ||
-          response.statusCode >= 300) {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         throw Exception(
           data['error']?.toString() ?? 'Tidak dapat membuat chat.',
         );
@@ -5936,11 +5422,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString().replaceFirst('Exception: ', ''),
-          ),
-        ),
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     } finally {
       if (mounted) {
@@ -5954,8 +5436,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
     final name = _profile['name']?.toString().trim() ?? '';
     final pin = _profile['m8_pin']?.toString().trim() ?? '';
     final bio = _profile['bio']?.toString().trim() ?? '';
-    final photo =
-        _profile['profile_photo_url']?.toString().trim() ?? '';
+    final photo = _profile['profile_photo_url']?.toString().trim() ?? '';
     final background =
         _profile['profile_background_url']?.toString().trim() ?? '';
 
@@ -5968,14 +5449,11 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
               child: Image.network(
                 background,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    const SizedBox.shrink(),
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
           Positioned.fill(
-            child: Container(
-              color: m8White.withValues(alpha: 0.88),
-            ),
+            child: Container(color: m8White.withValues(alpha: 0.88)),
           ),
           SafeArea(
             child: ListView(
@@ -6006,10 +5484,10 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                 Center(
                   child: CircleAvatar(
                     radius: 58,
-                    backgroundColor:
-                        m8Blue.withValues(alpha: 0.12),
-                    backgroundImage:
-                        photo.isNotEmpty ? NetworkImage(photo) : null,
+                    backgroundColor: m8Blue.withValues(alpha: 0.12),
+                    backgroundImage: photo.isNotEmpty
+                        ? NetworkImage(photo)
+                        : null,
                     child: photo.isEmpty
                         ? const Icon(
                             Icons.person_rounded,
@@ -6068,11 +5546,11 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                     child: FilledButton.icon(
                       onPressed:
                           (_checkingContact ||
-                                  _contactBusy ||
-                                  _isContact ||
-                                  _requestPending)
-                              ? null
-                              : _sendContactRequest,
+                              _contactBusy ||
+                              _isContact ||
+                              _requestPending)
+                          ? null
+                          : _sendContactRequest,
                       icon: _contactBusy
                           ? const SizedBox(
                               width: 19,
@@ -6086,36 +5564,32 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                               _isContact
                                   ? Icons.check_circle_rounded
                                   : _requestPending
-                                      ? Icons.hourglass_top_rounded
-                                      : Icons.person_add_alt_1_rounded,
+                                  ? Icons.hourglass_top_rounded
+                                  : Icons.person_add_alt_1_rounded,
                             ),
                       label: Text(
                         _checkingContact
                             ? 'MEMERIKSA KONTAK...'
                             : _contactBusy
-                                ? 'MENYIMPAN...'
-                                : _isContact
-                                    ? 'TERSIMPAN DI KONTAK'
-                                    : _requestPending
-                                        ? 'PERMINTAAN TERKIRIM'
-                                        : 'SIMPAN KE KONTAK',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                        ),
+                            ? 'MENYIMPAN...'
+                            : _isContact
+                            ? 'TERSIMPAN DI KONTAK'
+                            : _requestPending
+                            ? 'PERMINTAAN TERKIRIM'
+                            : 'SIMPAN KE KONTAK',
+                        style: const TextStyle(fontWeight: FontWeight.w900),
                       ),
                     ),
                   ),
                   const SizedBox(height: 10),
                 ],
 
-
                 const SizedBox(height: 10),
 
                 SizedBox(
                   height: 52,
                   child: ElevatedButton.icon(
-                    onPressed:
-                        _startingChat ? null : _startChat,
+                    onPressed: _startingChat ? null : _startChat,
                     icon: _startingChat
                         ? const SizedBox(
                             width: 20,
@@ -6127,9 +5601,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                           )
                         : const Icon(Icons.chat_rounded),
                     label: Text(
-                      _startingChat
-                          ? 'MEMBUAT CHAT...'
-                          : 'MULAI CHAT',
+                      _startingChat ? 'MEMBUAT CHAT...' : 'MULAI CHAT',
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: m8BlueDark,
@@ -6148,7 +5620,6 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
     );
   }
 }
-
 
 class M8GroupChatPage extends StatefulWidget {
   final String token;
@@ -6888,16 +6359,8 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
     return colors[hash % colors.length];
   }
 
-  Widget _buildVoiceBubble(
-    String url,
-    int duration,
-    bool mine,
-  ) {
-    return _BjoVoiceBubble(
-      url: url,
-      duration: duration,
-      mine: mine,
-    );
+  Widget _buildVoiceBubble(String url, int duration, bool mine) {
+    return _BjoVoiceBubble(url: url, duration: duration, mine: mine);
   }
 
   Widget _buildMessage(
@@ -6921,57 +6384,37 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
 
     final senderName =
         message['sender_name']?.toString().trim().isNotEmpty == true
-            ? message['sender_name'].toString().trim()
-            : (mine ? 'Kamu' : _memberName(sender));
+        ? message['sender_name'].toString().trim()
+        : (mine ? 'Kamu' : _memberName(sender));
 
-    final senderPhoto =
-        message['sender_photo_url']?.toString().trim() ?? '';
+    final senderPhoto = message['sender_photo_url']?.toString().trim() ?? '';
 
     final avatar = CircleAvatar(
       radius: 17,
       backgroundColor: m8Blue.withValues(alpha: 0.14),
-      backgroundImage:
-          senderPhoto.isNotEmpty ? NetworkImage(senderPhoto) : null,
+      backgroundImage: senderPhoto.isNotEmpty
+          ? NetworkImage(senderPhoto)
+          : null,
       child: senderPhoto.isNotEmpty
           ? null
-          : const Icon(
-              Icons.person_rounded,
-              color: m8Blue,
-              size: 19,
-            ),
+          : const Icon(Icons.person_rounded, color: m8Blue, size: 19),
     );
 
     final bubble = Container(
-      constraints: const BoxConstraints(
-        maxWidth: 310,
-        minWidth: 80,
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 9,
-      ),
+      constraints: const BoxConstraints(maxWidth: 310, minWidth: 80),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
-        color: mine
-            ? bjoChatBubble
-            : _groupBubbleColor(sender),
+        color: mine ? bjoChatBubble : _groupBubbleColor(sender),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(19),
           topRight: const Radius.circular(19),
           bottomLeft: Radius.circular(mine ? 19 : 5),
           bottomRight: Radius.circular(mine ? 5 : 19),
         ),
-        border: mine
-            ? null
-            : Border.all(
-                color: m8Blue.withValues(alpha: 0.10),
-              ),
+        border: mine ? null : Border.all(color: m8Blue.withValues(alpha: 0.10)),
       ),
       child: isVoice
-          ? _buildVoiceBubble(
-              voiceUrl,
-              voiceDuration,
-              mine,
-            )
+          ? _buildVoiceBubble(voiceUrl, voiceDuration, mine)
           : Text(
               text,
               style: const TextStyle(
@@ -6985,8 +6428,9 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
     final identity = showIdentity
         ? Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment:
-                mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: mine
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               avatar,
               const SizedBox(height: 3),
@@ -6996,8 +6440,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                   senderName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign:
-                      mine ? TextAlign.right : TextAlign.left,
+                  textAlign: mine ? TextAlign.right : TextAlign.left,
                   style: const TextStyle(
                     color: m8BlueDark,
                     fontSize: 11,
@@ -7010,11 +6453,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
         : const SizedBox(width: 0);
 
     final time = Padding(
-      padding: const EdgeInsets.only(
-        top: 3,
-        left: 3,
-        right: 3,
-      ),
+      padding: const EdgeInsets.only(top: 3, left: 3, right: 3),
       child: Text(
         _formatTime(message['timestamp']),
         style: const TextStyle(
@@ -7027,22 +6466,18 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
 
     final messageColumn = Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment:
-          mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-      children: [
-        bubble,
-        time,
-      ],
+      crossAxisAlignment: mine
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [bubble, time],
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 5,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Row(
-        mainAxisAlignment:
-            mine ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: mine
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: mine
             ? [
@@ -7101,9 +6536,9 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                     Text(
                       '${members.length} anggota',
                       style: TextStyle(
-                      color: bjoPearlWhite.withValues(alpha: 0.72),
-                      fontSize: 10,
-                    ),
+                        color: bjoPearlWhite.withValues(alpha: 0.72),
+                        fontSize: 10,
+                      ),
                     ),
                   ],
                 ),
@@ -7128,80 +6563,63 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                 onRefresh: loadGroup,
                 child: loading
                     ? const Center(
-                        child: CircularProgressIndicator(
-                          color: m8Blue,
-                        ),
+                        child: CircularProgressIndicator(color: m8Blue),
                       )
                     : messages.isEmpty
-                        ? ListView(
-                            children: const [
-                              SizedBox(height: 180),
-                              Icon(
-                                Icons.forum_outlined,
-                                size: 64,
-                                color: m8Blue,
+                    ? ListView(
+                        children: const [
+                          SizedBox(height: 180),
+                          Icon(Icons.forum_outlined, size: 64, color: m8Blue),
+                          SizedBox(height: 16),
+                          Center(
+                            child: Text(
+                              'Belum ada pesan',
+                              style: TextStyle(
+                                color: m8Text,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 18,
                               ),
-                              SizedBox(height: 16),
-                              Center(
-                                child: Text(
-                                  'Belum ada pesan',
-                                  style: TextStyle(
-                                    color: m8Text,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 6),
-                              Center(
-                                child: Text(
-                                  'Mulai percakapan di grup ini.',
-                                  style: TextStyle(
-                                    color: m8TextMuted,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        : ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 10,
                             ),
-                            itemCount: messages.length,
-                            itemBuilder: (context, index) {
-                              final message = messages[index];
-
-                              bool showIdentity = true;
-
-                              if (index > 0) {
-                                final previous = messages[index - 1];
-
-                                final currentSender =
-                                    message['sender_pin']
-                                        ?.toString() ??
-                                    '';
-
-                                final previousSender =
-                                    previous['sender_pin']
-                                        ?.toString() ??
-                                    '';
-
-                                showIdentity =
-                                    currentSender != previousSender;
-                              }
-
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  top: showIdentity ? 5 : 0,
-                                ),
-                                child: _buildMessage(
-                                  message,
-                                  showIdentity: showIdentity,
-                                ),
-                              );
-                            },
                           ),
+                          SizedBox(height: 6),
+                          Center(
+                            child: Text(
+                              'Mulai percakapan di grup ini.',
+                              style: TextStyle(color: m8TextMuted),
+                            ),
+                          ),
+                        ],
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final message = messages[index];
+
+                          bool showIdentity = true;
+
+                          if (index > 0) {
+                            final previous = messages[index - 1];
+
+                            final currentSender =
+                                message['sender_pin']?.toString() ?? '';
+
+                            final previousSender =
+                                previous['sender_pin']?.toString() ?? '';
+
+                            showIdentity = currentSender != previousSender;
+                          }
+
+                          return Padding(
+                            padding: EdgeInsets.only(top: showIdentity ? 5 : 0),
+                            child: _buildMessage(
+                              message,
+                              showIdentity: showIdentity,
+                            ),
+                          );
+                        },
+                      ),
               ),
             ),
           ),
@@ -7465,7 +6883,7 @@ class M8GamelanWallpaperPainter extends CustomPainter {
             _gong(canvas, line, fill);
             break;
 
-        default:
+          default:
             _siter(canvas, line, fill);
             break;
         }
@@ -7670,9 +7088,7 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
       if (_playing) {
         await _player.pause();
       } else {
-        await _player.play(
-          UrlSource(widget.url),
-        );
+        await _player.play(UrlSource(widget.url));
       }
     } catch (e) {
       debugPrint('[BJO VOICE] PLAY ERROR: $e');
@@ -7680,9 +7096,7 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Voice note tidak dapat diputar: $e'),
-        ),
+        SnackBar(content: Text('Voice note tidak dapat diputar: $e')),
       );
     }
   }
@@ -7698,9 +7112,7 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
     final total = _duration.inMilliseconds;
     final current = _position.inMilliseconds;
 
-    final progress = total > 0
-        ? (current / total).clamp(0.0, 1.0)
-        : 0.0;
+    final progress = total > 0 ? (current / total).clamp(0.0, 1.0) : 0.0;
 
     return SizedBox(
       height: 42,
@@ -7710,14 +7122,9 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
           IconButton(
             onPressed: _togglePlay,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(
-              minWidth: 34,
-              minHeight: 34,
-            ),
+            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
             icon: Icon(
-              _playing
-                  ? Icons.pause_rounded
-                  : Icons.play_arrow_rounded,
+              _playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
               color: widget.mine ? m8White : m8BlueDark,
               size: 28,
             ),
@@ -7740,11 +7147,7 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  _time(
-                    _position > Duration.zero
-                        ? _position
-                        : _duration,
-                  ),
+                  _time(_position > Duration.zero ? _position : _duration),
                   style: TextStyle(
                     color: widget.mine
                         ? m8White.withValues(alpha: 0.82)
@@ -7878,18 +7281,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     markMessagesAsDelivered();
     markMessagesAsRead();
 
-      typingPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-        if (mounted) {
-          checkOtherTyping();
-        }
-      });
+    typingPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (mounted) {
+        checkOtherTyping();
+      }
+    });
 
-      messagePollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
-        if (mounted && !_chatInitializing) {
-          loadMessages();
-        }
-      });
-    }
+    messagePollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (mounted && !_chatInitializing) {
+        loadMessages();
+      }
+    });
+  }
 
   Future<void> startVoiceRecording() async {
     if (_isRecordingVoice || sending) return;
@@ -7901,9 +7304,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Izin mikrofon belum diberikan.'),
-          ),
+          const SnackBar(content: Text('Izin mikrofon belum diberikan.')),
         );
         return;
       }
@@ -7924,21 +7325,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       });
 
       _voiceRecordingTimer?.cancel();
-      _voiceRecordingTimer = Timer.periodic(
-        const Duration(seconds: 1),
-        (_) {
-          if (!mounted || !_isRecordingVoice) return;
+      _voiceRecordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted || !_isRecordingVoice) return;
 
-          final started = _voiceRecordingStartedAt;
+        final started = _voiceRecordingStartedAt;
 
-          if (started == null) return;
+        if (started == null) return;
 
-          setState(() {
-            _voiceRecordingSeconds =
-                DateTime.now().difference(started).inSeconds;
-          });
-        },
-      );
+        setState(() {
+          _voiceRecordingSeconds = DateTime.now().difference(started).inSeconds;
+        });
+      });
     } catch (e) {
       debugPrint('[BJO VOICE] START ERROR: $e');
 
@@ -7953,9 +7350,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memulai rekaman suara: $e'),
-          ),
+          SnackBar(content: Text('Gagal memulai rekaman suara: $e')),
         );
       }
     }
@@ -8003,9 +7398,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal menghentikan rekaman: $e'),
-          ),
+          SnackBar(content: Text('Gagal menghentikan rekaman: $e')),
         );
       }
 
@@ -8288,7 +7681,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   M8NotificationService.showChatNotification(
                     sender: sender,
                     message: notificationMessage,
-                    ).catchError((_) {});
+                  ).catchError((_) {});
                 }
 
                 if (sender != widget.myPin &&
@@ -8517,9 +7910,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       }
 
       if (bytes.length > 10 * 1024 * 1024) {
-        throw Exception(
-          'Voice note terlalu besar. Maksimal 10 MB.',
-        );
+        throw Exception('Voice note terlalu besar. Maksimal 10 MB.');
       }
 
       final uploadResponse = await http.post(
@@ -8533,20 +7924,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
       final uploadData = jsonDecode(uploadResponse.body);
 
-      if (uploadResponse.statusCode != 201 ||
-          uploadData['success'] != true) {
+      if (uploadResponse.statusCode != 201 || uploadData['success'] != true) {
         throw Exception(
-          uploadData['error']?.toString() ??
-              'Gagal mengupload voice note.',
+          uploadData['error']?.toString() ?? 'Gagal mengupload voice note.',
         );
       }
 
       final audioUrl = uploadData['url']?.toString();
 
       if (audioUrl == null || audioUrl.isEmpty) {
-        throw Exception(
-          'URL voice note tidak ditemukan.',
-        );
+        throw Exception('URL voice note tidak ditemukan.');
       }
 
       final duration = _pendingVoiceDuration;
@@ -8560,8 +7947,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         body: jsonEncode({
           'chat_id': widget.chat['id'],
           'sender_pin': widget.myPin,
-          'message':
-              '__BJO_VOICE_URL__:$audioUrl|duration=$duration',
+          'message': '__BJO_VOICE_URL__:$audioUrl|duration=$duration',
         }),
       );
 
@@ -8571,8 +7957,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           response.statusCode >= 300 ||
           data['success'] != true) {
         throw Exception(
-          data['error']?.toString() ??
-              'Gagal mengirim voice note.',
+          data['error']?.toString() ?? 'Gagal mengirim voice note.',
         );
       }
 
@@ -8593,13 +7978,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       debugPrint('[BJO VOICE] SEND ERROR: $e');
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Voice note gagal dikirim: $e',
-            ),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Voice note gagal dikirim: $e')));
       }
     } finally {
       if (mounted) {
@@ -8689,18 +8070,20 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         });
       }
 
-      final response = await http.post(
-        Uri.parse('$apiBase/api/messages'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.token}',
-        },
-        body: jsonEncode({
-          'chat_id': widget.chat['id'],
-          'sender_pin': widget.myPin,
-          'message': messageText,
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            Uri.parse('$apiBase/api/messages'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${widget.token}',
+            },
+            body: jsonEncode({
+              'chat_id': widget.chat['id'],
+              'sender_pin': widget.myPin,
+              'message': messageText,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
 
@@ -8757,9 +8140,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   bool _isOtherOnline(Map<String, dynamic> otherUser) {
-    final lastSeen = int.tryParse(
-      otherUser["last_seen_at"]?.toString() ?? "",
-    );
+    final lastSeen = int.tryParse(otherUser["last_seen_at"]?.toString() ?? "");
 
     if (lastSeen == null || lastSeen <= 0) return false;
 
@@ -8768,9 +8149,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   String _otherPresence(Map<String, dynamic> otherUser) {
-    final lastSeen = int.tryParse(
-      otherUser["last_seen_at"]?.toString() ?? "",
-    );
+    final lastSeen = int.tryParse(otherUser["last_seen_at"]?.toString() ?? "");
 
     if (lastSeen == null || lastSeen <= 0) {
       return "Offline";
@@ -8791,16 +8170,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       return "Aktif ${seconds ~/ 3600} jam lalu";
     }
 
-    final date = DateTime.fromMillisecondsSinceEpoch(
-      lastSeen * 1000,
-    ).toLocal();
+    final date = DateTime.fromMillisecondsSinceEpoch(lastSeen * 1000).toLocal();
 
     String two(int n) => n.toString().padLeft(2, "0");
 
     return "Aktif ${two(date.day)}/${two(date.month)}/${date.year} "
         "${two(date.hour)}:${two(date.minute)}";
   }
-
 
   // ============================================================
   // B'Jo Smart Chat v1
@@ -8823,9 +8199,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   String _smartTime(Map<String, dynamic> msg) {
-    final raw = msg["timestamp"]?.toString() ??
-        msg["created_at"]?.toString() ??
-        "";
+    final raw =
+        msg["timestamp"]?.toString() ?? msg["created_at"]?.toString() ?? "";
 
     if (raw.isEmpty) return "";
 
@@ -8869,8 +8244,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 final sender = _smartSender(msg).toLowerCase();
 
                 return terms.every(
-                  (term) =>
-                      text.contains(term) || sender.contains(term),
+                  (term) => text.contains(term) || sender.contains(term),
                 );
               }).toList();
             }
@@ -8919,58 +8293,54 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               ),
                             )
                           : results.isEmpty
-                              ? const Center(
-                                  child: Text("Tidak ditemukan."),
-                                )
-                              : ListView.separated(
-                                  itemCount: results.length,
-                                  separatorBuilder: (_, __) =>
-                                      const Divider(height: 1),
-                                  itemBuilder: (_, index) {
-                                    final msg = results[index];
+                          ? const Center(child: Text("Tidak ditemukan."))
+                          : ListView.separated(
+                              itemCount: results.length,
+                              separatorBuilder: (_, __) =>
+                                  const Divider(height: 1),
+                              itemBuilder: (_, index) {
+                                final msg = results[index];
 
-                                    return ListTile(
-                                      leading: const Icon(
-                                        Icons.chat_bubble_outline,
-                                      ),
-                                      title: Text(
-                                        _smartMessageText(msg),
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      subtitle: Text(
-                                        "${_smartSender(msg)} • ${_smartTime(msg)}",
-                                      ),
-                                      onTap: () {
-                                        Navigator.pop(dialogContext);
+                                return ListTile(
+                                  leading: const Icon(
+                                    Icons.chat_bubble_outline,
+                                  ),
+                                  title: Text(
+                                    _smartMessageText(msg),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  subtitle: Text(
+                                    "${_smartSender(msg)} • ${_smartTime(msg)}",
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(dialogContext);
 
-                                        final target =
-                                            messages.indexOf(msg);
+                                    final target = messages.indexOf(msg);
 
-                                        if (target >= 0 &&
-                                            _chatScrollController
-                                                .hasClients) {
-                                          final max =
-                                              _chatScrollController
-                                                  .position
-                                                  .maxScrollExtent;
+                                    if (target >= 0 &&
+                                        _chatScrollController.hasClients) {
+                                      final max = _chatScrollController
+                                          .position
+                                          .maxScrollExtent;
 
-                                          final offset =
-                                              (target * 72.0)
-                                                  .clamp(0.0, max);
+                                      final offset = (target * 72.0).clamp(
+                                        0.0,
+                                        max,
+                                      );
 
-                                          _chatScrollController.animateTo(
-                                            offset,
-                                            duration: const Duration(
-                                              milliseconds: 350,
-                                            ),
-                                            curve: Curves.easeOut,
-                                          );
-                                        }
-                                      },
-                                    );
+                                      _chatScrollController.animateTo(
+                                        offset,
+                                        duration: const Duration(
+                                          milliseconds: 350,
+                                        ),
+                                        curve: Curves.easeOut,
+                                      );
+                                    }
                                   },
-                                ),
+                                );
+                              },
+                            ),
                     ),
                   ],
                 ),
@@ -8995,9 +8365,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
     for (final msg in messages) {
       final text = _smartMessageText(msg);
-      if (text.isNotEmpty &&
-          text != "[Foto]" &&
-          text != "[Voice note]") {
+      if (text.isNotEmpty && text != "[Foto]" && text != "[Voice note]") {
         recent.add(text);
       }
     }
@@ -9012,16 +8380,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           surfaceTintColor: Colors.transparent,
           title: const Text(
             "Ringkasan B'Jo",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
           ),
           content: const Text(
             "Belum ada cukup pesan untuk membuat ringkasan.",
-            style: TextStyle(
-              color: Colors.white,
-            ),
+            style: TextStyle(color: Colors.white),
           ),
           actions: [
             TextButton(
@@ -9067,9 +8430,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     final words = <String, int>{};
 
     for (final text in recent) {
-      final cleaned = text
-          .toLowerCase()
-          .replaceAll(RegExp(r"[^a-zA-Z0-9À-ÿ\s]"), " ");
+      final cleaned = text.toLowerCase().replaceAll(
+        RegExp(r"[^a-zA-Z0-9À-ÿ\s]"),
+        " ",
+      );
 
       for (final word in cleaned.split(RegExp(r"\s+"))) {
         if (word.length < 4 || stopWords.contains(word)) continue;
@@ -9090,22 +8454,20 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       context: context,
       builder: (context) {
         final otherUser = widget.chat["other_user"];
-        final contactName = otherUser is Map &&
+        final contactName =
+            otherUser is Map &&
                 otherUser["name"]?.toString().trim().isNotEmpty == true
             ? otherUser["name"].toString().trim()
             : otherUser is Map
-                ? (otherUser["m8_pin"]?.toString() ?? "Kontak")
-                : "Kontak";
+            ? (otherUser["m8_pin"]?.toString() ?? "Kontak")
+            : "Kontak";
 
         return AlertDialog(
           backgroundColor: m8Blue,
           surfaceTintColor: Colors.transparent,
           title: const Row(
             children: [
-              Icon(
-                Icons.auto_awesome_rounded,
-                color: Colors.white,
-              ),
+              Icon(Icons.auto_awesome_rounded, color: Colors.white),
               SizedBox(width: 8),
               Text(
                 "Ringkasan B'Jo",
@@ -9137,12 +8499,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(
-                    topics,
-                    style: const TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
+                  Text(topics, style: const TextStyle(color: Colors.white)),
                 ],
                 const SizedBox(height: 16),
                 const Text(
@@ -9155,9 +8512,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 const SizedBox(height: 5),
                 Text(
                   latest.map((e) => "• $e").join("\n"),
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: const TextStyle(color: Colors.white),
                 ),
               ],
             ),
@@ -9178,16 +8533,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       },
     );
   }
+
   Future<void> _rememberMessage(Map<String, dynamic> msg) async {
     final text = _smartMessageText(msg);
 
-    if (text.isEmpty ||
-        text == "[Foto]" ||
-        text == "[Voice note]") {
+    if (text.isEmpty || text == "[Foto]" || text == "[Voice note]") {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Pesan ini belum bisa disimpan."),
-        ),
+        const SnackBar(content: Text("Pesan ini belum bisa disimpan.")),
       );
       return;
     }
@@ -9196,7 +8548,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     final key = "bjo_memory_$chatId";
     final list = prefs.getStringList(key) ?? <String>[];
 
-    final timestamp = msg["timestamp"]?.toString() ??
+    final timestamp =
+        msg["timestamp"]?.toString() ??
         msg["created_at"]?.toString() ??
         DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -9280,23 +8633,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   )
                 : ListView.separated(
                     itemCount: memories.length,
-                    separatorBuilder: (_, __) =>
-                        const Divider(height: 1),
+                    separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (_, index) {
                       final memory = memories[index];
 
                       return ListTile(
-                        leading: const Icon(
-                          Icons.favorite_border_rounded,
-                        ),
+                        leading: const Icon(Icons.favorite_border_rounded),
                         title: Text(
                           memory["message"]?.toString() ?? "",
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        subtitle: Text(
-                          memory["sender"]?.toString() ?? "",
-                        ),
+                        subtitle: Text(memory["sender"]?.toString() ?? ""),
                       );
                     },
                   ),
@@ -9312,7 +8660,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 
-
   Future<void> _showSmartMessageActions(
     Map<String, dynamic> msg,
     bool mine,
@@ -9325,9 +8672,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       context: context,
       backgroundColor: m8White,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(22),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (sheetContext) {
         return SafeArea(
@@ -9349,20 +8694,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ListTile(
                   leading: CircleAvatar(
                     backgroundColor: m8Blue.withValues(alpha: 0.12),
-                    child: Icon(
-                      Icons.favorite_border_rounded,
-                      color: m8Blue,
-                    ),
+                    child: Icon(Icons.favorite_border_rounded, color: m8Blue),
                   ),
                   title: const Text(
                     "Ingat di B'Jo",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  subtitle: const Text(
-                    "Simpan pesan penting ke B'Jo Memory",
-                  ),
+                  subtitle: const Text("Simpan pesan penting ke B'Jo Memory"),
                   onTap: () async {
                     Navigator.pop(sheetContext);
                     await _rememberMessage(msg);
@@ -9372,30 +8710,21 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ListTile(
                   leading: CircleAvatar(
                     backgroundColor: m8Blue.withValues(alpha: 0.12),
-                    child: Icon(
-                      Icons.copy_rounded,
-                      color: m8Blue,
-                    ),
+                    child: Icon(Icons.copy_rounded, color: m8Blue),
                   ),
                   title: const Text(
                     "Salin pesan",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   onTap: () async {
                     Navigator.pop(sheetContext);
 
-                    await Clipboard.setData(
-                      ClipboardData(text: text),
-                    );
+                    await Clipboard.setData(ClipboardData(text: text));
 
                     if (!mounted) return;
 
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Pesan disalin."),
-                      ),
+                      const SnackBar(content: Text("Pesan disalin.")),
                     );
                   },
                 ),
@@ -9405,18 +8734,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     !text.startsWith("[Voice note]"))
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor:
-                          m8Blue.withValues(alpha: 0.12),
-                      child: Icon(
-                        Icons.edit_outlined,
-                        color: m8Blue,
-                      ),
+                      backgroundColor: m8Blue.withValues(alpha: 0.12),
+                      child: Icon(Icons.edit_outlined, color: m8Blue),
                     ),
                     title: const Text(
                       "Edit pesan",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
                     onTap: () {
                       Navigator.pop(sheetContext);
@@ -9426,12 +8749,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
                 ListTile(
                   leading: CircleAvatar(
-                    backgroundColor:
-                        m8Blue.withValues(alpha: 0.12),
-                    child: Icon(
-                      Icons.close_rounded,
-                      color: m8Blue,
-                    ),
+                    backgroundColor: m8Blue.withValues(alpha: 0.12),
+                    child: Icon(Icons.close_rounded, color: m8Blue),
                   ),
                   title: const Text("Batal"),
                   onTap: () => Navigator.pop(sheetContext),
@@ -9492,7 +8811,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               profileUser['name'] = otherName;
             }
 
-            if ((profileUser['profile_photo_url']?.toString().trim() ?? '').isEmpty &&
+            if ((profileUser['profile_photo_url']?.toString().trim() ?? '')
+                    .isEmpty &&
                 otherPhotoUrl.isNotEmpty) {
               profileUser['profile_photo_url'] = otherPhotoUrl;
             }
@@ -9567,11 +8887,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         ),
                       ),
                     ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
         actions: [
           IconButton(
@@ -9658,7 +8978,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ],
                 ),
               ),
-PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'mute',
                 child: Row(
                   children: [
@@ -9782,10 +9102,7 @@ PopupMenuItem<String>(
                                       : Alignment.centerLeft,
                                   child: GestureDetector(
                                     onLongPress: () =>
-                                        _showSmartMessageActions(
-                                          msg,
-                                          mine,
-                                        ),
+                                        _showSmartMessageActions(msg, mine),
                                     child: Container(
                                       constraints: BoxConstraints(
                                         maxWidth:
@@ -10475,8 +9792,7 @@ PopupMenuItem<String>(
                                   },
                                   onLongPressEnd: (_) async {
                                     if (_isRecordingVoice) {
-                                      final path =
-                                          await stopVoiceRecording();
+                                      final path = await stopVoiceRecording();
 
                                       if (path != null && mounted) {
                                         await sendVoiceMessage();
@@ -10501,8 +9817,7 @@ PopupMenuItem<String>(
                                 width: 40,
                                 height: 40,
                                 child: IconButton.filled(
-                                  onPressed:
-                                      sending ? null : sendMessage,
+                                  onPressed: sending ? null : sendMessage,
                                   style: IconButton.styleFrom(
                                     backgroundColor: m8Blue,
                                     foregroundColor: Colors.white,
@@ -10511,8 +9826,7 @@ PopupMenuItem<String>(
                                       ? const SizedBox(
                                           width: 19,
                                           height: 19,
-                                          child:
-                                              CircularProgressIndicator(
+                                          child: CircularProgressIndicator(
                                             strokeWidth: 2,
                                             color: Colors.white,
                                           ),
@@ -10661,24 +9975,17 @@ class StoryPage extends StatefulWidget {
 }
 
 class _StoryPageState extends State<StoryPage> {
+  String get photoUrl => widget.user['profile_photo_url']?.toString() ?? '';
 
-  String get photoUrl =>
-      widget.user['profile_photo_url']?.toString() ?? '';
+  String get name => widget.user['name']?.toString().trim().isNotEmpty == true
+      ? widget.user['name'].toString()
+      : "Pengguna B'Jo";
 
-  String get name =>
-      widget.user['name']?.toString().trim().isNotEmpty == true
-          ? widget.user['name'].toString()
-          : "Pengguna B'Jo";
+  String get username => widget.user['username']?.toString().trim() ?? '';
 
-  String get username =>
-      widget.user['username']?.toString().trim() ?? '';
+  String get bio => widget.user['bio']?.toString().trim() ?? '';
 
-  String get bio =>
-      widget.user['bio']?.toString().trim() ?? '';
-
-  String get pin =>
-      widget.user['pin']?.toString().trim() ?? '';
-
+  String get pin => widget.user['pin']?.toString().trim() ?? '';
 
   bool loading = true;
   bool posting = false;
@@ -10795,8 +10102,7 @@ class _StoryPageState extends State<StoryPage> {
 
             Future<void> chooseLocation() async {
               LatLng pickedLocation =
-                  selectedLocation ??
-                  const LatLng(-6.9175, 107.6191);
+                  selectedLocation ?? const LatLng(-6.9175, 107.6191);
 
               final result = await showModalBottomSheet<LatLng>(
                 context: sheetContext,
@@ -10829,8 +10135,7 @@ class _StoryPageState extends State<StoryPage> {
                                   ),
                                   const Spacer(),
                                   IconButton(
-                                    onPressed: () =>
-                                        Navigator.pop(mapContext),
+                                    onPressed: () => Navigator.pop(mapContext),
                                     icon: const Icon(Icons.close_rounded),
                                   ),
                                 ],
@@ -10855,10 +10160,8 @@ class _StoryPageState extends State<StoryPage> {
                               SizedBox(
                                 width: double.infinity,
                                 child: FilledButton.icon(
-                                  onPressed: () => Navigator.pop(
-                                    mapContext,
-                                    pickedLocation,
-                                  ),
+                                  onPressed: () =>
+                                      Navigator.pop(mapContext, pickedLocation),
                                   icon: const Icon(Icons.check_rounded),
                                   label: const Text('Gunakan Lokasi Ini'),
                                 ),
@@ -11049,29 +10352,29 @@ class _StoryPageState extends State<StoryPage> {
                         Expanded(
                           child: FilledButton.icon(
                             onPressed: () async {
-                            final text = textController.text.trim();
+                              final text = textController.text.trim();
 
-                            if (text.isEmpty && selectedMedia == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "Tulis sesuatu atau pilih foto/video.",
+                              if (text.isEmpty && selectedMedia == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Tulis sesuatu atau pilih foto/video.",
+                                    ),
                                   ),
-                                ),
+                                );
+                                return;
+                              }
+
+                              Navigator.pop(sheetContext);
+
+                              await _publishPost(
+                                text: text,
+                                media: selectedMedia,
+                                mediaType: mediaType,
+                                latitude: selectedLocation?.latitude,
+                                longitude: selectedLocation?.longitude,
                               );
-                              return;
-                            }
-
-                            Navigator.pop(sheetContext);
-
-                            await _publishPost(
-                              text: text,
-                              media: selectedMedia,
-                              mediaType: mediaType,
-                              latitude: selectedLocation?.latitude,
-                              longitude: selectedLocation?.longitude,
-                            );
-                          },
+                            },
                             icon: const Icon(Icons.send_rounded, size: 18),
                             label: const Text("Posting"),
                           ),
@@ -11267,30 +10570,30 @@ class _StoryPageState extends State<StoryPage> {
           ),
         ),
         child: RefreshIndicator(
-        onRefresh: _loadPosts,
-        child: loading
-            ? const Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                padding: const EdgeInsets.only(top: 8, bottom: 100),
-                itemCount: posts.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return _BJoComposerCard(
-                      user: widget.user,
-                      onTap: posting ? null : _openComposer,
+          onRefresh: _loadPosts,
+          child: loading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView.builder(
+                  padding: const EdgeInsets.only(top: 8, bottom: 100),
+                  itemCount: posts.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return _BJoComposerCard(
+                        user: widget.user,
+                        onTap: posting ? null : _openComposer,
+                      );
+                    }
+
+                    final post = posts[index - 1];
+
+                    return _BJoPostCard(
+                      post: post,
+                      currentPin: myPin,
+                      timeAgo: _timeAgo(post['created_at']),
                     );
-                  }
-
-                  final post = posts[index - 1];
-
-                  return _BJoPostCard(
-                    post: post,
-                    currentPin: myPin,
-                    timeAgo: _timeAgo(post['created_at']),
-                  );
-                },
-              ),
-      )
+                  },
+                ),
+        ),
       ),
     );
   }
@@ -11749,10 +11052,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
     }
   }
 
-  Future<void> _openPostLocation(
-    double latitude,
-    double longitude,
-  ) async {
+  Future<void> _openPostLocation(double latitude, double longitude) async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -11764,18 +11064,13 @@ class _BJoPostCardState extends State<_BJoPostCard> {
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 18),
             decoration: const BoxDecoration(
               color: m8White,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(26),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
             ),
             child: Column(
               children: [
                 Row(
                   children: [
-                    const Icon(
-                      Icons.location_on_rounded,
-                      color: m8Blue,
-                    ),
+                    const Icon(Icons.location_on_rounded, color: m8Blue),
                     const SizedBox(width: 8),
                     const Text(
                       'Lokasi Moment',
@@ -11798,10 +11093,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                     borderRadius: BorderRadius.circular(18),
                     child: FlutterMap(
                       options: MapOptions(
-                        initialCenter: LatLng(
-                          latitude,
-                          longitude,
-                        ),
+                        initialCenter: LatLng(latitude, longitude),
                         initialZoom: 15,
                       ),
                       children: [
@@ -11813,10 +11105,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                         MarkerLayer(
                           markers: [
                             Marker(
-                              point: LatLng(
-                                latitude,
-                                longitude,
-                              ),
+                              point: LatLng(latitude, longitude),
                               width: 56,
                               height: 56,
                               child: const Icon(
@@ -11835,10 +11124,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                 Text(
                   '${latitude.toStringAsFixed(5)}, '
                   '${longitude.toStringAsFixed(5)}',
-                  style: const TextStyle(
-                    color: m8TextMuted,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: m8TextMuted, fontSize: 11),
                 ),
               ],
             ),
@@ -11861,13 +11147,9 @@ class _BJoPostCardState extends State<_BJoPostCard> {
     final text = post['caption']?.toString().trim() ?? '';
     final mediaUrl = post['media_url']?.toString().trim() ?? '';
 
-    final latitude = double.tryParse(
-      post['latitude']?.toString() ?? '',
-    );
+    final latitude = double.tryParse(post['latitude']?.toString() ?? '');
 
-    final longitude = double.tryParse(
-      post['longitude']?.toString() ?? '',
-    );
+    final longitude = double.tryParse(post['longitude']?.toString() ?? '');
 
     final hasLocation =
         latitude != null &&
@@ -11899,17 +11181,12 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                 backgroundColor: m8BlueDark,
                 backgroundImage:
                     post['user_photo_url']?.toString().trim().isNotEmpty == true
-                        ? NetworkImage(
-                            post['user_photo_url'].toString().trim(),
-                          )
-                        : null,
+                    ? NetworkImage(post['user_photo_url'].toString().trim())
+                    : null,
                 child:
                     post['user_photo_url']?.toString().trim().isNotEmpty == true
-                        ? null
-                        : const Icon(
-                            Icons.person_rounded,
-                            color: m8White,
-                          ),
+                    ? null
+                    : const Icon(Icons.person_rounded, color: m8White),
               ),
               const SizedBox(width: 11),
               Expanded(
@@ -11969,10 +11246,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
           if (hasLocation) ...[
             const SizedBox(height: 12),
             InkWell(
-              onTap: () => _openPostLocation(
-                latitude!,
-                longitude!,
-              ),
+              onTap: () => _openPostLocation(latitude!, longitude!),
               borderRadius: BorderRadius.circular(15),
               child: Container(
                 width: double.infinity,
@@ -11983,9 +11257,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                 decoration: BoxDecoration(
                   color: m8WhiteSoft,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: m8Blue.withValues(alpha: 0.18),
-                  ),
+                  border: Border.all(color: m8Blue.withValues(alpha: 0.18)),
                 ),
                 child: Row(
                   children: [
@@ -12018,18 +11290,12 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                           SizedBox(height: 2),
                           Text(
                             'Ketuk untuk melihat di peta',
-                            style: TextStyle(
-                              color: m8TextMuted,
-                              fontSize: 11,
-                            ),
+                            style: TextStyle(color: m8TextMuted, fontSize: 11),
                           ),
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: m8TextMuted,
-                    ),
+                    const Icon(Icons.chevron_right_rounded, color: m8TextMuted),
                   ],
                 ),
               ),
@@ -12574,89 +11840,84 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
                         ),
                       ),
               )
-              else
-                Center(
-                  child: _videoLoading
-                      ? const Column(
-                          mainAxisSize: MainAxisSize.min,
+            else
+              Center(
+                child: _videoLoading
+                    ? const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 42,
+                            height: 42,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Memuat video...',
+                            style: TextStyle(color: Colors.white, fontSize: 14),
+                          ),
+                        ],
+                      )
+                    : (_videoController != null &&
+                          _videoController!.value.isInitialized)
+                    ? GestureDetector(
+                        onTap: _toggleVideoPlayback,
+                        child: Stack(
+                          alignment: Alignment.center,
                           children: [
-                            SizedBox(
-                              width: 42,
-                              height: 42,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 3,
-                              ),
+                            AspectRatio(
+                              aspectRatio: _videoController!.value.aspectRatio,
+                              child: VideoPlayer(_videoController!),
                             ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Memuat video...',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        )
-                      : (_videoController != null &&
-                              _videoController!.value.isInitialized)
-                          ? GestureDetector(
-                              onTap: _toggleVideoPlayback,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  AspectRatio(
-                                    aspectRatio:
-                                        _videoController!.value.aspectRatio,
-                                    child: VideoPlayer(_videoController!),
-                                  ),
-                                  if (!_videoController!.value.isPlaying)
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.35),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      padding: const EdgeInsets.all(12),
-                                      child: const Icon(
-                                        Icons.play_arrow_rounded,
-                                        color: Colors.white,
-                                        size: 54,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            )
-                          : Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.error_outline_rounded,
+                            if (!_videoController!.value.isPlaying)
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: const Icon(
+                                  Icons.play_arrow_rounded,
                                   color: Colors.white,
-                                  size: 70,
+                                  size: 54,
                                 ),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'Video tidak dapat diputar',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  url,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
+                              ),
+                          ],
+                        ),
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: Colors.white,
+                            size: 70,
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Video tidak dapat diputar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                             ),
-                ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            url,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
 
             if (_videoController != null &&
                 _videoController!.value.isInitialized)
@@ -12771,17 +12032,11 @@ class _M8StoryViewerState extends State<_M8StoryViewer> {
 // B'JO PROFILE
 // ============================================================
 
-
 class BJoProfilePage extends StatefulWidget {
   final Map<String, dynamic> user;
   final String token;
 
-  const BJoProfilePage({
-    super.key,
-    required this.user,
-    required this.token,
-  });
-
+  const BJoProfilePage({super.key, required this.user, required this.token});
 
   @override
   State<BJoProfilePage> createState() => _BJoProfilePageState();
@@ -12822,7 +12077,8 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
   }
 
   String get pin {
-    final v = widget.user['m8_pin']?.toString() ??
+    final v =
+        widget.user['m8_pin']?.toString() ??
         widget.user['pin']?.toString() ??
         '';
     return v.trim();
@@ -12837,14 +12093,14 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
   }
 
   String get backgroundUrl {
-      return (widget.user['profile_background_url'] ??
-              widget.user['background_url'] ??
-              '')
-          .toString()
-          .trim();
-    }
+    return (widget.user['profile_background_url'] ??
+            widget.user['background_url'] ??
+            '')
+        .toString()
+        .trim();
+  }
 
-    String get username {
+  String get username {
     final v = widget.user['username']?.toString().trim();
     if (v != null && v.isNotEmpty) return '@$v';
     return '';
@@ -12859,30 +12115,13 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (backgroundUrl.isNotEmpty)
-              Image.network(
-                backgroundUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF1769AA),
-                        Color(0xFF5FA4D5),
-                        Color(0xFFDCEAF3),
-                        Color(0xFFF7F3EA),
-                      ],
-                      stops: [0.0, 0.32, 0.68, 1.0],
-                    ),
-                  ),
-                ),
-              )
-            else
-              Container(
+        fit: StackFit.expand,
+        children: [
+          if (backgroundUrl.isNotEmpty)
+            Image.network(
+              backgroundUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -12897,365 +12136,396 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                   ),
                 ),
               ),
-            IgnorePointer(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0x330B4774),
-                      Color(0x120B4774),
-                      Color(0x66F7F3EA),
-                      Color(0xFFF7F3EA),
-                    ],
-                    stops: [0.0, 0.38, 0.72, 1.0],
-                  ),
+            )
+          else
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF1769AA),
+                    Color(0xFF5FA4D5),
+                    Color(0xFFDCEAF3),
+                    Color(0xFFF7F3EA),
+                  ],
+                  stops: [0.0, 0.32, 0.68, 1.0],
                 ),
               ),
             ),
-            SafeArea(
-
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                backgroundColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                elevation: 0,
-                pinned: true,
-                automaticallyImplyLeading: false,
-                title: const Text(
-                  "Profil",
-                  style: TextStyle(
-                    color: m8White,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w900,
-                  ),
+          IgnorePointer(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0x330B4774),
+                    Color(0x120B4774),
+                    Color(0x66F7F3EA),
+                    Color(0xFFF7F3EA),
+                  ],
+                  stops: [0.0, 0.38, 0.72, 1.0],
                 ),
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: Material(
-                      color: m8White.withValues(alpha: 0.16),
-                      shape: const CircleBorder(),
-                      child: IconButton(
-                        tooltip: "Pengaturan",
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => SettingsPage(
-                                token: widget.token,
-                                user: widget.user,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.settings_rounded,
-                          color: m8White,
-                          size: 22,
-                        ),
-                      ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverAppBar(
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  pinned: true,
+                  automaticallyImplyLeading: false,
+                  title: const Text(
+                    "Profil",
+                    style: TextStyle(
+                      color: m8White,
+                      fontSize: 21,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                ],
-              ),
-
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 42),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    Center(
-                      child: Container(
-                        width: 138,
-                        height: 138,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFF7F3EA),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF0B4774)
-                                  .withValues(alpha: 0.28),
-                              blurRadius: 30,
-                              offset: const Offset(0, 14),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: photoUrl.isEmpty
-                              ? Container(
-                                  color: const Color(0xFFF7F3EA),
-                                  child: const Icon(
-                                    Icons.person_rounded,
-                                    color: Color(0xFF1769AA),
-                                    size: 70,
-                                  ),
-                                )
-                              : Image.network(
-                                  photoUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) {
-                                    return Container(
-                                      color: const Color(0xFFF7F3EA),
-                                      child: const Icon(
-                                        Icons.person_rounded,
-                                        color: Color(0xFF1769AA),
-                                        size: 70,
-                                      ),
-                                    );
-                                  },
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Material(
+                        color: m8White.withValues(alpha: 0.16),
+                        shape: const CircleBorder(),
+                        child: IconButton(
+                          tooltip: "Pengaturan",
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => SettingsPage(
+                                  token: widget.token,
+                                  user: widget.user,
                                 ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    Center(
-                      child: Text(
-                        name,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: m8White,
-                          fontSize: 29,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ),
-
-                    if (username.isNotEmpty) ...[
-                      const SizedBox(height: 5),
-                      Center(
-                        child: Text(
-                          username,
-                          style: TextStyle(
-                            color: m8White.withValues(alpha: 0.82),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.settings_rounded,
+                            color: m8White,
+                            size: 22,
                           ),
                         ),
                       ),
-                    ],
+                    ),
+                  ],
+                ),
 
-                    const SizedBox(height: 9),
-
-                    Center(
-                      child: GestureDetector(
-                        onTap: _toggleOnlineStatus,
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 42),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      Center(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 13,
-                            vertical: 6,
+                          width: 138,
+                          height: 138,
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFFF7F3EA),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF0B4774,
+                                ).withValues(alpha: 0.28),
+                                blurRadius: 30,
+                                offset: const Offset(0, 14),
+                              ),
+                            ],
                           ),
-                        decoration: BoxDecoration(
-                          color: m8White.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(
-                            color: m8White.withValues(alpha: 0.22),
+                          child: ClipOval(
+                            child: photoUrl.isEmpty
+                                ? Container(
+                                    color: const Color(0xFFF7F3EA),
+                                    child: const Icon(
+                                      Icons.person_rounded,
+                                      color: Color(0xFF1769AA),
+                                      size: 70,
+                                    ),
+                                  )
+                                : Image.network(
+                                    photoUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) {
+                                      return Container(
+                                        color: const Color(0xFFF7F3EA),
+                                        child: const Icon(
+                                          Icons.person_rounded,
+                                          color: Color(0xFF1769AA),
+                                          size: 70,
+                                        ),
+                                      );
+                                    },
+                                  ),
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 7,
-                              height: 7,
-                              decoration: BoxDecoration(
-                                  color: _isOnline
-                                      ? const Color(0xFFBDECC8)
-                                      : m8White.withValues(alpha: 0.45),
-                                  shape: BoxShape.circle,
-                                ),
-                            ),
-                            const SizedBox(width: 7),
-                            Text(
-                                _isOnline ? "Online" : "Offline",
-                                style: TextStyle(
-                                  color: m8White.withValues(alpha: 0.94),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Icon(
-                                _isOnline
-                                    ? Icons.toggle_on_rounded
-                                    : Icons.toggle_off_rounded,
-                                size: 21,
-                                color: m8White.withValues(alpha: 0.90),
-                              ),
-                          ],
-                        ),
                       ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 17),
+                      const SizedBox(height: 18),
 
-                    if (bio.isNotEmpty)
                       Center(
                         child: Text(
-                          bio,
+                          name,
                           textAlign: TextAlign.center,
-                          maxLines: 3,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: m8White.withValues(alpha: 0.92),
-                            fontSize: 14,
-                            height: 1.45,
-                            fontWeight: FontWeight.w600,
+                          style: const TextStyle(
+                            color: m8White,
+                            fontSize: 29,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
                           ),
                         ),
                       ),
 
-                    const SizedBox(height: 28),
-
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 19),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF7F3EA).withValues(alpha: 0.93),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: m8White.withValues(alpha: 0.65),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF174C70)
-                                .withValues(alpha: 0.10),
-                            blurRadius: 28,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Tentang Aku",
+                      if (username.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        Center(
+                          child: Text(
+                            username,
                             style: TextStyle(
-                              color: Color(0xFF17384D),
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
+                              color: m8White.withValues(alpha: 0.82),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 9),
-                          Text(
-                            bio.isNotEmpty
-                                ? bio
-                                : "Ceritakan sedikit tentang dirimu.",
-                            style: TextStyle(
-                              color: bio.isNotEmpty
-                                  ? const Color(0xFF496271)
-                                  : const Color(0xFF82919A),
-                              fontSize: 13,
-                              height: 1.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(20, 18, 14, 18),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF7F3EA).withValues(alpha: 0.93),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: m8White.withValues(alpha: 0.65),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 46,
-                            height: 46,
+                      ],
+
+                      const SizedBox(height: 9),
+
+                      Center(
+                        child: GestureDetector(
+                          onTap: _toggleOnlineStatus,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 13,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1769AA)
-                                  .withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(15),
+                              color: m8White.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: m8White.withValues(alpha: 0.22),
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.fingerprint_rounded,
-                              color: Color(0xFF1769AA),
-                              size: 23,
-                            ),
-                          ),
-                          const SizedBox(width: 13),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text(
-                                  "B'Jo ID",
-                                  style: TextStyle(
-                                    color: Color(0xFF17384D),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w900,
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: BoxDecoration(
+                                    color: _isOnline
+                                        ? const Color(0xFFBDECC8)
+                                        : m8White.withValues(alpha: 0.45),
+                                    shape: BoxShape.circle,
                                   ),
                                 ),
-                                const SizedBox(height: 3),
+                                const SizedBox(width: 7),
                                 Text(
-                                  pin.isEmpty ? "Belum tersedia" : pin,
-                                  style: const TextStyle(
-                                    color: Color(0xFF667985),
+                                  _isOnline ? "Online" : "Offline",
+                                  style: TextStyle(
+                                    color: m8White.withValues(alpha: 0.94),
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.8,
+                                    fontWeight: FontWeight.w800,
                                   ),
+                                ),
+                                const SizedBox(width: 5),
+                                Icon(
+                                  _isOnline
+                                      ? Icons.toggle_on_rounded
+                                      : Icons.toggle_off_rounded,
+                                  size: 21,
+                                  color: m8White.withValues(alpha: 0.90),
                                 ),
                               ],
                             ),
                           ),
-                          IconButton(
-                            tooltip: "Salin B'Jo ID",
-                            onPressed: pin.isEmpty
-                                ? null
-                                : () {
-                                    Clipboard.setData(
-                                      ClipboardData(text: widget.user['pin']?.toString() ?? ''),
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("B'Jo ID berhasil disalin"),
-                                      ),
-                                    );
-                                  },
-                            icon: const Icon(
-                              Icons.copy_rounded,
-                              color: Color(0xFF1769AA),
+                        ),
+                      ),
+
+                      const SizedBox(height: 17),
+
+                      if (bio.isNotEmpty)
+                        Center(
+                          child: Text(
+                            bio,
+                            textAlign: TextAlign.center,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: m8White.withValues(alpha: 0.92),
+                              fontSize: 14,
+                              height: 1.45,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ],
+                        ),
+
+                      const SizedBox(height: 28),
+
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 19),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFFF7F3EA,
+                          ).withValues(alpha: 0.93),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color: m8White.withValues(alpha: 0.65),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(
+                                0xFF174C70,
+                              ).withValues(alpha: 0.10),
+                              blurRadius: 28,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Tentang Aku",
+                              style: TextStyle(
+                                color: Color(0xFF17384D),
+                                fontSize: 17,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 9),
+                            Text(
+                              bio.isNotEmpty
+                                  ? bio
+                                  : "Ceritakan sedikit tentang dirimu.",
+                              style: TextStyle(
+                                color: bio.isNotEmpty
+                                    ? const Color(0xFF496271)
+                                    : const Color(0xFF82919A),
+                                fontSize: 13,
+                                height: 1.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 22),
+                      const SizedBox(height: 14),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: () async {
-                              final changed = await Navigator.push<bool>(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => BJoProfileMediaPage(
-                                    user: widget.user,
-                                    token: widget.token,
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 14, 18),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFFF7F3EA,
+                          ).withValues(alpha: 0.93),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: m8White.withValues(alpha: 0.65),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF1769AA,
+                                ).withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: const Icon(
+                                Icons.fingerprint_rounded,
+                                color: Color(0xFF1769AA),
+                                size: 23,
+                              ),
+                            ),
+                            const SizedBox(width: 13),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "B'Jo ID",
+                                    style: TextStyle(
+                                      color: Color(0xFF17384D),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
-                                ),
-                              );
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    pin.isEmpty ? "Belum tersedia" : pin,
+                                    style: const TextStyle(
+                                      color: Color(0xFF667985),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: "Salin B'Jo ID",
+                              onPressed: pin.isEmpty
+                                  ? null
+                                  : () {
+                                      Clipboard.setData(
+                                        ClipboardData(
+                                          text:
+                                              widget.user['pin']?.toString() ??
+                                              '',
+                                        ),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "B'Jo ID berhasil disalin",
+                                          ),
+                                        ),
+                                      );
+                                    },
+                              icon: const Icon(
+                                Icons.copy_rounded,
+                                color: Color(0xFF1769AA),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
-                              if (changed == true && context.mounted) {
+                      const SizedBox(height: 22),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: () async {
+                                final changed = await Navigator.push<bool>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => BJoProfileMediaPage(
+                                      user: widget.user,
+                                      token: widget.token,
+                                    ),
+                                  ),
+                                );
+
+                                if (changed == true && context.mounted) {
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -13266,54 +12536,55 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                                     ),
                                   );
                                 }
-                            },
-                            icon: const Icon(Icons.edit_rounded, size: 19),
-                            label: const Text("Edit Profil"),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF1769AA),
-                              foregroundColor: m8White,
-                              minimumSize: const Size.fromHeight(52),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              elevation: 0,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.ios_share_rounded,
-                              size: 19,
-                            ),
-                            label: const Text("Bagikan"),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF1769AA),
-                              backgroundColor:
-                                  const Color(0xFFF7F3EA).withValues(alpha: 0.72),
-                              minimumSize: const Size.fromHeight(52),
-                              side: const BorderSide(
-                                color: Color(0xFF1769AA),
-                                width: 1.1,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
+                              },
+                              icon: const Icon(Icons.edit_rounded, size: 19),
+                              label: const Text("Edit Profil"),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFF1769AA),
+                                foregroundColor: m8White,
+                                minimumSize: const Size.fromHeight(52),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                elevation: 0,
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ]),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {},
+                              icon: const Icon(
+                                Icons.ios_share_rounded,
+                                size: 19,
+                              ),
+                              label: const Text("Bagikan"),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF1769AA),
+                                backgroundColor: const Color(
+                                  0xFFF7F3EA,
+                                ).withValues(alpha: 0.72),
+                                minimumSize: const Size.fromHeight(52),
+                                side: const BorderSide(
+                                  color: Color(0xFF1769AA),
+                                  width: 1.1,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ]),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-        ),
+        ],
+      ),
     );
   }
 }
@@ -13323,13 +12594,9 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
 // ============================================================
 
 class BJoSessionsPage extends StatefulWidget {
-
   final String token;
 
-  const BJoSessionsPage({
-    super.key,
-    required this.token,
-  });
+  const BJoSessionsPage({super.key, required this.token});
 
   @override
   State<BJoSessionsPage> createState() => _BJoSessionsPageState();
@@ -13352,12 +12619,12 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
     setState(() => loading = true);
 
     try {
-      final response = await http.get(
-        Uri.parse('$apiBase/api/sessions'),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
-      ).timeout(const Duration(seconds: 20));
+      final response = await http
+          .get(
+            Uri.parse('$apiBase/api/sessions'),
+            headers: {'Authorization': 'Bearer ${widget.token}'},
+          )
+          .timeout(const Duration(seconds: 20));
 
       final data = jsonDecode(response.body);
 
@@ -13370,18 +12637,16 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
       final list = data['sessions'];
 
       if (list is List) {
-        sessions = list
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
+        sessions = list.map((e) => Map<String, dynamic>.from(e)).toList();
       } else {
         sessions = [];
       }
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat sesi: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat sesi: $e')));
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -13417,18 +12682,13 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
         '${two(date.hour)}:${two(date.minute)}';
   }
 
-  Future<void> _revokeSession(
-    int sessionId,
-    bool current,
-  ) async {
+  Future<void> _revokeSession(int sessionId, bool current) async {
     if (actionLoading) return;
 
     if (current) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Gunakan Logout untuk keluar dari perangkat ini.',
-          ),
+          content: Text('Gunakan Logout untuk keluar dari perangkat ini.'),
         ),
       );
       return;
@@ -13437,31 +12697,27 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
     setState(() => actionLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse('$apiBase/api/sessions/revoke'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.token}',
-        },
-        body: jsonEncode({
-          'session_id': sessionId,
-        }),
-      ).timeout(const Duration(seconds: 20));
+      final response = await http
+          .post(
+            Uri.parse('$apiBase/api/sessions/revoke'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${widget.token}',
+            },
+            body: jsonEncode({'session_id': sessionId}),
+          )
+          .timeout(const Duration(seconds: 20));
 
       final data = jsonDecode(response.body);
 
       if (response.statusCode != 200 || data['success'] != true) {
-        throw Exception(
-          data['error']?.toString() ?? 'Gagal mencabut sesi.',
-        );
+        throw Exception(data['error']?.toString() ?? 'Gagal mencabut sesi.');
       }
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Perangkat berhasil dikeluarkan.'),
-        ),
+        const SnackBar(content: Text('Perangkat berhasil dikeluarkan.')),
       );
 
       await _loadSessions();
@@ -13469,9 +12725,7 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal mengeluarkan perangkat: $e'),
-        ),
+        SnackBar(content: Text('Gagal mengeluarkan perangkat: $e')),
       );
     } finally {
       if (mounted) {
@@ -13493,9 +12747,7 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Keluarkan perangkat?',
           style: TextStyle(fontWeight: FontWeight.w900),
@@ -13522,18 +12774,14 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
   }
 
   Widget _sessionCard(Map<String, dynamic> session) {
-    final id = int.tryParse(
-          session['id']?.toString() ?? '',
-        ) ??
-        0;
+    final id = int.tryParse(session['id']?.toString() ?? '') ?? 0;
 
     final deviceName =
         session['device_name']?.toString().trim().isNotEmpty == true
-            ? session['device_name'].toString()
-            : "Perangkat B'Jo";
+        ? session['device_name'].toString()
+        : "Perangkat B'Jo";
 
-    final platform =
-        session['platform']?.toString() ?? 'unknown';
+    final platform = session['platform']?.toString() ?? 'unknown';
 
     final current = session['current'] == true;
 
@@ -13549,10 +12797,7 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           width: 48,
           height: 48,
@@ -13560,10 +12805,7 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
             color: m8BlueDark,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(
-            _deviceIcon(platform),
-            color: m8White,
-          ),
+          child: Icon(_deviceIcon(platform), color: m8White),
         ),
         title: Row(
           children: [
@@ -13580,10 +12822,7 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
             ),
             if (current)
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: m8Blue.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10),
@@ -13603,30 +12842,17 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
           padding: const EdgeInsets.only(top: 5),
           child: Text(
             'Aktif terakhir: ${_formatTimestamp(session['last_seen_at'])}',
-            style: const TextStyle(
-              color: m8TextMuted,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: m8TextMuted, fontSize: 11),
           ),
         ),
         trailing: current
-            ? const Icon(
-                Icons.verified_user_rounded,
-                color: m8Blue,
-              )
+            ? const Icon(Icons.verified_user_rounded, color: m8Blue)
             : IconButton(
                 tooltip: 'Keluarkan perangkat',
                 onPressed: actionLoading
                     ? null
-                    : () => _confirmRevoke(
-                          id,
-                          deviceName,
-                          false,
-                        ),
-                icon: const Icon(
-                  Icons.logout_rounded,
-                  color: m8BlueDark,
-                ),
+                    : () => _confirmRevoke(id, deviceName, false),
+                icon: const Icon(Icons.logout_rounded, color: m8BlueDark),
               ),
       ),
     );
@@ -13638,18 +12864,9 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
       child: RefreshIndicator(
         onRefresh: _loadSessions,
         child: loading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  color: m8White,
-                ),
-              )
+            ? const Center(child: CircularProgressIndicator(color: m8White))
             : ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  16,
-                  18,
-                  16,
-                  30,
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
                 children: [
                   Container(
                     padding: const EdgeInsets.all(18),
@@ -13662,16 +12879,11 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
                     ),
                     child: const Row(
                       children: [
-                        Icon(
-                          Icons.devices_rounded,
-                          color: m8White,
-                          size: 30,
-                        ),
+                        Icon(Icons.devices_rounded, color: m8White, size: 30),
                         SizedBox(width: 14),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Perangkat B’Jo',
@@ -13735,7 +12947,6 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
 // PROFILE
 // ============================================================
 
-
 // ============================================================
 // ============================================================
 // B'JO FOTO & BACKGROUND PROFIL — REBUILD
@@ -13795,8 +13006,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     return name.isEmpty ? "Pengguna B'Jo" : name;
   }
 
-  String get displayPin =>
-      widget.user['m8_pin']?.toString().trim() ?? '';
+  String get displayPin => widget.user['m8_pin']?.toString().trim() ?? '';
 
   Future<void> _chooseProfileImage(ImageSource source) async {
     try {
@@ -13813,10 +13023,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
         sourcePath: picked.path,
         compressFormat: ImageCompressFormat.jpg,
         compressQuality: 92,
-        aspectRatio: const CropAspectRatio(
-          ratioX: 1,
-          ratioY: 1,
-        ),
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Atur Foto Profil',
@@ -13860,10 +13067,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
         sourcePath: picked.path,
         compressFormat: ImageCompressFormat.jpg,
         compressQuality: 92,
-        aspectRatio: const CropAspectRatio(
-          ratioX: 16,
-          ratioY: 9,
-        ),
+        aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Atur Background Profil',
@@ -13896,16 +13100,11 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
-  Future<void> _showSourcePicker({
-    required bool profile,
-  }) async {
+  Future<void> _showSourcePicker({required bool profile}) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: m8White,
@@ -13933,9 +13132,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                   ),
                   title: const Text(
                     'Pilih dari Galeri',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
@@ -13948,15 +13145,10 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(
-                    Icons.camera_alt_rounded,
-                    color: m8Blue,
-                  ),
+                  leading: const Icon(Icons.camera_alt_rounded, color: m8Blue),
                   title: const Text(
                     'Ambil dari Kamera',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   onTap: () {
                     Navigator.pop(sheetContext);
@@ -14016,20 +13208,14 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
         fit: StackFit.expand,
         children: [
           if (background != null)
-            Image(
-              image: background,
-              fit: BoxFit.cover,
-            )
+            Image(image: background, fit: BoxFit.cover)
           else
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    m8Blue,
-                    m8BlueDark,
-                  ],
+                  colors: [m8Blue, m8BlueDark],
                 ),
               ),
             ),
@@ -14110,10 +13296,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                         decoration: BoxDecoration(
                           color: m8White,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: m8BlueDark,
-                            width: 2,
-                          ),
+                          border: Border.all(color: m8BlueDark, width: 2),
                         ),
                         child: const Icon(
                           Icons.camera_alt_rounded,
@@ -14165,16 +13348,11 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
       decoration: BoxDecoration(
         color: m8White,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: m8Blue.withValues(alpha: 0.10),
-        ),
+        border: Border.all(color: m8Blue.withValues(alpha: 0.10)),
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 5,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         leading: Container(
           width: 46,
           height: 46,
@@ -14182,32 +13360,20 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
             color: m8Blue.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(
-            icon,
-            color: m8Blue,
-          ),
+          child: Icon(icon, color: m8Blue),
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            color: m8Text,
-            fontWeight: FontWeight.w800,
-          ),
+          style: const TextStyle(color: m8Text, fontWeight: FontWeight.w800),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 3),
           child: Text(
             subtitle,
-            style: const TextStyle(
-              color: m8TextMuted,
-              fontSize: 11.5,
-            ),
+            style: const TextStyle(color: m8TextMuted, fontSize: 11.5),
           ),
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: m8TextMuted,
-        ),
+        trailing: const Icon(Icons.chevron_right_rounded, color: m8TextMuted),
       ),
     );
   }
@@ -14234,20 +13400,18 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
       _ => 'image/jpeg',
     };
 
-    final response = await http.post(
-      Uri.parse('$apiBase/api/upload'),
-      headers: {
-        'Content-Type': contentType,
-      },
-      body: bytes,
-    ).timeout(const Duration(seconds: 30));
+    final response = await http
+        .post(
+          Uri.parse('$apiBase/api/upload'),
+          headers: {'Content-Type': contentType},
+          body: bytes,
+        )
+        .timeout(const Duration(seconds: 30));
 
     final data = jsonDecode(response.body);
 
     if (response.statusCode != 201 || data['success'] != true) {
-      throw Exception(
-        data['error']?.toString() ?? 'Upload gambar gagal.',
-      );
+      throw Exception(data['error']?.toString() ?? 'Upload gambar gagal.');
     }
 
     final url = data['url']?.toString().trim();
@@ -14309,24 +13473,22 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
           throw Exception('M8 ID tidak tersedia untuk memperbarui nama.');
         }
 
-        final response = await http.post(
-          Uri.parse('$apiBase/api/profile/name'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ${widget.token}',
-          },
-          body: jsonEncode({
-            'm8_pin': m8Pin,
-            'name': newName,
-          }),
-        ).timeout(const Duration(seconds: 20));
+        final response = await http
+            .post(
+              Uri.parse('$apiBase/api/profile/name'),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ${widget.token}',
+              },
+              body: jsonEncode({'m8_pin': m8Pin, 'name': newName}),
+            )
+            .timeout(const Duration(seconds: 20));
 
         final data = jsonDecode(response.body);
 
         if (response.statusCode != 200 || data['success'] != true) {
           throw Exception(
-            data['error']?.toString() ??
-                'Gagal memperbarui nama profil.',
+            data['error']?.toString() ?? 'Gagal memperbarui nama profil.',
           );
         }
 
@@ -14340,24 +13502,22 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
           throw Exception('M8 ID tidak tersedia untuk memperbarui bio.');
         }
 
-        final response = await http.post(
-          Uri.parse('$apiBase/api/profile/bio'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ${widget.token}',
-          },
-          body: jsonEncode({
-            'm8_pin': m8Pin,
-            'bio': newBio,
-          }),
-        ).timeout(const Duration(seconds: 20));
+        final response = await http
+            .post(
+              Uri.parse('$apiBase/api/profile/bio'),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ${widget.token}',
+              },
+              body: jsonEncode({'m8_pin': m8Pin, 'bio': newBio}),
+            )
+            .timeout(const Duration(seconds: 20));
 
         final data = jsonDecode(response.body);
 
         if (response.statusCode != 200 || data['success'] != true) {
           throw Exception(
-            data['error']?.toString() ??
-                'Gagal memperbarui bio profil.',
+            data['error']?.toString() ?? 'Gagal memperbarui bio profil.',
           );
         }
 
@@ -14367,23 +13527,19 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
       if (_profileImage != null) {
         final photoUrl = await _uploadImage(_profileImage!);
 
-        final response = await http.post(
-          Uri.parse('$apiBase/api/profile/photo'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'user_id': userId,
-            'photo_url': photoUrl,
-          }),
-        ).timeout(const Duration(seconds: 20));
+        final response = await http
+            .post(
+              Uri.parse('$apiBase/api/profile/photo'),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({'user_id': userId, 'photo_url': photoUrl}),
+            )
+            .timeout(const Duration(seconds: 20));
 
         final data = jsonDecode(response.body);
 
         if (response.statusCode != 200 || data['success'] != true) {
           throw Exception(
-            data['error']?.toString() ??
-                'Gagal menyimpan foto profil.',
+            data['error']?.toString() ?? 'Gagal menyimpan foto profil.',
           );
         }
 
@@ -14393,23 +13549,22 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
       if (_backgroundImage != null) {
         final backgroundUrl = await _uploadImage(_backgroundImage!);
 
-        final response = await http.post(
-          Uri.parse('$apiBase/api/profile/background'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'user_id': userId,
-            'background_url': backgroundUrl,
-          }),
-        ).timeout(const Duration(seconds: 20));
+        final response = await http
+            .post(
+              Uri.parse('$apiBase/api/profile/background'),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'user_id': userId,
+                'background_url': backgroundUrl,
+              }),
+            )
+            .timeout(const Duration(seconds: 20));
 
         final data = jsonDecode(response.body);
 
         if (response.statusCode != 200 || data['success'] != true) {
           throw Exception(
-            data['error']?.toString() ??
-                'Gagal menyimpan background profil.',
+            data['error']?.toString() ?? 'Gagal menyimpan background profil.',
           );
         }
 
@@ -14440,9 +13595,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
         elevation: 0,
         title: const Text(
           'Profil B’Jo',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w900),
         ),
       ),
       body: SafeArea(
@@ -14469,19 +13622,14 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
               decoration: BoxDecoration(
                 color: m8White,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: m8Blue.withValues(alpha: 0.10),
-                ),
+                border: Border.all(color: m8Blue.withValues(alpha: 0.10)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Row(
                     children: [
-                      Icon(
-                        Icons.badge_rounded,
-                        color: m8Blue,
-                      ),
+                      Icon(Icons.badge_rounded, color: m8Blue),
                       SizedBox(width: 10),
                       Text(
                         'Nama B’Jo',
@@ -14522,19 +13670,14 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
               decoration: BoxDecoration(
                 color: m8White,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: m8Blue.withValues(alpha: 0.10),
-                ),
+                border: Border.all(color: m8Blue.withValues(alpha: 0.10)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Row(
                     children: [
-                      Icon(
-                        Icons.edit_note_rounded,
-                        color: m8Blue,
-                      ),
+                      Icon(Icons.edit_note_rounded, color: m8Blue),
                       SizedBox(width: 10),
                       Text(
                         'Tentang Aku',
@@ -14548,10 +13691,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                   const SizedBox(height: 11),
                   TextField(
                     controller: _bioController,
-                    style: const TextStyle(
-                      color: m8Text,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: m8Text, fontSize: 14),
                     cursorColor: m8Blue,
                     maxLength: 500,
                     maxLines: 5,
@@ -14615,8 +13755,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: m8BlueDark,
                   foregroundColor: m8White,
-                  disabledBackgroundColor:
-                      m8BlueDark.withValues(alpha: 0.45),
+                  disabledBackgroundColor: m8BlueDark.withValues(alpha: 0.45),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(17),
                   ),
@@ -14646,8 +13785,6 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
     );
   }
 }
-
-
 
 class _AttachmentItem extends StatelessWidget {
   final IconData icon;
@@ -15235,21 +14372,17 @@ class _CallButton extends StatelessWidget {
   }
 }
 
-
 // ============================================================
 // B'JO TUGAS
 // ============================================================
 
-
 // ============================================================
 // B'JO TUGAS / PRODUCTIVITY
 // ============================================================
 
-
 // ============================================================
 // B'JO TUGAS / PRODUCTIVITY
 // ============================================================
-
 
 // ============================================================
 // B'JO TUGAS / PRODUCTIVITY FULL
@@ -15258,18 +14391,12 @@ class _CallButton extends StatelessWidget {
 class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
-  const TasksPage({
-    super.key,
-    required this.user,
-  });
+  const TasksPage({super.key, required this.user});
 
   void _open(BuildContext context, String title, IconData icon) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => _ProductivityPage(
-          title: title,
-          icon: icon,
-        ),
+        builder: (_) => _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
@@ -15328,10 +14455,7 @@ class TasksPage extends StatelessWidget {
         const SizedBox(height: 5),
         const Text(
           'Semua yang kamu butuhkan dalam satu tempat.',
-          style: TextStyle(
-            color: Color(0xFF71808C),
-            fontSize: 13,
-          ),
+          style: TextStyle(color: Color(0xFF71808C), fontSize: 13),
         ),
         const SizedBox(height: 20),
 
@@ -15372,8 +14496,7 @@ class TasksPage extends StatelessWidget {
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               item['title'] as String,
@@ -15410,7 +14533,6 @@ class TasksPage extends StatelessWidget {
   }
 }
 
-
 // ============================================================
 // PRODUCTIVITY DETAIL
 // ============================================================
@@ -15419,19 +14541,13 @@ class _ProductivityPage extends StatefulWidget {
   final String title;
   final IconData icon;
 
-  const _ProductivityPage({
-    required this.title,
-    required this.icon,
-  });
+  const _ProductivityPage({required this.title, required this.icon});
 
   @override
-  State<_ProductivityPage> createState() =>
-      _ProductivityPageState();
+  State<_ProductivityPage> createState() => _ProductivityPageState();
 }
 
-class _ProductivityPageState
-    extends State<_ProductivityPage> {
-
+class _ProductivityPageState extends State<_ProductivityPage> {
   final List<Map<String, dynamic>> items = [];
 
   final titleController = TextEditingController();
@@ -15442,8 +14558,7 @@ class _ProductivityPageState
   TimeOfDay? selectedTime;
   bool completed = false;
 
-  String get storageKey =>
-      'bjo_full_${widget.title.toLowerCase()}';
+  String get storageKey => 'bjo_full_${widget.title.toLowerCase()}';
 
   @override
   void initState() {
@@ -15459,8 +14574,7 @@ class _ProductivityPageState
   }
 
   Future<void> _load() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
     final data = prefs.getString(storageKey);
 
@@ -15475,22 +14589,16 @@ class _ProductivityPageState
         items.clear();
 
         for (final item in decoded) {
-          items.add(
-            Map<String, dynamic>.from(item),
-          );
+          items.add(Map<String, dynamic>.from(item));
         }
       });
     } catch (_) {}
   }
 
   Future<void> _save() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString(
-      storageKey,
-      jsonEncode(items),
-    );
+    await prefs.setString(storageKey, jsonEncode(items));
   }
 
   String _dateText(DateTime? date) {
@@ -15526,8 +14634,7 @@ class _ProductivityPageState
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime:
-          selectedTime ?? TimeOfDay.now(),
+      initialTime: selectedTime ?? TimeOfDay.now(),
     );
 
     if (picked != null) {
@@ -15548,20 +14655,18 @@ class _ProductivityPageState
   }
 
   Future<void> _add() async {
-    final title =
-        titleController.text.trim();
+    final title = titleController.text.trim();
 
     if (title.isEmpty) return;
 
     final item = <String, dynamic>{
       'title': title,
-      'detail':
-          detailController.text.trim(),
+      'detail': detailController.text.trim(),
       'date': selectedDate?.toIso8601String(),
       'time': selectedTime == null
           ? null
           : '${selectedTime!.hour}:'
-              '${selectedTime!.minute}',
+                '${selectedTime!.minute}',
       'priority': priority,
       'completed': completed,
     };
@@ -15594,43 +14699,30 @@ class _ProductivityPageState
                 left: 18,
                 right: 18,
                 top: 20,
-                bottom:
-                    MediaQuery.of(context)
-                            .viewInsets
-                            .bottom +
-                        20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
               ),
               child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Tambah ${widget.title}',
                       style: const TextStyle(
                         fontSize: 21,
-                        fontWeight:
-                            FontWeight.w900,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
 
                     const SizedBox(height: 18),
 
                     TextField(
-                      controller:
-                          titleController,
-                      decoration:
-                          InputDecoration(
-                        labelText:
-                            widget.title ==
-                                    'Tugas'
-                                ? 'Nama tugas'
-                                : 'Judul',
-                        border:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(14),
+                      controller: titleController,
+                      decoration: InputDecoration(
+                        labelText: widget.title == 'Tugas'
+                            ? 'Nama tugas'
+                            : 'Judul',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),
@@ -15638,48 +14730,36 @@ class _ProductivityPageState
                     const SizedBox(height: 12),
 
                     TextField(
-                      controller:
-                          detailController,
+                      controller: detailController,
                       maxLines: 4,
-                      decoration:
-                          InputDecoration(
-                        labelText:
-                            'Keterangan',
-                        border:
-                            OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(14),
+                      decoration: InputDecoration(
+                        labelText: 'Keterangan',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),
 
                     const SizedBox(height: 12),
 
-                    DropdownButtonFormField<
-                        String>(
+                    DropdownButtonFormField<String>(
                       value: priority,
-                      decoration:
-                          const InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Prioritas',
-                        border:
-                            OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                       ),
                       items: const [
                         DropdownMenuItem(
                           value: 'Rendah',
-                          child:
-                              Text('Rendah'),
+                          child: Text('Rendah'),
                         ),
                         DropdownMenuItem(
                           value: 'Normal',
-                          child:
-                              Text('Normal'),
+                          child: Text('Normal'),
                         ),
                         DropdownMenuItem(
                           value: 'Tinggi',
-                          child:
-                              Text('Tinggi'),
+                          child: Text('Tinggi'),
                         ),
                       ],
                       onChanged: (value) {
@@ -15696,45 +14776,31 @@ class _ProductivityPageState
                     Row(
                       children: [
                         Expanded(
-                          child:
-                              OutlinedButton.icon(
+                          child: OutlinedButton.icon(
                             onPressed: () async {
                               await _pickDate();
-                              setModalState(
-                                  () {});
+                              setModalState(() {});
                             },
-                            icon: const Icon(
-                              Icons
-                                  .calendar_today,
-                            ),
+                            icon: const Icon(Icons.calendar_today),
                             label: Text(
-                              selectedDate ==
-                                      null
+                              selectedDate == null
                                   ? 'Tanggal'
-                                  : _dateText(
-                                      selectedDate),
+                                  : _dateText(selectedDate),
                             ),
                           ),
                         ),
-                        const SizedBox(
-                            width: 10),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child:
-                              OutlinedButton.icon(
+                          child: OutlinedButton.icon(
                             onPressed: () async {
                               await _pickTime();
-                              setModalState(
-                                  () {});
+                              setModalState(() {});
                             },
-                            icon: const Icon(
-                              Icons.access_time,
-                            ),
+                            icon: const Icon(Icons.access_time),
                             label: Text(
-                              selectedTime ==
-                                      null
+                              selectedTime == null
                                   ? 'Jam'
-                                  : _timeText(
-                                      selectedTime),
+                                  : _timeText(selectedTime),
                             ),
                           ),
                         ),
@@ -15747,11 +14813,8 @@ class _ProductivityPageState
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: _add,
-                        icon: const Icon(
-                          Icons.save_outlined,
-                        ),
-                        label:
-                            const Text('Simpan'),
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text('Simpan'),
                       ),
                     ),
                   ],
@@ -15774,9 +14837,7 @@ class _ProductivityPageState
 
   Future<void> _toggle(int index) async {
     setState(() {
-      items[index]['completed'] =
-          !(items[index]['completed'] ==
-              true);
+      items[index]['completed'] = !(items[index]['completed'] == true);
     });
 
     await _save();
@@ -15791,8 +14852,7 @@ class _ProductivityPageState
         foregroundColor: m8White,
         title: Text(widget.title),
       ),
-      floatingActionButton:
-          FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         backgroundColor: m8Blue,
         foregroundColor: m8White,
         onPressed: _showAddDialog,
@@ -15801,113 +14861,61 @@ class _ProductivityPageState
       body: items.isEmpty
           ? Center(
               child: Column(
-                mainAxisSize:
-                    MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    widget.icon,
-                    size: 62,
-                    color: m8Blue,
-                  ),
-                  const SizedBox(
-                      height: 12),
+                  Icon(widget.icon, size: 62, color: m8Blue),
+                  const SizedBox(height: 12),
                   Text(
                     'Belum ada ${widget.title.toLowerCase()}.',
-                    style:
-                        const TextStyle(
-                      color:
-                          Color(0xFF71808C),
-                    ),
+                    style: const TextStyle(color: Color(0xFF71808C)),
                   ),
                   const SizedBox(height: 14),
                   ElevatedButton.icon(
-                    onPressed:
-                        _showAddDialog,
-                    icon:
-                        const Icon(Icons.add),
-                    label: Text(
-                      'Tambah ${widget.title}',
-                    ),
+                    onPressed: _showAddDialog,
+                    icon: const Icon(Icons.add),
+                    label: Text('Tambah ${widget.title}'),
                   ),
                 ],
               ),
             )
           : ListView.builder(
-              padding:
-                  const EdgeInsets.fromLTRB(
-                16,
-                16,
-                16,
-                90,
-              ),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
               itemCount: items.length,
-              itemBuilder:
-                  (context, index) {
-                final item =
-                    items[index];
+              itemBuilder: (context, index) {
+                final item = items[index];
 
-                final done =
-                    item['completed'] ==
-                        true;
+                final done = item['completed'] == true;
 
                 return Card(
-                  margin:
-                      const EdgeInsets.only(
-                    bottom: 10,
-                  ),
+                  margin: const EdgeInsets.only(bottom: 10),
                   child: ListTile(
-                    leading: widget.title ==
-                            'Tugas'
+                    leading: widget.title == 'Tugas'
                         ? Checkbox(
                             value: done,
-                            onChanged: (_) =>
-                                _toggle(index),
+                            onChanged: (_) => _toggle(index),
                           )
                         : CircleAvatar(
-                            backgroundColor:
-                                m8Blue.withOpacity(
-                                    .10),
-                            child: Icon(
-                              widget.icon,
-                              color: m8Blue,
-                            ),
+                            backgroundColor: m8Blue.withOpacity(.10),
+                            child: Icon(widget.icon, color: m8Blue),
                           ),
                     title: Text(
-                      item['title']
-                          .toString(),
+                      item['title'].toString(),
                       style: TextStyle(
-                        fontWeight:
-                            FontWeight.w800,
-                        decoration: done
-                            ? TextDecoration
-                                .lineThrough
-                            : null,
+                        fontWeight: FontWeight.w800,
+                        decoration: done ? TextDecoration.lineThrough : null,
                       ),
                     ),
-                    subtitle:
-                        Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if ((item['detail']
-                                ?.toString()
-                                .isNotEmpty ??
-                            false))
-                          Text(
-                            item['detail']
-                                .toString(),
-                          ),
-                        if (item['date'] !=
-                            null)
+                        if ((item['detail']?.toString().isNotEmpty ?? false))
+                          Text(item['detail'].toString()),
+                        if (item['date'] != null)
                           Text(
                             'Tanggal: ${_dateText(DateTime.tryParse(item['date'].toString()))}',
                           ),
-                        if (item['priority'] !=
-                            null)
-                          Text(
-                            'Prioritas: ${item['priority']}',
-                          ),
+                        if (item['priority'] != null)
+                          Text('Prioritas: ${item['priority']}'),
                       ],
                     ),
                     isThreeLine: true,
@@ -15949,16 +14957,11 @@ class CallsPage extends StatelessWidget {
   }
 }
 
-
 class SettingsPage extends StatelessWidget {
   final String token;
   final Map<String, dynamic> user;
 
-  const SettingsPage({
-    super.key,
-    required this.token,
-    required this.user,
-  });
+  const SettingsPage({super.key, required this.token, required this.user});
 
   void _open(BuildContext context, String title, IconData icon) {
     Navigator.of(context).push(
@@ -16031,9 +15034,7 @@ class SettingsPage extends StatelessWidget {
         elevation: 0,
         title: const Text(
           'Pengaturan',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
       body: ListView(
@@ -16050,10 +15051,7 @@ class SettingsPage extends StatelessWidget {
           const SizedBox(height: 5),
           const Text(
             'Atur akun dan pengalaman B\'Jo sesuai kebutuhanmu.',
-            style: TextStyle(
-              color: Color(0xFF71808C),
-              fontSize: 13,
-            ),
+            style: TextStyle(color: Color(0xFF71808C), fontSize: 13),
           ),
           const SizedBox(height: 20),
 
@@ -16094,8 +15092,7 @@ class SettingsPage extends StatelessWidget {
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 item['title'] as String,
@@ -16138,18 +15135,12 @@ class SettingsPage extends StatelessWidget {
               ),
               title: const Text(
                 'Keluar',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              subtitle: const Text(
-                'Keluar dari akun B\'Jo',
-              ),
+              subtitle: const Text('Keluar dari akun B\'Jo'),
               onTap: () {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (_) => const LoginPage(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
                   (_) => false,
                 );
               },
@@ -16161,11 +15152,9 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-
 // ============================================================
 // SETTINGS DETAIL
 // ============================================================
-
 
 class _SettingsDetailPage extends StatefulWidget {
   final String title;
@@ -16181,13 +15170,10 @@ class _SettingsDetailPage extends StatefulWidget {
   });
 
   @override
-  State<_SettingsDetailPage> createState() =>
-      _SettingsDetailPageState();
+  State<_SettingsDetailPage> createState() => _SettingsDetailPageState();
 }
 
-class _SettingsDetailPageState
-    extends State<_SettingsDetailPage> {
-
+class _SettingsDetailPageState extends State<_SettingsDetailPage> {
   String themeMode = 'system';
   double textScale = 1.0;
   bool compactChat = false;
@@ -16214,27 +15200,20 @@ class _SettingsDetailPageState
     if (!mounted) return;
 
     setState(() {
-      themeMode =
-          prefs.getString('bjo_theme_mode') ?? 'system';
+      themeMode = prefs.getString('bjo_theme_mode') ?? 'system';
 
-      textScale =
-          prefs.getDouble('bjo_text_scale') ?? 1.0;
+      textScale = prefs.getDouble('bjo_text_scale') ?? 1.0;
 
-      compactChat =
-          prefs.getBool('bjo_compact_chat') ?? false;
+      compactChat = prefs.getBool('bjo_compact_chat') ?? false;
 
-      showAvatars =
-          prefs.getBool('bjo_show_avatars') ?? true;
+      showAvatars = prefs.getBool('bjo_show_avatars') ?? true;
     });
   }
 
   Future<void> _setTheme(String value) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString(
-      'bjo_theme_mode',
-      value,
-    );
+    await prefs.setString('bjo_theme_mode', value);
 
     if (mounted) {
       setState(() {
@@ -16246,10 +15225,7 @@ class _SettingsDetailPageState
   Future<void> _setTextScale(double value) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setDouble(
-      'bjo_text_scale',
-      value,
-    );
+    await prefs.setDouble('bjo_text_scale', value);
 
     if (mounted) {
       setState(() {
@@ -16261,10 +15237,7 @@ class _SettingsDetailPageState
   Future<void> _setCompactChat(bool value) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setBool(
-      'bjo_compact_chat',
-      value,
-    );
+    await prefs.setBool('bjo_compact_chat', value);
 
     if (mounted) {
       setState(() {
@@ -16276,10 +15249,7 @@ class _SettingsDetailPageState
   Future<void> _setShowAvatars(bool value) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setBool(
-      'bjo_show_avatars',
-      value,
-    );
+    await prefs.setBool('bjo_show_avatars', value);
 
     if (mounted) {
       setState(() {
@@ -16292,9 +15262,7 @@ class _SettingsDetailPageState
     try {
       final response = await http.get(
         Uri.parse('$apiBase/api/privacy'),
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-        },
+        headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
       if (response.statusCode != 200) return;
@@ -16307,8 +15275,7 @@ class _SettingsDetailPageState
       setState(() {
         profilePhotoVisibility =
             privacy['profile_photo_visibility']?.toString() ?? 'everyone';
-        bioVisibility =
-            privacy['bio_visibility']?.toString() ?? 'everyone';
+        bioVisibility = privacy['bio_visibility']?.toString() ?? 'everyone';
         profileBackgroundVisibility =
             privacy['profile_background_visibility']?.toString() ?? 'everyone';
         onlineVisibility =
@@ -16336,8 +15303,7 @@ class _SettingsDetailPageState
         body: jsonEncode({
           'profile_photo_visibility': profilePhotoVisibility,
           'bio_visibility': bioVisibility,
-          'profile_background_visibility':
-              profileBackgroundVisibility,
+          'profile_background_visibility': profileBackgroundVisibility,
           'online_visibility': onlineVisibility,
           'last_seen_visibility': lastSeenVisibility,
         }),
@@ -16345,27 +15311,20 @@ class _SettingsDetailPageState
 
       if (!mounted) return;
 
-      if (response.statusCode >= 200 &&
-          response.statusCode < 300) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pengaturan privasi tersimpan.'),
-          ),
+          const SnackBar(content: Text('Pengaturan privasi tersimpan.')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Gagal menyimpan pengaturan privasi.'),
-          ),
+          const SnackBar(content: Text('Gagal menyimpan pengaturan privasi.')),
         );
       }
     } catch (_) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tidak dapat terhubung ke server.'),
-        ),
+        const SnackBar(content: Text('Tidak dapat terhubung ke server.')),
       );
     } finally {
       if (mounted) {
@@ -16429,23 +15388,12 @@ class _SettingsDetailPageState
     return Card(
       child: ListTile(
         leading: Icon(icon, color: m8Blue),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
         subtitle: Text(
           '$subtitle • ${value == 'everyone' ? 'Semua orang' : 'Tidak ada'}',
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-        ),
-        onTap: () => _choosePrivacy(
-          title,
-          value,
-          update,
-        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: () => _choosePrivacy(title, value, update),
       ),
     );
   }
@@ -16459,9 +15407,7 @@ class _SettingsDetailPageState
         elevation: 0,
         title: const Text(
           'Privasi & Keamanan',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
       body: ListView(
@@ -16480,9 +15426,7 @@ class _SettingsDetailPageState
 
           const Text(
             'Tentukan informasi profil yang boleh dilihat pengguna lain.',
-            style: TextStyle(
-              color: Color(0xFF71808C),
-            ),
+            style: TextStyle(color: Color(0xFF71808C)),
           ),
 
           const SizedBox(height: 16),
@@ -16556,10 +15500,7 @@ class _SettingsDetailPageState
             ),
             child: const Row(
               children: [
-                Icon(
-                  Icons.lock_outline_rounded,
-                  color: m8Blue,
-                ),
+                Icon(Icons.lock_outline_rounded, color: m8Blue),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -16577,9 +15518,7 @@ class _SettingsDetailPageState
           if (privacyLoading)
             const Padding(
               padding: EdgeInsets.only(top: 16),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: Center(child: CircularProgressIndicator()),
             ),
         ],
       ),
@@ -16630,9 +15569,7 @@ class _SettingsDetailPageState
   Future<void> _chooseAccent() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final current =
-        prefs.getInt('bjo_accent_color') ??
-        0xFF3B82F6;
+    final current = prefs.getInt('bjo_accent_color') ?? 0xFF3B82F6;
 
     final colors = <Map<String, dynamic>>[
       {'name': 'Biru', 'color': 0xFF3B82F6},
@@ -16657,18 +15594,12 @@ class _SettingsDetailPageState
               },
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundColor: Color(value),
-                  ),
+                  CircleAvatar(radius: 14, backgroundColor: Color(value)),
                   const SizedBox(width: 12),
                   Text(item['name'] as String),
                   const Spacer(),
                   if (value == current)
-                    const Icon(
-                      Icons.check_circle,
-                      color: m8Blue,
-                    ),
+                    const Icon(Icons.check_circle, color: m8Blue),
                 ],
               ),
             );
@@ -16678,10 +15609,7 @@ class _SettingsDetailPageState
     );
 
     if (result != null) {
-      await prefs.setInt(
-        'bjo_accent_color',
-        result,
-      );
+      await prefs.setInt('bjo_accent_color', result);
 
       if (mounted) {
         setState(() {});
@@ -16702,10 +15630,7 @@ class _SettingsDetailPageState
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Contoh teks B\'Jo',
-                    textScaleFactor: value,
-                  ),
+                  Text('Contoh teks B\'Jo', textScaleFactor: value),
                   const SizedBox(height: 15),
                   Slider(
                     min: .85,
@@ -16721,9 +15646,7 @@ class _SettingsDetailPageState
                   ),
                   Text(
                     '${(value * 100).round()}%',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
@@ -16733,8 +15656,7 @@ class _SettingsDetailPageState
                   child: const Text('BATAL'),
                 ),
                 FilledButton(
-                  onPressed: () =>
-                      Navigator.pop(context, value),
+                  onPressed: () => Navigator.pop(context, value),
                   child: const Text('SIMPAN'),
                 ),
               ],
@@ -16771,10 +15693,10 @@ class _SettingsDetailPageState
       _notifSound = prefs.getBool('bjo_notif_sound') ?? true;
       _notifVibration = prefs.getBool('bjo_notif_vibration') ?? true;
       _notifDnd = prefs.getBool('bjo_notif_dnd') ?? false;
-      _notificationSound = prefs.getString('bjo_notification_sound') ??
-          'bjo_notification.wav';
-      _ringtoneSound = prefs.getString('bjo_ringtone_sound') ??
-          'bjo_ringtone.wav';
+      _notificationSound =
+          prefs.getString('bjo_notification_sound') ?? 'bjo_notification.wav';
+      _ringtoneSound =
+          prefs.getString('bjo_ringtone_sound') ?? 'bjo_ringtone.wav';
     });
   }
 
@@ -16791,207 +15713,167 @@ class _SettingsDetailPageState
     }
   }
 
-    Future<void> _saveSoundChoice({
-      required String type,
-      required String value,
-    }) async {
-      final prefs = await SharedPreferences.getInstance();
+  Future<void> _saveSoundChoice({
+    required String type,
+    required String value,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
 
-      if (type == 'notification') {
-        await prefs.setString('bjo_notification_sound', value);
+    if (type == 'notification') {
+      await prefs.setString('bjo_notification_sound', value);
 
-        if (mounted) {
-          setState(() {
-            _notificationSound = value;
-          });
-        }
-      } else {
-        await prefs.setString('bjo_ringtone_sound', value);
+      if (mounted) {
+        setState(() {
+          _notificationSound = value;
+        });
+      }
+    } else {
+      await prefs.setString('bjo_ringtone_sound', value);
 
-        if (mounted) {
-          setState(() {
-            _ringtoneSound = value;
-          });
-        }
+      if (mounted) {
+        setState(() {
+          _ringtoneSound = value;
+        });
       }
     }
+  }
 
-    Future<void> _previewSound(String asset) async {
-      try {
-        await _soundPreviewPlayer.stop();
-        await _soundPreviewPlayer.play(
-          AssetSource('sounds/$asset'),
-        );
-      } catch (e) {
-        debugPrint('[BJO SOUND PREVIEW] ERROR: $e');
-      }
+  Future<void> _previewSound(String asset) async {
+    try {
+      await _soundPreviewPlayer.stop();
+      await _soundPreviewPlayer.play(AssetSource('sounds/$asset'));
+    } catch (e) {
+      debugPrint('[BJO SOUND PREVIEW] ERROR: $e');
     }
+  }
 
-    Future<void> _showSoundPicker({
-      required String type,
-      required String title,
-    }) async {
-      final isNotification = type == 'notification';
+  Future<void> _showSoundPicker({
+    required String type,
+    required String title,
+  }) async {
+    final isNotification = type == 'notification';
 
-      final asset = isNotification
-          ? 'bjo_notification.wav'
-          : 'bjo_ringtone.wav';
+    final asset = isNotification ? 'bjo_notification.wav' : 'bjo_ringtone.wav';
 
-      final name = isNotification
-          ? "B'Jo Notification"
-          : "B'Jo Ringtone";
+    final name = isNotification ? "B'Jo Notification" : "B'Jo Ringtone";
 
-      final current = isNotification
-          ? _notificationSound
-          : _ringtoneSound;
+    final current = isNotification ? _notificationSound : _ringtoneSound;
 
-      final selected = await showModalBottomSheet<String>(
-        context: context,
-        backgroundColor: m8White,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(24),
-          ),
-        ),
-        builder: (sheetContext) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 42,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: m8Blue.withOpacity(.25),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: m8White,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: m8Blue.withOpacity(.25),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.music_note_rounded,
-                        color: m8Blue,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            color: Color(0xFF102A43),
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Card(
-                    elevation: 0,
-                    color: m8Blue.withOpacity(.06),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        backgroundColor: m8Blue,
-                        child: Icon(
-                          Icons.music_note_rounded,
-                          color: m8White,
-                        ),
-                      ),
-                      title: Text(
-                        name,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.music_note_rounded, color: m8Blue),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        title,
                         style: const TextStyle(
                           color: Color(0xFF102A43),
-                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
-                      subtitle: Text(asset),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            tooltip: 'Putar',
-                            onPressed: () {
-                              _previewSound(asset);
-                            },
-                            icon: const Icon(
-                              Icons.play_circle_fill_rounded,
-                              color: m8Blue,
-                              size: 30,
-                            ),
-                          ),
-                          Radio<String>(
-                            value: asset,
-                            groupValue: current,
-                            onChanged: (value) {
-                              if (value != null) {
-                                Navigator.pop(
-                                  sheetContext,
-                                  value,
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.pop(
-                          sheetContext,
-                          asset,
-                        );
-                      },
                     ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Card(
+                  elevation: 0,
+                  color: m8Blue.withOpacity(.06),
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      backgroundColor: m8Blue,
+                      child: Icon(Icons.music_note_rounded, color: m8White),
+                    ),
+                    title: Text(
+                      name,
+                      style: const TextStyle(
+                        color: Color(0xFF102A43),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    subtitle: Text(asset),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: 'Putar',
+                          onPressed: () {
+                            _previewSound(asset);
+                          },
+                          icon: const Icon(
+                            Icons.play_circle_fill_rounded,
+                            color: m8Blue,
+                            size: 30,
+                          ),
+                        ),
+                        Radio<String>(
+                          value: asset,
+                          groupValue: current,
+                          onChanged: (value) {
+                            if (value != null) {
+                              Navigator.pop(sheetContext, value);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.pop(sheetContext, asset);
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },
-      );
-
-      if (selected != null) {
-        await _saveSoundChoice(
-          type: type,
-          value: selected,
+          ),
         );
-      }
-    }
+      },
+    );
 
-    Widget _buildSoundChoiceTile({
-      required IconData icon,
-      required String title,
-      required String subtitle,
-      required String type,
-    }) {
-      return Card(
-        child: ListTile(
-          leading: Icon(
-            icon,
-            color: m8Blue,
-          ),
-          title: Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          subtitle: Text(subtitle),
-          trailing: const Icon(
-            Icons.chevron_right_rounded,
-            color: m8Blue,
-          ),
-          onTap: () {
-            _showSoundPicker(
-              type: type,
-              title: title,
-            );
-          },
-        ),
-      );
+    if (selected != null) {
+      await _saveSoundChoice(type: type, value: selected);
     }
+  }
 
+  Widget _buildSoundChoiceTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String type,
+  }) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon, color: m8Blue),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.chevron_right_rounded, color: m8Blue),
+        onTap: () {
+          _showSoundPicker(type: type, title: title);
+        },
+      ),
+    );
+  }
 
   Widget _bjoNotificationSwitch({
     required IconData icon,
@@ -17004,12 +15886,7 @@ class _SettingsDetailPageState
     return Card(
       child: SwitchListTile(
         secondary: Icon(icon, color: m8Blue),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
         subtitle: Text(subtitle),
         value: value,
         onChanged: (v) {
@@ -17028,9 +15905,7 @@ class _SettingsDetailPageState
         elevation: 0,
         title: const Text(
           'Notifikasi',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
       body: ListView(
@@ -17110,29 +15985,27 @@ class _SettingsDetailPageState
             key: 'bjo_notif_vibration',
             update: () => _notifVibration = !_notifVibration,
           ),
-            const SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-            _buildSoundChoiceTile(
-              icon: Icons.notifications_active_outlined,
-              title: 'Nada Notifikasi',
-              subtitle:
-                  _notificationSound == 'bjo_notification.wav'
-                      ? "B'Jo Notification"
-                      : _notificationSound,
-              type: 'notification',
-            ),
+          _buildSoundChoiceTile(
+            icon: Icons.notifications_active_outlined,
+            title: 'Nada Notifikasi',
+            subtitle: _notificationSound == 'bjo_notification.wav'
+                ? "B'Jo Notification"
+                : _notificationSound,
+            type: 'notification',
+          ),
 
-            const SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-            _buildSoundChoiceTile(
-              icon: Icons.ring_volume_outlined,
-              title: 'Nada Dering',
-              subtitle:
-                  _ringtoneSound == 'bjo_ringtone.wav'
-                      ? "B'Jo Ringtone"
-                      : _ringtoneSound,
-              type: 'ringtone',
-            ),
+          _buildSoundChoiceTile(
+            icon: Icons.ring_volume_outlined,
+            title: 'Nada Dering',
+            subtitle: _ringtoneSound == 'bjo_ringtone.wav'
+                ? "B'Jo Ringtone"
+                : _ringtoneSound,
+            type: 'ringtone',
+          ),
 
           const SizedBox(height: 20),
 
@@ -17166,10 +16039,7 @@ class _SettingsDetailPageState
             ),
             child: const Row(
               children: [
-                Icon(
-                  Icons.info_outline,
-                  color: m8Blue,
-                ),
+                Icon(Icons.info_outline, color: m8Blue),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -17188,16 +16058,14 @@ class _SettingsDetailPageState
     );
   }
 
-
-    @override
-    void dispose() {
-      _soundPreviewPlayer.dispose();
-      super.dispose();
-    }
+  @override
+  void dispose() {
+    _soundPreviewPlayer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-
     if (widget.title == 'Privasi & Keamanan') {
       return _buildPrivacySettings();
     }
@@ -17214,37 +16082,27 @@ class _SettingsDetailPageState
           foregroundColor: m8White,
           title: const Text(
             'Tampilan',
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w800),
           ),
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-
             Card(
               child: ListTile(
-                leading: const Icon(
-                  Icons.dark_mode_outlined,
-                  color: m8Blue,
-                ),
+                leading: const Icon(Icons.dark_mode_outlined, color: m8Blue),
                 title: const Text(
                   'Tema',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
                 subtitle: Text(
                   themeMode == 'dark'
                       ? 'Gelap'
                       : themeMode == 'light'
-                          ? 'Terang'
-                          : 'Ikuti sistem',
+                      ? 'Terang'
+                      : 'Ikuti sistem',
                 ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: _chooseTheme,
               ),
             ),
@@ -17253,22 +16111,13 @@ class _SettingsDetailPageState
 
             Card(
               child: ListTile(
-                leading: const Icon(
-                  Icons.color_lens_outlined,
-                  color: m8Blue,
-                ),
+                leading: const Icon(Icons.color_lens_outlined, color: m8Blue),
                 title: const Text(
                   'Warna B\'Jo',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                subtitle: const Text(
-                  'Pilih warna utama aplikasi',
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                ),
+                subtitle: const Text('Pilih warna utama aplikasi'),
+                trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: _chooseAccent,
               ),
             ),
@@ -17277,22 +16126,13 @@ class _SettingsDetailPageState
 
             Card(
               child: ListTile(
-                leading: const Icon(
-                  Icons.format_size_rounded,
-                  color: m8Blue,
-                ),
+                leading: const Icon(Icons.format_size_rounded, color: m8Blue),
                 title: const Text(
                   'Ukuran Teks',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                subtitle: Text(
-                  '${(textScale * 100).round()}%',
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                ),
+                subtitle: Text('${(textScale * 100).round()}%'),
+                trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: _chooseTextSize,
               ),
             ),
@@ -17307,13 +16147,9 @@ class _SettingsDetailPageState
                 ),
                 title: const Text(
                   'Chat Ringkas',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                subtitle: const Text(
-                  'Gunakan jarak chat yang lebih rapat',
-                ),
+                subtitle: const Text('Gunakan jarak chat yang lebih rapat'),
                 value: compactChat,
                 onChanged: _setCompactChat,
               ),
@@ -17329,13 +16165,9 @@ class _SettingsDetailPageState
                 ),
                 title: const Text(
                   'Tampilkan Foto Profil',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                subtitle: const Text(
-                  'Tampilkan avatar pada daftar chat',
-                ),
+                subtitle: const Text('Tampilkan avatar pada daftar chat'),
                 value: showAvatars,
                 onChanged: _setShowAvatars,
               ),
@@ -17351,10 +16183,7 @@ class _SettingsDetailPageState
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.check_circle_outline,
-                    color: m8Blue,
-                  ),
+                  const Icon(Icons.check_circle_outline, color: m8Blue),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -17422,44 +16251,28 @@ class _SettingsDetailPageState
         foregroundColor: m8White,
         title: Text(
           widget.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: items.length,
-        separatorBuilder: (_, __) =>
-            const SizedBox(height: 8),
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
           final item = items[index];
 
           return Card(
             child: ListTile(
-              leading: Icon(
-                item['icon'] as IconData,
-                color: m8Blue,
-              ),
+              leading: Icon(item['icon'] as IconData, color: m8Blue),
               title: Text(
                 item['title'] as String,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
-              subtitle: Text(
-                item['subtitle'] as String,
-              ),
-              trailing: const Icon(
-                Icons.chevron_right_rounded,
-              ),
+              subtitle: Text(item['subtitle'] as String),
+              trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${item['title']} siap diaktifkan.',
-                    ),
-                  ),
+                  SnackBar(content: Text('${item['title']} siap diaktifkan.')),
                 );
               },
             ),
