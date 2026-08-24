@@ -886,7 +886,7 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     )
                                   : const Text(
-                                      "MASUK KE B'JO",
+                                      "MASUK KE B'Jo",
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w900,
@@ -1019,7 +1019,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (!mounted) return;
 
       if (response.statusCode == 201 && data['success'] == true) {
-        showMessage('Akun M8 berhasil dibuat');
+        showMessage("Akun B'Jo berhasil dibuat");
 
         await Future.delayed(const Duration(milliseconds: 800));
 
@@ -1027,12 +1027,14 @@ class _RegisterPageState extends State<RegisterPage> {
 
         Navigator.of(context).pop();
       } else {
-        showMessage(data['error']?.toString() ?? 'Pendaftaran M8 gagal');
+        showMessage(
+          data['error']?.toString() ?? "Pendaftaran B'Jo gagal",
+        );
       }
     } catch (_) {
       if (!mounted) return;
 
-      showMessage('Tidak dapat terhubung ke server M8.');
+      showMessage("Tidak dapat terhubung ke server B'Jo.");
     } finally {
       if (mounted) {
         setState(() => loading = false);
@@ -1229,9 +1231,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ],
             ),
           ),
-        );
       },
-    );
 
     if (!mounted || proceed != true) return;
 
@@ -1243,7 +1243,6 @@ class _RegisterPageState extends State<RegisterPage> {
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
-
   @override
   void dispose() {
     nameController.dispose();
@@ -1291,158 +1290,292 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: m8Blue,
+      backgroundColor: m8White,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: m8Blue,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         foregroundColor: m8White,
-        title: const Text('Daftar M8'),
+        title: const Text(
+          "Daftar B'Jo",
+          style: TextStyle(
+            color: m8White,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ),
-      body: SafeArea(
-        child: Center(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              m8Blue,
+              Color(0xFFB9D9EA),
+              m8White,
+            ],
+            stops: [0.0, 0.45, 1.0],
+          ),
+        ),
+        child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: Column(
-                children: [
-                  const Icon(Icons.person_add_alt_1_rounded, size: 64),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 430),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
 
-                  const SizedBox(height: 18),
-
-                  const Text(
-                    'Buat Akun M8',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: m8Text,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    'Daftar untuk mulai menggunakan M8 Messenger',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: m8TextMuted),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  TextField(
-                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
-                    controller: nameController,
-                    textInputAction: TextInputAction.next,
-                    decoration: fieldDecoration('Nama', Icons.person_outline),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  TextField(
-                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
-                    controller: identifierController,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    decoration: fieldDecoration(
-                      'Email / Nomor HP',
-                      Icons.alternate_email,
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  TextField(
-                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
-                    textInputAction: TextInputAction.next,
-                    decoration: fieldDecoration(
-                      'Nomor HP',
-                      Icons.phone_outlined,
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  TextField(
-                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
-                    controller: passwordController,
-                    obscureText: obscurePassword,
-                    textInputAction: TextInputAction.next,
-                    decoration: fieldDecoration(
-                      'Password',
-                      Icons.lock_outline,
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+                    // Logo B'Jo
+                    Container(
+                      width: 82,
+                      height: 82,
+                      decoration: BoxDecoration(
+                        color: m8White,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: m8BlueDark.withValues(alpha: 0.20),
+                            blurRadius: 24,
+                            offset: const Offset(0, 9),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        "B'Jo",
+                        style: TextStyle(
+                          color: m8BlueDark,
+                          fontSize: 25,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 14),
+                    const SizedBox(height: 18),
 
-                  TextField(
-                    style: const TextStyle(color: m8BlueDark, fontWeight: FontWeight.w600),
-                    controller: confirmPasswordController,
-                    obscureText: obscureConfirmPassword,
-                    textInputAction: TextInputAction.next,
-                    decoration: fieldDecoration(
-                      'Konfirmasi Password',
-                      Icons.lock_reset_outlined,
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscureConfirmPassword = !obscureConfirmPassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscureConfirmPassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                        ),
+                    const Text(
+                      "Buat Akun B'Jo",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: m8White,
+                        fontSize: 29,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 6),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: FilledButton(
-                      onPressed: loading ? null : _showPinDialog,
-                      child: loading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text(
-                              'DAFTAR',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
+                    const Text(
+                      "Bergabung dan mulai terhubung di B'Jo",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: m8White,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 26),
+
+                    // Kartu registrasi
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+                      decoration: BoxDecoration(
+                        color: m8White,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: m8BlueDark.withValues(alpha: 0.16),
+                            blurRadius: 28,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: nameController,
+                            style: const TextStyle(
+                              color: m8BlueDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textInputAction: TextInputAction.next,
+                            decoration: fieldDecoration(
+                              'Nama',
+                              Icons.person_outline_rounded,
+                            ),
+                          ),
+
+                          const SizedBox(height: 13),
+
+                          TextField(
+                            controller: identifierController,
+                            style: const TextStyle(
+                              color: m8BlueDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            decoration: fieldDecoration(
+                              'Email / Nomor HP',
+                              Icons.alternate_email_rounded,
+                            ),
+                          ),
+
+                          const SizedBox(height: 13),
+
+                          TextField(
+                            controller: phoneController,
+                            style: const TextStyle(
+                              color: m8BlueDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.next,
+                            decoration: fieldDecoration(
+                              'Nomor HP',
+                              Icons.phone_outlined,
+                            ),
+                          ),
+
+                          const SizedBox(height: 13),
+
+                          TextField(
+                            controller: passwordController,
+                            style: const TextStyle(
+                              color: m8BlueDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            obscureText: obscurePassword,
+                            textInputAction: TextInputAction.next,
+                            decoration: fieldDecoration(
+                              'Password',
+                              Icons.lock_outline_rounded,
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    obscurePassword = !obscurePassword;
+                                  });
+                                },
+                                icon: Icon(
+                                  obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: m8BlueDark,
+                                ),
                               ),
                             ),
+                          ),
+
+                          const SizedBox(height: 13),
+
+                          TextField(
+                            controller: confirmPasswordController,
+                            style: const TextStyle(
+                              color: m8BlueDark,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            obscureText: obscureConfirmPassword,
+                            textInputAction: TextInputAction.done,
+                            decoration: fieldDecoration(
+                              'Konfirmasi Password',
+                              Icons.lock_reset_rounded,
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    obscureConfirmPassword =
+                                        !obscureConfirmPassword;
+                                  });
+                                },
+                                icon: Icon(
+                                  obscureConfirmPassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: m8BlueDark,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 22),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: FilledButton(
+                              onPressed: loading ? null : _showPinDialog,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: m8Blue,
+                                foregroundColor: m8White,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(17),
+                                ),
+                              ),
+                              child: loading
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: m8White,
+                                      ),
+                                    )
+                                  : const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.person_add_alt_1_rounded,
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 9),
+                                        Text(
+                                          "DAFTAR DI B'Jo",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          TextButton(
+                            onPressed: loading
+                                ? null
+                                : () => Navigator.of(context).pop(),
+                            child: const Text(
+                              'Sudah punya akun? MASUK',
+                              style: TextStyle(
+                                color: m8BlueDark,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 17),
 
-                  TextButton(
-                    onPressed: loading
-                        ? null
-                        : () => Navigator.of(context).pop(),
-                    child: const Text('Sudah punya akun? MASUK'),
-                  ),
-                ],
+                    const Text(
+                      "B'Jo • Tempat Kita Terhubung",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: m8BlueDark,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
