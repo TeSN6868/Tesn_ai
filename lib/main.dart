@@ -1736,26 +1736,31 @@ class BJoNavigationPage extends StatefulWidget {
 }
 
 class _BJoNavigationPageState extends State<BJoNavigationPage> {
-  bool _followingGps = true;
-  bool _destinationSelected = false;
-
-  double _currentLat = -6.9175;
-  double _currentLng = 107.6191;
-
-  StreamSubscription<Position>? _positionSubscription;
-  bool _locationReady = false;
-  bool _locationPermissionDenied = false;
-
-  double? _destinationLat;
-  double? _destinationLng;
-
-  double? _distanceKm;
-  int? _durationMinutes;
-
+  final MapController _mapController = MapController();
   final TextEditingController _destinationController =
       TextEditingController();
   final FocusNode _destinationFocusNode = FocusNode();
 
+  StreamSubscription<Position>? _positionSubscription;
+
+  double _currentLat = -6.9175;
+  double _currentLng = 107.6191;
+
+  bool _locationReady = false;
+  bool _locationPermissionDenied = false;
+  bool _followingGps = true;
+  bool _searching = false;
+  bool _routing = false;
+  bool _navigationActive = false;
+
+  double? _destinationLat;
+  double? _destinationLng;
+  double? _distanceKm;
+  int? _durationMinutes;
+
+  String? _destinationName;
+
+  List<LatLng> _routePoints = const [];
 
   @override
   void initState() {
@@ -1777,11 +1782,11 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
           await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) {
-        if (mounted) {
-          setState(() {
-            _locationReady = false;
-          });
-        }
+        if (!mounted) return;
+        setState(() {
+          _locationReady = false;
+        });
+        _showMessage('GPS belum aktif. Aktifkan Lokasi di perangkat.');
         return;
       }
 
@@ -1793,12 +1798,12 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
 
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        if (mounted) {
-          setState(() {
-            _locationReady = false;
-            _locationPermissionDenied = true;
-          });
-        }
+        if (!mounted) return;
+        setState(() {
+          _locationReady = false;
+          _locationPermissionDenied = true;
+        });
+        _showMessage('Izin lokasi diperlukan untuk navigasi B\'Jo.');
         return;
       }
 
@@ -1819,6 +1824,11 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
         _followingGps = true;
       });
 
+      _mapController.move(
+        LatLng(_currentLat, _currentLng),
+        16,
+      );
+
       await _positionSubscription?.cancel();
 
       _positionSubscription = Geolocator.getPositionStream(
@@ -1835,21 +1845,31 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
             _currentLng = position.longitude;
             _locationReady = true;
           });
+
+          if (_followingGps) {
+            _mapController.move(
+              LatLng(position.latitude, position.longitude),
+              16,
+            );
+          }
+
+          if (_destinationLat != null && _destinationLng != null) {
+            _updateRouteFromCurrentPosition();
+          }
         },
         onError: (_) {
           if (!mounted) return;
-
           setState(() {
             _locationReady = false;
           });
         },
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-
       setState(() {
         _locationReady = false;
       });
+      _showMessage('GPS gagal diaktifkan: $e');
     }
   }
 
@@ -1864,46 +1884,361 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     setState(() {
       _followingGps = true;
     });
+
+    _mapController.move(
+      LatLng(_currentLat, _currentLng),
+      16,
+    );
+  }
+
+  Future<void> _searchDestination(String value) async {
+    final query = value.trim();
+
+    if (query.isEmpty) {
+      _showMessage('Masukkan nama tempat atau alamat tujuan.');
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _searching = true;
+      _navigationActive = false;
+    });
+
+    try {
+      final uri = Uri.https(
+        'nominatim.openstreetmap.org',
+        '/search',
+        {
+          'q': query,
+          'format': 'jsonv2',
+          'limit': '5',
+          'countrycodes': 'id',
+          'addressdetails': '1',
+        },
+      );
+
+      final response = await http.get(
+        uri,
+        headers: const {
+          'Accept': 'application/json',
+          'User-Agent': 'BJo-Navigation/1.0',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Pencarian lokasi gagal (${response.statusCode})');
+      }
+
+      final data = jsonDecode(response.body);
+
+      if (data is! List || data.isEmpty) {
+        _showMessage('Tujuan tidak ditemukan.');
+        return;
+      }
+
+      final result = Map<String, dynamic>.from(data.first);
+
+      final lat = double.tryParse('${result['lat']}');
+      final lon = double.tryParse('${result['lon']}');
+      final displayName = '${result['display_name'] ?? query}';
+
+      if (lat == null || lon == null) {
+        throw Exception('Koordinat tujuan tidak valid.');
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _destinationLat = lat;
+        _destinationLng = lon;
+        _destinationName = displayName;
+        _routePoints = const [];
+        _distanceKm = null;
+        _durationMinutes = null;
+        _searching = false;
+      });
+
+      _mapController.move(
+        LatLng(lat, lon),
+        15,
+      );
+
+      await _requestRoute();
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _searching = false;
+      });
+
+      _showMessage('Tidak dapat mencari tujuan: $e');
+    }
+  }
+
+  Future<void> _requestRoute() async {
+    if (_destinationLat == null || _destinationLng == null) {
+      return;
+    }
+
+    setState(() {
+      _routing = true;
+    });
+
+    try {
+      final uri = Uri.https(
+        'router.project-osrm.org',
+        '/route/v1/driving/'
+            '${_currentLng.toStringAsFixed(6)},'
+            '${_currentLat.toStringAsFixed(6)};'
+            '${_destinationLng!.toStringAsFixed(6)},'
+            '${_destinationLat!.toStringAsFixed(6)}',
+        {
+          'overview': 'full',
+          'geometries': 'geojson',
+          'steps': 'true',
+        },
+      );
+
+      final response = await http.get(
+        uri,
+        headers: const {
+          'Accept': 'application/json',
+          'User-Agent': 'BJo-Navigation/1.0',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Routing gagal (${response.statusCode})');
+      }
+
+      final data = jsonDecode(response.body);
+
+      if (data is! Map ||
+          data['routes'] is! List ||
+          (data['routes'] as List).isEmpty) {
+        throw Exception('Rute jalan tidak ditemukan.');
+      }
+
+      final route = Map<String, dynamic>.from(
+        (data['routes'] as List).first,
+      );
+
+      final geometry = route['geometry'];
+
+      if (geometry is! Map || geometry['coordinates'] is! List) {
+        throw Exception('Jalur rute tidak tersedia.');
+      }
+
+      final points = <LatLng>[];
+
+      for (final item in geometry['coordinates']) {
+        if (item is List && item.length >= 2) {
+          final lng = (item[0] as num).toDouble();
+          final lat = (item[1] as num).toDouble();
+          points.add(LatLng(lat, lng));
+        }
+      }
+
+      if (points.length < 2) {
+        throw Exception('Jalur rute terlalu pendek.');
+      }
+
+      final distanceMeters =
+          (route['distance'] as num?)?.toDouble() ?? 0;
+
+      final durationSeconds =
+          (route['duration'] as num?)?.toDouble() ?? 0;
+
+      if (!mounted) return;
+
+      setState(() {
+        _routePoints = points;
+        _distanceKm = distanceMeters / 1000;
+        _durationMinutes = (durationSeconds / 60).ceil();
+        _routing = false;
+      });
+
+      _mapController.move(
+        LatLng(_currentLat, _currentLng),
+        14,
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _routing = false;
+        _routePoints = const [];
+      });
+
+      _showMessage('Rute belum dapat dibuat: $e');
+    }
+  }
+
+  Future<void> _updateRouteFromCurrentPosition() async {
+    if (_routing ||
+        _destinationLat == null ||
+        _destinationLng == null ||
+        !_navigationActive) {
+      return;
+    }
+
+    await _requestRoute();
+  }
+
+  void _startNavigation() {
+    if (_destinationLat == null ||
+        _destinationLng == null ||
+        _routePoints.length < 2) {
+      _showMessage('Tunggu sampai rute tersedia.');
+      return;
+    }
+
+    setState(() {
+      _navigationActive = true;
+      _followingGps = true;
+    });
+
+    _mapController.move(
+      LatLng(_currentLat, _currentLng),
+      17,
+    );
+
+    _showMessage('Navigasi B\'Jo aktif.');
+  }
+
+  void _clearDestination() {
+    setState(() {
+      _destinationLat = null;
+      _destinationLng = null;
+      _destinationName = null;
+      _distanceKm = null;
+      _durationMinutes = null;
+      _routePoints = const [];
+      _navigationActive = false;
+    });
+
+    _destinationController.clear();
+
+    _mapController.move(
+      LatLng(_currentLat, _currentLng),
+      16,
+    );
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
+    final current = LatLng(_currentLat, _currentLng);
+
     return Scaffold(
       backgroundColor: m8WhiteSoft,
       body: Stack(
         children: [
-          // ============================================================
-          // PETA NAVIGATION
-          // ============================================================
           Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF0B4F71),
-                    Color(0xFF75B5D3),
-                    Color(0xFFF8FBFD),
+            child: FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: current,
+                initialZoom: 16,
+                onPositionChanged: (camera, hasGesture) {
+                  if (hasGesture && mounted) {
+                    setState(() {
+                      _followingGps = false;
+                    });
+                  }
+                },
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.bjo.messenger',
+                ),
+                if (_routePoints.length >= 2)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: _routePoints,
+                        strokeWidth: 9,
+                        color: const Color(0xFFFFFFFF),
+                      ),
+                      Polyline(
+                        points: _routePoints,
+                        strokeWidth: 6,
+                        color: m8Blue,
+                      ),
+                    ],
+                  ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: current,
+                      width: 54,
+                      height: 54,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: m8Blue,
+                          border: Border.all(
+                            color: m8White,
+                            width: 4,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              blurRadius: 10,
+                              color: Color(0x55000000),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.navigation_rounded,
+                          color: m8White,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                    if (_destinationLat != null &&
+                        _destinationLng != null)
+                      Marker(
+                        point: LatLng(
+                          _destinationLat!,
+                          _destinationLng!,
+                        ),
+                        width: 54,
+                        height: 64,
+                        child: const Icon(
+                          Icons.location_pin,
+                          color: Color(0xFF0B4F71),
+                          size: 52,
+                        ),
+                      ),
                   ],
-                  stops: [0.0, 0.52, 1.0],
                 ),
-              ),
-              child: CustomPaint(
-                painter: _BJoNavigationMapPainter(
-                  currentLat: _currentLat,
-                  currentLng: _currentLng,
-                  destinationLat: _destinationLat,
-                  destinationLng: _destinationLng,
-                  destinationSelected: _destinationSelected,
+                RichAttributionWidget(
+                  attributions: [
+                    TextSourceAttribution(
+                      'OpenStreetMap contributors',
+                    ),
+                  ],
                 ),
-              ),
+              ],
             ),
           ),
 
-          // ============================================================
-          // HEADER
-          // ============================================================
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
             left: 16,
@@ -1914,7 +2249,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                 vertical: 12,
               ),
               decoration: BoxDecoration(
-                color: m8Blue.withOpacity(0.94),
+                color: m8Blue.withOpacity(0.96),
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: const [
                   BoxShadow(
@@ -1942,145 +2277,147 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                       ),
                     ),
                   ),
-                    IconButton(
-                      tooltip: _locationPermissionDenied
-                          ? "Izin lokasi ditolak"
-                          : "Ikuti GPS",
-                      onPressed: _centerOnGps,
-                      icon: Icon(
-                        _locationReady
-                            ? Icons.my_location_rounded
-                            : Icons.location_searching_rounded,
-                        color: m8White,
-                      ),
+                  IconButton(
+                    tooltip: _locationPermissionDenied
+                        ? "Izin lokasi ditolak"
+                        : "Ikuti GPS",
+                    onPressed: _centerOnGps,
+                    icon: Icon(
+                      _locationReady
+                          ? Icons.my_location_rounded
+                          : Icons.location_searching_rounded,
+                      color: m8White,
                     ),
+                  ),
                 ],
               ),
             ),
           ),
 
-            // ============================================================
-            // SEARCH / TUJUAN
-            // ============================================================
-            Positioned(
-              left: 16,
-              right: 16,
-              top: MediaQuery.of(context).padding.top + 86,
-              child: Material(
-                color: m8White,
-                elevation: 5,
-                borderRadius: BorderRadius.circular(18),
-                child: TextField(
-                  controller: _destinationController,
-                  focusNode: _destinationFocusNode,
-                  onTap: () {
-                    _destinationFocusNode.requestFocus();
-                    Future.delayed(
-                      const Duration(milliseconds: 100),
-                      () {
-                        if (mounted &&
-                            _destinationFocusNode.hasFocus) {
-                          SystemChannels.textInput.invokeMethod(
-                            'TextInput.show',
-                          );
-                        }
-                      },
-                    );
-                  },
-
-                  textInputAction: TextInputAction.search,
-                  keyboardType: TextInputType.streetAddress,
-                  style: const TextStyle(
-                    color: m8BlueDark,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+          Positioned(
+            left: 16,
+            right: 16,
+            top: MediaQuery.of(context).padding.top + 86,
+            child: Material(
+              color: m8White,
+              elevation: 5,
+              borderRadius: BorderRadius.circular(18),
+              child: TextField(
+                controller: _destinationController,
+                focusNode: _destinationFocusNode,
+                textInputAction: TextInputAction.search,
+                keyboardType: TextInputType.streetAddress,
+                style: const TextStyle(
+                  color: m8BlueDark,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: InputDecoration(
+                  hintText: "Cari tujuan atau alamat",
+                  hintStyle: TextStyle(
+                    color: m8BlueDark.withOpacity(0.65),
                   ),
-                  decoration: InputDecoration(
-                    hintText: "Cari tujuan atau alamat",
-                    hintStyle: TextStyle(
-                      color: m8BlueDark.withOpacity(0.65),
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search_rounded,
-                      color: m8BlueDark,
-                    ),
-                    suffixIcon: ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: _destinationController,
-                      builder: (context, value, _) {
-                        if (value.text.isEmpty) {
-                          return const Icon(
-                            Icons.chevron_right_rounded,
-                            color: m8BlueDark,
-                          );
-                        }
-
-                        return IconButton(
-                          tooltip: "Hapus pencarian",
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: m8BlueDark,
+                  ),
+                  suffixIcon: _searching
+                      ? const Padding(
+                          padding: EdgeInsets.all(14),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: "Cari tujuan",
+                          onPressed: () => _searchDestination(
+                            _destinationController.text,
+                          ),
                           icon: const Icon(
-                            Icons.close_rounded,
+                            Icons.arrow_forward_rounded,
                             color: m8BlueDark,
                           ),
-                          onPressed: () {
-                            _destinationController.clear();
-                            _destinationFocusNode.requestFocus();
-                          },
-                        );
-                      },
-                    ),
-                    filled: true,
-                    fillColor: m8White,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      borderSide: const BorderSide(
-                        color: m8Blue,
-                        width: 2,
-                      ),
+                        ),
+                  filled: true,
+                  fillColor: m8White,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: const BorderSide(
+                      color: m8Blue,
+                      width: 2,
                     ),
                   ),
-                  onSubmitted: (value) {
-                    final destination = value.trim();
+                ),
+                onSubmitted: _searchDestination,
+              ),
+            ),
+          ),
 
-                    if (destination.isEmpty) {
-                      _destinationFocusNode.requestFocus();
-                      return;
-                    }
-
-                    setState(() {
-                      _destinationSelected = true;
-                      _destinationLat = _currentLat + 0.018;
-                      _destinationLng = _currentLng + 0.024;
-                      _distanceKm = 3.4;
-                      _durationMinutes = 11;
-                    });
-
-                    FocusScope.of(context).unfocus();
-                  },
+          if (_routing)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 150,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: m8White,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      blurRadius: 12,
+                      color: Color(0x33000000),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'B\'Jo sedang mencari rute jalan...',
+                        style: TextStyle(
+                          color: m8BlueDark,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
 
-          // ============================================================
-          // INFO RUTE
-          // ============================================================
-          if (_destinationSelected)
+          if (_destinationLat != null &&
+              _destinationLng != null &&
+              _routePoints.length >= 2)
             Positioned(
               left: 16,
               right: 16,
               bottom: 92,
               child: Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: m8White,
                   borderRadius: BorderRadius.circular(22),
@@ -2092,60 +2429,81 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                     ),
                   ],
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: m8Blue,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: const Icon(
-                        Icons.alt_route_rounded,
-                        color: m8White,
-                        size: 26,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${_distanceKm?.toStringAsFixed(1) ?? '-'} km",
-                            style: TextStyle(
-                              color: m8BlueDark,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                            ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: m8Blue,
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            "${_durationMinutes ?? '-'} menit • Rute tercepat",
-                            style: TextStyle(
-                              color: m8BlueDark,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          child: const Icon(
+                            Icons.alt_route_rounded,
+                            color: m8White,
+                            size: 26,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _destinationName ?? 'Tujuan',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: m8BlueDark,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${_distanceKm?.toStringAsFixed(1) ?? '-'} km'
+                                ' • '
+                                '${_durationMinutes ?? '-'} menit',
+                                style: const TextStyle(
+                                  color: m8BlueDark,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: "Hapus tujuan",
+                          onPressed: _clearDestination,
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: m8BlueDark,
+                          ),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      tooltip: "Hapus tujuan",
-                      onPressed: () {
-                        setState(() {
-                          _destinationSelected = false;
-                          _destinationLat = null;
-                          _destinationLng = null;
-                          _distanceKm = null;
-                          _durationMinutes = null;
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: m8BlueDark,
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _navigationActive
+                            ? null
+                            : _startNavigation,
+                        icon: Icon(
+                          _navigationActive
+                              ? Icons.navigation_rounded
+                              : Icons.play_arrow_rounded,
+                        ),
+                        label: Text(
+                          _navigationActive
+                              ? "Navigasi B'Jo Aktif"
+                              : "Mulai Navigasi",
+                        ),
                       ),
                     ),
                   ],
@@ -2153,12 +2511,13 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
               ),
             ),
 
-          // ============================================================
-          // CENTER GPS
-          // ============================================================
           Positioned(
             right: 16,
-            bottom: _destinationSelected ? 205 : 92,
+            bottom: _destinationLat != null &&
+                    _destinationLng != null &&
+                    _routePoints.length >= 2
+                ? 255
+                : 92,
             child: FloatingActionButton(
               heroTag: "bjo-navigation-center",
               backgroundColor: m8White,
@@ -2166,191 +2525,63 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
               elevation: 5,
               onPressed: _centerOnGps,
               child: Icon(
-                _locationReady
+                _followingGps
                     ? Icons.my_location_rounded
                     : Icons.location_searching_rounded,
               ),
             ),
           ),
+
+          if (_navigationActive)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 158,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: m8Blue,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      blurRadius: 12,
+                      color: Color(0x44000000),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.navigation_rounded,
+                      color: m8White,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "NAVIGASI B'JO AKTIF",
+                        style: TextStyle(
+                          color: m8White,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: .4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-class _BJoNavigationMapPainter extends CustomPainter {
-  final double currentLat;
-  final double currentLng;
-  final double? destinationLat;
-  final double? destinationLng;
-  final bool destinationSelected;
-
-  _BJoNavigationMapPainter({
-    required this.currentLat,
-    required this.currentLng,
-    required this.destinationLat,
-    required this.destinationLng,
-    required this.destinationSelected,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final mapPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = const Color(0xFFE7F0F5);
-
-    canvas.drawRect(
-      Offset.zero & size,
-      mapPaint,
-    );
-
-    final roadPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..color = const Color(0xFFB7CAD5);
-
-    final majorRoadPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..color = const Color(0xFF9BB6C5);
-
-    // Jalan utama sederhana sebagai dasar visual peta.
-    final roads = [
-      Path()
-        ..moveTo(0, size.height * .24)
-        ..quadraticBezierTo(
-          size.width * .35,
-          size.height * .18,
-          size.width,
-          size.height * .30,
-        ),
-      Path()
-        ..moveTo(0, size.height * .72)
-        ..quadraticBezierTo(
-          size.width * .48,
-          size.height * .56,
-          size.width,
-          size.height * .68,
-        ),
-      Path()
-        ..moveTo(size.width * .18, 0)
-        ..quadraticBezierTo(
-          size.width * .42,
-          size.height * .40,
-          size.width * .28,
-          size.height,
-        ),
-      Path()
-        ..moveTo(size.width * .72, 0)
-        ..quadraticBezierTo(
-          size.width * .58,
-          size.height * .42,
-          size.width * .84,
-          size.height,
-        ),
-    ];
-
-    for (final road in roads) {
-      canvas.drawPath(road, roadPaint);
-    }
-
-    final majorRoad = Path()
-      ..moveTo(0, size.height * .48)
-      ..quadraticBezierTo(
-        size.width * .48,
-        size.height * .34,
-        size.width,
-        size.height * .52,
-      );
-
-    canvas.drawPath(majorRoad, majorRoadPaint);
-
-    final current = Offset(
-      size.width * .46,
-      size.height * .53,
-    );
-
-    // Rute simulasi.
-    if (destinationSelected) {
-      final destination = Offset(
-        size.width * .72,
-        size.height * .30,
-      );
-
-      final routePaint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 7
-        ..strokeCap = StrokeCap.round
-        ..color = m8Blue;
-
-      final route = Path()
-        ..moveTo(current.dx, current.dy)
-        ..quadraticBezierTo(
-          size.width * .52,
-          size.height * .42,
-          destination.dx,
-          destination.dy,
-        );
-
-      canvas.drawPath(route, routePaint);
-
-      final destinationPaint = Paint()
-        ..style = PaintingStyle.fill
-        ..color = const Color(0xFF0B4F71);
-
-      canvas.drawCircle(
-        destination,
-        13,
-        destinationPaint,
-      );
-
-      canvas.drawCircle(
-        destination,
-        6,
-        Paint()..color = m8White,
-      );
-    }
-
-    // Marker posisi pengguna.
-    canvas.drawCircle(
-      current,
-      17,
-      Paint()..color = m8White,
-    );
-
-    canvas.drawCircle(
-      current,
-      12,
-      Paint()..color = m8Blue,
-    );
-
-    canvas.drawCircle(
-      current,
-      5,
-      Paint()..color = m8White,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _BJoNavigationMapPainter oldDelegate) {
-    return oldDelegate.currentLat != currentLat ||
-        oldDelegate.currentLng != currentLng ||
-        oldDelegate.destinationLat != destinationLat ||
-        oldDelegate.destinationLng != destinationLng ||
-        oldDelegate.destinationSelected != destinationSelected;
-  }
-}
-
-
-
-
-
-
-
-
-
 // ============================================================
 // END B'JO NAVIGATION
+// ============================================================
 // ============================================================
 
 
