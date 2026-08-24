@@ -1771,183 +1771,6 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     super.dispose();
   }
 
-
-  // ============================================================
-  // B'JO REAL DESTINATION SEARCH + ROUTING
-  // ============================================================
-
-  List<LatLng> _routePoints = [];
-  bool _searchingDestination = false;
-  String? _navigationError;
-
-  Future<void> _searchDestination(String query) async {
-    final destination = query.trim();
-
-    if (destination.isEmpty) {
-      _destinationFocusNode.requestFocus();
-      return;
-    }
-
-    setState(() {
-      _searchingDestination = true;
-      _navigationError = null;
-      _routePoints = [];
-    });
-
-    try {
-      final uri = Uri.https(
-        'nominatim.openstreetmap.org',
-        '/search',
-        {
-          'q': destination,
-          'format': 'jsonv2',
-          'limit': '1',
-          'countrycodes': 'id',
-        },
-      );
-
-      final response = await http.get(
-        uri,
-        headers: {
-          'User-Agent': "BJo/1.0 navigation",
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 15));
-
-      if (response.statusCode != 200) {
-        throw Exception(
-          'Pencarian tujuan gagal (${response.statusCode}).',
-        );
-      }
-
-      final data = jsonDecode(response.body);
-
-      if (data is! List || data.isEmpty) {
-        throw Exception(
-          'Tujuan tidak ditemukan. Coba masukkan nama tempat atau alamat yang lebih lengkap.',
-        );
-      }
-
-      final result = data.first;
-
-      final lat = double.tryParse('${result['lat']}');
-      final lng = double.tryParse('${result['lon']}');
-
-      if (lat == null || lng == null) {
-        throw Exception('Koordinat tujuan tidak valid.');
-      }
-
-      await _loadRealRoute(
-        destinationLat: lat,
-        destinationLng: lng,
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        _searchingDestination = false;
-        _navigationError = e.toString().replaceFirst('Exception: ', '');
-      });
-    }
-  }
-
-  Future<void> _loadRealRoute({
-    required double destinationLat,
-    required double destinationLng,
-  }) async {
-    final startLat = _currentLat;
-    final startLng = _currentLng;
-
-    final uri = Uri.https(
-      'router.project-osrm.org',
-      '/route/v1/driving/$startLng,$startLat;$destinationLng,$destinationLat',
-      {
-        'overview': 'full',
-        'geometries': 'geojson',
-        'steps': 'false',
-      },
-    );
-
-    final response = await http.get(
-      uri,
-      headers: {
-        'User-Agent': 'BJo/1.0 navigation',
-        'Accept': 'application/json',
-      },
-    ).timeout(const Duration(seconds: 20));
-
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Server rute tidak dapat dihubungi (${response.statusCode}).',
-      );
-    }
-
-    final data = jsonDecode(response.body);
-
-    if (data['code'] != 'Ok') {
-      throw Exception(
-        'Rute menuju tujuan tidak ditemukan.',
-      );
-    }
-
-    final routes = data['routes'];
-
-    if (routes is! List || routes.isEmpty) {
-      throw Exception('Tidak ada rute yang tersedia.');
-    }
-
-    final route = routes.first;
-
-    final geometry = route['geometry'];
-
-    if (geometry == null ||
-        geometry['coordinates'] is! List) {
-      throw Exception('Garis rute tidak tersedia.');
-    }
-
-    final coordinates = geometry['coordinates'] as List;
-
-    final points = <LatLng>[];
-
-    for (final item in coordinates) {
-      if (item is! List || item.length < 2) continue;
-
-      final lng = (item[0] as num).toDouble();
-      final lat = (item[1] as num).toDouble();
-
-      points.add(LatLng(lat, lng));
-    }
-
-    if (points.length < 2) {
-      throw Exception('Rute terlalu pendek atau tidak valid.');
-    }
-
-    final distanceMeters =
-        (route['distance'] as num?)?.toDouble() ?? 0;
-
-    final durationSeconds =
-        (route['duration'] as num?)?.toDouble() ?? 0;
-
-    if (!mounted) return;
-
-    setState(() {
-      _destinationLat = destinationLat;
-      _destinationLng = destinationLng;
-
-      _routePoints = points;
-
-      _distanceKm = distanceMeters / 1000;
-
-      _durationMinutes =
-          (durationSeconds / 60).ceil();
-
-      _destinationSelected = true;
-
-      _searchingDestination = false;
-      _navigationError = null;
-    });
-  }
-
   Future<void> _initLiveGps() async {
     try {
       final serviceEnabled =
@@ -2073,7 +1896,6 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                   destinationLat: _destinationLat,
                   destinationLng: _destinationLng,
                   destinationSelected: _destinationSelected,
-                    routePoints: _routePoints,
                 ),
               ),
             ),
@@ -2116,7 +1938,6 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                       style: TextStyle(
                         color: m8White,
                         fontSize: 20,
-                      color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -2229,88 +2050,29 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                     ),
                   ),
                   onSubmitted: (value) {
+                    final destination = value.trim();
+
+                    if (destination.isEmpty) {
+                      _destinationFocusNode.requestFocus();
+                      return;
+                    }
+
+                    setState(() {
+                      _destinationSelected = true;
+                      _destinationLat = _currentLat + 0.018;
+                      _destinationLng = _currentLng + 0.024;
+                      _distanceKm = 3.4;
+                      _durationMinutes = 11;
+                    });
+
                     FocusScope.of(context).unfocus();
-                    _searchDestination(value);
                   },
                 ),
               ),
             ),
 
           // ============================================================
-                      if (_searchingDestination)
-              Positioned(
-                left: 16,
-                right: 16,
-                top: MediaQuery.of(context).padding.top + 146,
-                child: Material(
-                  color: m8White,
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(14),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: m8Blue,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            "Mencari tujuan dan menghitung rute...",
-                            style: TextStyle(
-                              color: m8BlueDark,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-            if (_navigationError != null)
-              Positioned(
-                left: 16,
-                right: 16,
-                top: MediaQuery.of(context).padding.top + 146,
-                child: Material(
-                  color: m8White,
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(14),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.error_outline_rounded,
-                          color: m8BlueDark,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            _navigationError!,
-                            style: const TextStyle(
-                              color: m8BlueDark,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-// INFO RUTE
+          // INFO RUTE
           // ============================================================
           if (_destinationSelected)
             Positioned(
@@ -2355,7 +2117,6 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                             style: TextStyle(
                               color: m8BlueDark,
                               fontSize: 20,
-                              color: Colors.white,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -2423,7 +2184,6 @@ class _BJoNavigationMapPainter extends CustomPainter {
   final double? destinationLat;
   final double? destinationLng;
   final bool destinationSelected;
-  final List<LatLng> routePoints;
 
   _BJoNavigationMapPainter({
     required this.currentLat,
@@ -2431,7 +2191,6 @@ class _BJoNavigationMapPainter extends CustomPainter {
     required this.destinationLat,
     required this.destinationLng,
     required this.destinationSelected,
-    required this.routePoints,
   });
 
   @override
@@ -2511,93 +2270,48 @@ class _BJoNavigationMapPainter extends CustomPainter {
       size.height * .53,
     );
 
-    // Rute nyata hasil OSRM.
-      if (destinationSelected && routePoints.length >= 2) {
-        final routePaint = Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 7
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round
-          ..color = m8Blue;
+    // Rute simulasi.
+    if (destinationSelected) {
+      final destination = Offset(
+        size.width * .72,
+        size.height * .30,
+      );
 
-        double minLat = routePoints.first.latitude;
-        double maxLat = routePoints.first.latitude;
-        double minLng = routePoints.first.longitude;
-        double maxLng = routePoints.first.longitude;
+      final routePaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..strokeCap = StrokeCap.round
+        ..color = m8Blue;
 
-        for (final point in routePoints) {
-          if (point.latitude < minLat) minLat = point.latitude;
-          if (point.latitude > maxLat) maxLat = point.latitude;
-          if (point.longitude < minLng) minLng = point.longitude;
-          if (point.longitude > maxLng) maxLng = point.longitude;
-        }
-
-        final latRange = (maxLat - minLat).abs();
-        final lngRange = (maxLng - minLng).abs();
-
-        final safeLatRange = latRange < 0.001 ? 0.001 : latRange;
-        final safeLngRange = lngRange < 0.001 ? 0.001 : lngRange;
-
-        const padding = 54.0;
-
-        final availableWidth = size.width - (padding * 2);
-        final availableHeight = size.height - (padding * 2);
-
-        final scaleX = availableWidth / safeLngRange;
-        final scaleY = availableHeight / safeLatRange;
-        final scale = scaleX < scaleY ? scaleX : scaleY;
-
-        final routeWidth = safeLngRange * scale;
-        final routeHeight = safeLatRange * scale;
-
-        final offsetX = (size.width - routeWidth) / 2;
-        final offsetY = (size.height - routeHeight) / 2;
-
-        Offset project(LatLng point) {
-          final x =
-              offsetX + ((point.longitude - minLng) * scale);
-
-          final y =
-              offsetY + ((maxLat - point.latitude) * scale);
-
-          return Offset(x, y);
-        }
-
-        final route = Path();
-
-        for (int i = 0; i < routePoints.length; i++) {
-          final point = project(routePoints[i]);
-
-          if (i == 0) {
-            route.moveTo(point.dx, point.dy);
-          } else {
-            route.lineTo(point.dx, point.dy);
-          }
-        }
-
-        canvas.drawPath(route, routePaint);
-
-        // Marker tujuan mengikuti titik akhir rute nyata.
-        final destination = project(routePoints.last);
-
-        final destinationPaint = Paint()
-          ..style = PaintingStyle.fill
-          ..color = const Color(0xFF0B4F71);
-
-        canvas.drawCircle(
-          destination,
-          13,
-          destinationPaint,
+      final route = Path()
+        ..moveTo(current.dx, current.dy)
+        ..quadraticBezierTo(
+          size.width * .52,
+          size.height * .42,
+          destination.dx,
+          destination.dy,
         );
 
-        canvas.drawCircle(
-          destination,
-          6,
-          Paint()..color = m8White,
-        );
-      }
+      canvas.drawPath(route, routePaint);
 
-// Marker posisi pengguna.
+      final destinationPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = const Color(0xFF0B4F71);
+
+      canvas.drawCircle(
+        destination,
+        13,
+        destinationPaint,
+      );
+
+      canvas.drawCircle(
+        destination,
+        6,
+        Paint()..color = m8White,
+      );
+    }
+
+    // Marker posisi pengguna.
     canvas.drawCircle(
       current,
       17,
@@ -2794,7 +2508,6 @@ class _BJoMainShellState extends State<BJoMainShell> {
         title: Text(
           title,
           style: const TextStyle(
-            color: Colors.white,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -2846,7 +2559,6 @@ class _BJoMainShellState extends State<BJoMainShell> {
                     style: const TextStyle(
                       color: m8White,
                       fontSize: 12,
-                      color: Colors.white,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.15,
                     ),
@@ -3391,7 +3103,6 @@ class _ChatsPageState extends State<ChatsPage> {
                     style: TextStyle(
                       color: selected ? m8White : bjoChatNavy,
                       fontSize: 11,
-                      color: Colors.white,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -3588,7 +3299,6 @@ class _ChatsPageState extends State<ChatsPage> {
                             style: const TextStyle(
                               color: m8White,
                               fontSize: 10,
-                              color: Colors.white,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -3668,7 +3378,6 @@ class _ChatsPageState extends State<ChatsPage> {
                     style: const TextStyle(
                       color: m8Text,
                       fontSize: 15,
-                      color: Colors.white,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -3783,7 +3492,6 @@ Widget buildEmptyMessenger() {
               'Belum ada percakapan',
               style: TextStyle(
                 fontSize: 19,
-                color: Colors.white,
                 fontWeight: FontWeight.w800,
                 color: m8Text,
               ),
@@ -4807,7 +4515,6 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
                               'Pengguna tidak ditemukan.',
                               style: TextStyle(
                                 color: m8TextMuted,
-                      color: Colors.white,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -4881,7 +4588,6 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
                                                 pin,
                                                 style: const TextStyle(
                                                   color: m8Blue,
-                                                  color: Colors.white,
                                                   fontWeight: FontWeight.w800,
                                                   fontSize: 12,
                                                 ),
@@ -5450,7 +5156,6 @@ class _M8GroupInfoPage extends StatelessWidget {
                   style: const TextStyle(
                     color: m8White,
                     fontSize: 21,
-                    color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -5512,7 +5217,6 @@ class _M8GroupInfoPage extends StatelessWidget {
               style: const TextStyle(
                 color: m8TextMuted,
                 fontSize: 12,
-                color: Colors.white,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
               ),
@@ -5585,7 +5289,6 @@ class _M8GroupInfoPage extends StatelessWidget {
                                       : '?',
                                   style: const TextStyle(
                                     color: m8White,
-                                    color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 )
@@ -5600,7 +5303,6 @@ class _M8GroupInfoPage extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: m8Text,
-                                  color: Colors.white,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -5857,7 +5559,6 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
               hintText: 'Masukkan PIN M8',
               labelStyle: const TextStyle(
                 color: m8White,
-                      color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
               hintStyle: TextStyle(color: m8White.withValues(alpha: 0.65)),
@@ -6042,7 +5743,6 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
               data['error']?.toString() ?? 'Gagal mengubah nama grup.',
               style: const TextStyle(
                 color: m8White,
-                      color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -6217,7 +5917,6 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                   style: const TextStyle(
                     color: m8BlueDark,
                     fontSize: 11,
-                    color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -6311,7 +6010,6 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: bjoPearlWhite,
-                        color: Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
@@ -6365,7 +6063,6 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                   'Belum ada pesan',
                                   style: TextStyle(
                                     color: m8Text,
-                                    color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 18,
                                   ),
@@ -6474,7 +6171,6 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
                                             'Lampiran',
                                             style: TextStyle(
                                               fontSize: 19,
-                                              color: Colors.white,
                                               fontWeight: FontWeight.w800,
                                               color: m8Text,
                                             ),
@@ -6970,7 +6666,6 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
                         ? m8White.withValues(alpha: 0.82)
                         : m8TextMuted,
                     fontSize: 9,
-                      color: Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -8199,13 +7894,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text(
-                    "Tutup",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: const Text("Tutup"),
                 ),
               ],
             );
@@ -8231,6 +7920,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
     if (recent.isEmpty) {
       if (!mounted) return;
+
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -8315,6 +8005,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     await showDialog(
       context: context,
       builder: (context) {
+        final otherUser = widget.chat["other_user"];
+        final contactName = otherUser is Map &&
+                otherUser["name"]?.toString().trim().isNotEmpty == true
+            ? otherUser["name"].toString().trim()
+            : otherUser is Map
+                ? (otherUser["m8_pin"]?.toString() ?? "Kontak")
+                : "Kontak";
+
         return AlertDialog(
           backgroundColor: m8Blue,
           surfaceTintColor: Colors.transparent,
@@ -8339,7 +8037,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${widget.chat["other_user"] is Map && (widget.chat["other_user"]["name"]?.toString().trim().isNotEmpty == true) ? widget.chat["other_user"]["name"].toString().trim() : (widget.chat["other_user"] is Map ? (widget.chat["other_user"]["m8_pin"]?.toString() ?? "Kontak") : "Kontak")} • ${recent.length} pesan teks",
+                  "$contactName • ${recent.length} pesan teks",
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -8396,7 +8094,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       },
     );
   }
-
   Future<void> _rememberMessage(Map<String, dynamic> msg) async {
     final text = _smartMessageText(msg);
 
