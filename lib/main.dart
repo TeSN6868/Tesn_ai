@@ -3016,6 +3016,77 @@ Future<void> _requestRoute() async {
           ),
 
           Positioned(
+            left: 12,
+            right: 12,
+            top: MediaQuery.of(context).padding.top + 68,
+            child: Material(
+              color: m8White,
+              elevation: 2,
+              borderRadius: BorderRadius.circular(13),
+              child: TextField(
+                controller: _destinationController,
+                focusNode: _destinationFocusNode,
+                textInputAction: TextInputAction.search,
+                keyboardType: TextInputType.streetAddress,
+                style: const TextStyle(
+                  color: m8BlueDark,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: InputDecoration(
+                  hintText: "Cari tujuan atau alamat",
+                  hintStyle: TextStyle(
+                    color: m8BlueDark.withOpacity(0.65),
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: m8BlueDark,
+                  ),
+                  suffixIcon: _searching
+                      ? const Padding(
+                          padding: EdgeInsets.all(14),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: "Cari tujuan",
+                          onPressed: () => _searchDestination(
+                            _destinationController.text,
+                          ),
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: m8BlueDark,
+                          ),
+                        ),
+                  filled: true,
+                  fillColor: m8White,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: const BorderSide(
+                      color: m8Blue,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                onSubmitted: _searchDestination,
+              ),
+            ),
+          ),
+
+          Positioned(
     left: 12,
     right: 12,
     bottom: 68,
