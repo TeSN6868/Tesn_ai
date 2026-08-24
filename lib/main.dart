@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:math';
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/material.dart';
@@ -1457,6 +1458,589 @@ class _RegisterPageState extends State<RegisterPage> {
 // B'JO MAIN SHELL
 // ============================================================
 
+
+// ============================================================
+// B'JO NAVIGATION
+// GPS / GNSS + SATELLITE MAP + LIVE ROUTING
+
+// ============================================================
+// B'JO NAVIGATION
+// GPS / GNSS + SATELLITE MAP + LIVE ROUTING
+// ============================================================
+
+class BJoNavigationPage extends StatefulWidget {
+  const BJoNavigationPage({super.key});
+
+  @override
+  State<BJoNavigationPage> createState() => _BJoNavigationPageState();
+}
+
+class _BJoNavigationPageState extends State<BJoNavigationPage> {
+  bool _followingGps = true;
+  bool _destinationSelected = false;
+
+  double _currentLat = -6.9175;
+  double _currentLng = 107.6191;
+
+  StreamSubscription<Position>? _positionSubscription;
+  bool _locationReady = false;
+  bool _locationPermissionDenied = false;
+
+  double? _destinationLat;
+  double? _destinationLng;
+
+  double? _distanceKm;
+  int? _durationMinutes;
+
+  @override
+  void initState() {
+    super.initState();
+    _initLiveGps();
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initLiveGps() async {
+    try {
+      final serviceEnabled =
+          await Geolocator.isLocationServiceEnabled();
+
+      if (!serviceEnabled) {
+        if (mounted) {
+          setState(() {
+            _locationReady = false;
+          });
+        }
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          setState(() {
+            _locationReady = false;
+            _locationPermissionDenied = true;
+          });
+        }
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 5,
+        ),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _currentLat = position.latitude;
+        _currentLng = position.longitude;
+        _locationReady = true;
+        _locationPermissionDenied = false;
+        _followingGps = true;
+      });
+
+      await _positionSubscription?.cancel();
+
+      _positionSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 5,
+        ),
+      ).listen(
+        (position) {
+          if (!mounted) return;
+
+          setState(() {
+            _currentLat = position.latitude;
+            _currentLng = position.longitude;
+            _locationReady = true;
+          });
+        },
+        onError: (_) {
+          if (!mounted) return;
+
+          setState(() {
+            _locationReady = false;
+          });
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _locationReady = false;
+      });
+    }
+  }
+
+  Future<void> _centerOnGps() async {
+    if (!_locationReady) {
+      await _initLiveGps();
+      return;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _followingGps = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      body: Stack(
+        children: [
+          // ============================================================
+          // PETA NAVIGATION
+          // ============================================================
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF0B4F71),
+                    Color(0xFF75B5D3),
+                    Color(0xFFF8FBFD),
+                  ],
+                  stops: [0.0, 0.52, 1.0],
+                ),
+              ),
+              child: CustomPaint(
+                painter: _BJoNavigationMapPainter(
+                  currentLat: _currentLat,
+                  currentLng: _currentLng,
+                  destinationLat: _destinationLat,
+                  destinationLng: _destinationLng,
+                  destinationSelected: _destinationSelected,
+                ),
+              ),
+            ),
+          ),
+
+          // ============================================================
+          // HEADER
+          // ============================================================
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12,
+            left: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: m8Blue.withOpacity(0.94),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: const [
+                  BoxShadow(
+                    blurRadius: 14,
+                    offset: Offset(0, 5),
+                    color: Color(0x33000000),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.navigation_rounded,
+                    color: m8White,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      "B'Jo Navigation",
+                      style: TextStyle(
+                        color: m8White,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                    IconButton(
+                      tooltip: _locationPermissionDenied
+                          ? "Izin lokasi ditolak"
+                          : "Ikuti GPS",
+                      onPressed: _centerOnGps,
+                      icon: Icon(
+                        _locationReady
+                            ? Icons.my_location_rounded
+                            : Icons.location_searching_rounded,
+                        color: m8White,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // ============================================================
+          // SEARCH / TUJUAN
+          // ============================================================
+          Positioned(
+            left: 16,
+            right: 16,
+            top: MediaQuery.of(context).padding.top + 86,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () {
+                  setState(() {
+                    _destinationSelected = true;
+                    _destinationLat = _currentLat + 0.018;
+                    _destinationLng = _currentLng + 0.024;
+                    _distanceKm = 3.4;
+                    _durationMinutes = 11;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: m8White,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: const [
+                      BoxShadow(
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
+                        color: Color(0x30000000),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.search_rounded,
+                        color: m8BlueDark,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _destinationSelected
+                              ? "Tujuan dipilih"
+                              : "Cari tujuan atau tap peta",
+                          style: TextStyle(
+                            color: m8BlueDark,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: m8BlueDark,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ============================================================
+          // INFO RUTE
+          // ============================================================
+          if (_destinationSelected)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 92,
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: m8White,
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: const [
+                    BoxShadow(
+                      blurRadius: 16,
+                      offset: Offset(0, 6),
+                      color: Color(0x33000000),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: m8Blue,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Icon(
+                        Icons.alt_route_rounded,
+                        color: m8White,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${_distanceKm?.toStringAsFixed(1) ?? '-'} km",
+                            style: TextStyle(
+                              color: m8BlueDark,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            "${_durationMinutes ?? '-'} menit • Rute tercepat",
+                            style: TextStyle(
+                              color: m8BlueDark,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: "Hapus tujuan",
+                      onPressed: () {
+                        setState(() {
+                          _destinationSelected = false;
+                          _destinationLat = null;
+                          _destinationLng = null;
+                          _distanceKm = null;
+                          _durationMinutes = null;
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: m8BlueDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // ============================================================
+          // CENTER GPS
+          // ============================================================
+          Positioned(
+            right: 16,
+            bottom: _destinationSelected ? 205 : 92,
+            child: FloatingActionButton(
+              heroTag: "bjo-navigation-center",
+              backgroundColor: m8White,
+              foregroundColor: m8BlueDark,
+              elevation: 5,
+              onPressed: _centerOnGps,
+              child: Icon(
+                _locationReady
+                    ? Icons.my_location_rounded
+                    : Icons.location_searching_rounded,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BJoNavigationMapPainter extends CustomPainter {
+  final double currentLat;
+  final double currentLng;
+  final double? destinationLat;
+  final double? destinationLng;
+  final bool destinationSelected;
+
+  _BJoNavigationMapPainter({
+    required this.currentLat,
+    required this.currentLng,
+    required this.destinationLat,
+    required this.destinationLng,
+    required this.destinationSelected,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final mapPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFFE7F0F5);
+
+    canvas.drawRect(
+      Offset.zero & size,
+      mapPaint,
+    );
+
+    final roadPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..color = const Color(0xFFB7CAD5);
+
+    final majorRoadPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..color = const Color(0xFF9BB6C5);
+
+    // Jalan utama sederhana sebagai dasar visual peta.
+    final roads = [
+      Path()
+        ..moveTo(0, size.height * .24)
+        ..quadraticBezierTo(
+          size.width * .35,
+          size.height * .18,
+          size.width,
+          size.height * .30,
+        ),
+      Path()
+        ..moveTo(0, size.height * .72)
+        ..quadraticBezierTo(
+          size.width * .48,
+          size.height * .56,
+          size.width,
+          size.height * .68,
+        ),
+      Path()
+        ..moveTo(size.width * .18, 0)
+        ..quadraticBezierTo(
+          size.width * .42,
+          size.height * .40,
+          size.width * .28,
+          size.height,
+        ),
+      Path()
+        ..moveTo(size.width * .72, 0)
+        ..quadraticBezierTo(
+          size.width * .58,
+          size.height * .42,
+          size.width * .84,
+          size.height,
+        ),
+    ];
+
+    for (final road in roads) {
+      canvas.drawPath(road, roadPaint);
+    }
+
+    final majorRoad = Path()
+      ..moveTo(0, size.height * .48)
+      ..quadraticBezierTo(
+        size.width * .48,
+        size.height * .34,
+        size.width,
+        size.height * .52,
+      );
+
+    canvas.drawPath(majorRoad, majorRoadPaint);
+
+    final current = Offset(
+      size.width * .46,
+      size.height * .53,
+    );
+
+    // Rute simulasi.
+    if (destinationSelected) {
+      final destination = Offset(
+        size.width * .72,
+        size.height * .30,
+      );
+
+      final routePaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..strokeCap = StrokeCap.round
+        ..color = m8Blue;
+
+      final route = Path()
+        ..moveTo(current.dx, current.dy)
+        ..quadraticBezierTo(
+          size.width * .52,
+          size.height * .42,
+          destination.dx,
+          destination.dy,
+        );
+
+      canvas.drawPath(route, routePaint);
+
+      final destinationPaint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = const Color(0xFF0B4F71);
+
+      canvas.drawCircle(
+        destination,
+        13,
+        destinationPaint,
+      );
+
+      canvas.drawCircle(
+        destination,
+        6,
+        Paint()..color = m8White,
+      );
+    }
+
+    // Marker posisi pengguna.
+    canvas.drawCircle(
+      current,
+      17,
+      Paint()..color = m8White,
+    );
+
+    canvas.drawCircle(
+      current,
+      12,
+      Paint()..color = m8Blue,
+    );
+
+    canvas.drawCircle(
+      current,
+      5,
+      Paint()..color = m8White,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BJoNavigationMapPainter oldDelegate) {
+    return oldDelegate.currentLat != currentLat ||
+        oldDelegate.currentLng != currentLng ||
+        oldDelegate.destinationLat != destinationLat ||
+        oldDelegate.destinationLng != destinationLng ||
+        oldDelegate.destinationSelected != destinationSelected;
+  }
+}
+
+
+
+
+
+
+
+
+
+// ============================================================
+// END B'JO NAVIGATION
+// ============================================================
+
+
 class BJoMainShell extends StatefulWidget {
   final String token;
   final Map<String, dynamic> user;
@@ -1658,7 +2242,18 @@ class _BJoMainShellState extends State<BJoMainShell> {
             selectedIcon: Icon(Icons.auto_awesome_motion, color: m8White),
             label: 'Moments',
           ),
-          NavigationDestination(
+                      NavigationDestination(
+              icon: Icon(
+                Icons.navigation_outlined,
+                color: m8WhiteSoft,
+              ),
+              selectedIcon: Icon(
+                Icons.navigation,
+                color: m8White,
+              ),
+              label: 'Navigation',
+            ),
+NavigationDestination(
             icon: Icon(Icons.call_outlined, color: m8WhiteSoft),
             selectedIcon: Icon(Icons.call, color: m8White),
             label: 'Call',
