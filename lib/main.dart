@@ -1468,6 +1468,81 @@ class _RegisterPageState extends State<RegisterPage> {
 // GPS / GNSS + SATELLITE MAP + LIVE ROUTING
 // ============================================================
 
+class _BjoBatikHeaderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..color = Colors.white.withValues(alpha: 0.075);
+
+    const spacing = 34.0;
+
+    for (double x = -spacing; x < size.width + spacing; x += spacing) {
+      for (double y = -spacing; y < size.height + spacing; y += spacing) {
+        final path = Path();
+
+        path.moveTo(x, y + 9);
+        path.quadraticBezierTo(
+          x + 8,
+          y,
+          x + 17,
+          y + 9,
+        );
+        path.quadraticBezierTo(
+          x + 8,
+          y + 18,
+          x,
+          y + 9,
+        );
+
+        path.moveTo(x + 17, y + 9);
+        path.quadraticBezierTo(
+          x + 25,
+          y,
+          x + 34,
+          y + 9,
+        );
+        path.quadraticBezierTo(
+          x + 25,
+          y + 18,
+          x + 17,
+          y + 9,
+        );
+
+        canvas.drawPath(path, paint);
+      }
+    }
+
+    final dotPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white.withValues(alpha: 0.055);
+
+    for (double x = 10; x < size.width; x += 34) {
+      for (double y = 8; y < size.height; y += 34) {
+        canvas.drawCircle(
+          Offset(x, y),
+          1.3,
+          dotPaint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class HomePage extends StatefulWidget {
+  final String token;
+  final Map<String, dynamic> user;
+
+  const HomePage({super.key, required this.token, required this.user});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
 class BJoNavigationPage extends StatefulWidget {
   const BJoNavigationPage({super.key});
 
@@ -7679,7 +7754,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "$other • ${recent.length} pesan teks",
+                  "${otherName.isNotEmpty ? otherName : otherPin} • ${recent.length} pesan teks",
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                   ),
