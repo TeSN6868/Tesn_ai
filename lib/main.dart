@@ -2165,20 +2165,21 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
               children: [
                 TileLayer(
                   urlTemplate:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                   userAgentPackageName: 'com.bjo.messenger',
+                  maxZoom: 19,
                 ),
                 if (_routePoints.length >= 2)
                   PolylineLayer(
                     polylines: [
                       Polyline(
                         points: _routePoints,
-                        strokeWidth: 9,
+                        strokeWidth: 7,
                         color: const Color(0xFFFFFFFF),
                       ),
                       Polyline(
                         points: _routePoints,
-                        strokeWidth: 6,
+                        strokeWidth: 4.5,
                         color: m8Blue,
                       ),
                     ],
@@ -2187,19 +2188,19 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                   markers: [
                     Marker(
                       point: current,
-                      width: 54,
-                      height: 54,
+                      width: 42,
+                      height: 42,
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: m8Blue,
                           border: Border.all(
                             color: m8White,
-                            width: 4,
+                            width: 3,
                           ),
                           boxShadow: const [
                             BoxShadow(
-                              blurRadius: 10,
+                              blurRadius: 7,
                               color: Color(0x55000000),
                             ),
                           ],
@@ -2207,7 +2208,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                         child: const Icon(
                           Icons.navigation_rounded,
                           color: m8White,
-                          size: 28,
+                          size: 21,
                         ),
                       ),
                     ),
@@ -2218,12 +2219,12 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                           _destinationLat!,
                           _destinationLng!,
                         ),
-                        width: 54,
-                        height: 64,
+                        width: 42,
+                        height: 50,
                         child: const Icon(
                           Icons.location_pin,
                           color: Color(0xFF0B4F71),
-                          size: 52,
+                          size: 42,
                         ),
                       ),
                   ],
@@ -2231,7 +2232,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                 RichAttributionWidget(
                   attributions: [
                     TextSourceAttribution(
-                      'OpenStreetMap contributors',
+                      'Esri, Maxar, Earthstar Geographics, and the GIS User Community',
                     ),
                   ],
                 ),
@@ -2241,16 +2242,16 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
 
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
-            left: 16,
-            right: 16,
+            left: 12,
+            right: 12,
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
+                horizontal: 12,
+                vertical: 7,
               ),
               decoration: BoxDecoration(
-                color: m8Blue.withOpacity(0.96),
-                borderRadius: BorderRadius.circular(18),
+                color: m8Blue.withOpacity(0.90),
+                borderRadius: BorderRadius.circular(14),
                 boxShadow: const [
                   BoxShadow(
                     blurRadius: 14,
@@ -2272,7 +2273,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                       "B'Jo Navigation",
                       style: TextStyle(
                         color: m8White,
-                        fontSize: 20,
+                        fontSize: 17,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -2295,13 +2296,13 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
           ),
 
           Positioned(
-            left: 16,
-            right: 16,
-            top: MediaQuery.of(context).padding.top + 86,
+            left: 12,
+            right: 12,
+            top: MediaQuery.of(context).padding.top + 68,
             child: Material(
               color: m8White,
-              elevation: 5,
-              borderRadius: BorderRadius.circular(18),
+              elevation: 2,
+              borderRadius: BorderRadius.circular(13),
               child: TextField(
                 controller: _destinationController,
                 focusNode: _destinationFocusNode,
@@ -2345,8 +2346,8 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
                   filled: true,
                   fillColor: m8White,
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
+                    horizontal: 12,
+                    vertical: 8,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
@@ -2368,16 +2369,16 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
           if (_routing)
             Positioned(
               top: MediaQuery.of(context).padding.top + 150,
-              left: 16,
-              right: 16,
+              left: 12,
+              right: 12,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                  horizontal: 12,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: m8White,
-                  borderRadius: BorderRadius.circular(16),
+                  color: m8White.withOpacity(0.94),
+                  borderRadius: BorderRadius.circular(13),
                   boxShadow: const [
                     BoxShadow(
                       blurRadius: 12,
@@ -2413,100 +2414,99 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
               _destinationLng != null &&
               _routePoints.length >= 2)
             Positioned(
-              left: 16,
-              right: 16,
-              bottom: 92,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: m8White,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: const [
-                    BoxShadow(
-                      blurRadius: 16,
-                      offset: Offset(0, 6),
-                      color: Color(0x33000000),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: m8Blue,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: const Icon(
-                            Icons.alt_route_rounded,
-                            color: m8White,
-                            size: 26,
-                          ),
+              left: 12,
+              right: 12,
+              bottom: 12,
+              child: SafeArea(
+                top: false,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: m8White.withOpacity(0.94),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: const [
+                      BoxShadow(
+                        blurRadius: 10,
+                        offset: Offset(0, 3),
+                        color: Color(0x30000000),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: m8Blue,
+                          borderRadius: BorderRadius.circular(9),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _destinationName ?? 'Tujuan',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: m8BlueDark,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${_distanceKm?.toStringAsFixed(1) ?? '-'} km'
-                                ' • '
-                                '${_durationMinutes ?? '-'} menit',
-                                style: const TextStyle(
-                                  color: m8BlueDark,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: "Hapus tujuan",
-                          onPressed: _clearDestination,
-                          icon: const Icon(
-                            Icons.close_rounded,
-                            color: m8BlueDark,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: _navigationActive
-                            ? null
-                            : _startNavigation,
-                        icon: Icon(
-                          _navigationActive
-                              ? Icons.navigation_rounded
-                              : Icons.play_arrow_rounded,
-                        ),
-                        label: Text(
-                          _navigationActive
-                              ? "Navigasi B'Jo Aktif"
-                              : "Mulai Navigasi",
+                        child: const Icon(
+                          Icons.route_rounded,
+                          color: m8White,
+                          size: 19,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${_distanceKm?.toStringAsFixed(1) ?? '-'} km'
+                              ' • '
+                              '${_durationMinutes ?? '-'} menit',
+                              style: const TextStyle(
+                                color: m8BlueDark,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              _navigationActive
+                                  ? "Navigasi B'Jo aktif"
+                                  : "Rute jalan",
+                              style: const TextStyle(
+                                color: m8BlueDark,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      SizedBox(
+                        height: 34,
+                        child: FilledButton.icon(
+                          onPressed: _navigationActive
+                              ? null
+                              : _startNavigation,
+                          icon: Icon(
+                            _navigationActive
+                                ? Icons.navigation_rounded
+                                : Icons.play_arrow_rounded,
+                            size: 17,
+                          ),
+                          label: Text(
+                            _navigationActive ? 'Aktif' : 'Mulai',
+                          ),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                            ),
+                            visualDensity:
+                                VisualDensity.compact,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -5376,7 +5376,7 @@ class _M8GroupInfoPage extends StatelessWidget {
                       ? const Icon(
                           Icons.groups_rounded,
                           color: m8White,
-                          size: 52,
+                          size: 39,
                         )
                       : null,
                 ),
