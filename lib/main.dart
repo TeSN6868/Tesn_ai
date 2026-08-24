@@ -2942,7 +2942,7 @@ Future<void> _requestRoute() async {
                   urlTemplate:
                       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                   userAgentPackageName: 'com.bjo.messenger',
-                  maxZoom: 19,
+                  maxZoom: 21,
                 ),
                 if (_routePoints.length >= 2)
                   PolylineLayer(
