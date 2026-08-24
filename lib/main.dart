@@ -3311,6 +3311,25 @@ class _BJoMainShellState extends State<BJoMainShell> {
     });
   }
 
+  Future<void> _openBJoProfile() async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) =>
+            BJoProfilePage(user: widget.user, token: widget.token),
+      ),
+    );
+
+    if (!mounted || changed != true) return;
+
+    // Profil mengubah object widget.user yang sama.
+    // Buang halaman cache agar Home membaca nama terbaru.
+    setState(() {
+      for (var i = 0; i < _cachedPages.length; i++) {
+        _cachedPages[i] = null;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -3325,12 +3344,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
             tooltip: "Profil B'Jo",
             icon: const Icon(Icons.person_rounded),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      BJoProfilePage(user: widget.user, token: widget.token),
-                ),
-              );
+              _openBJoProfile();
             },
           ),
         ],
@@ -7165,7 +7179,7 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
   }
 }
 
-class _ChatRoomPageState extends State<ChatRoomPage> {
+class _ChatRoomPageState extends State<ChatRoomPage> with WidgetsBindingObserver {
   final AudioPlayer _chatHeyPlayer = AudioPlayer();
 
   // B'Jo Voice Message
@@ -7266,7 +7280,22 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
+
     _initializeChatStatus();
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (!mounted) return;
+
+    final bottomInset =
+        WidgetsBinding.instance.platformDispatcher.views.first.viewInsets.bottom;
+
+    if (bottomInset > 0) {
+      _scrollChatToBottom();
+    }
   }
 
   Future<void> _initializeChatStatus() async {
@@ -7444,6 +7473,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     typingPollTimer?.cancel();
     messagePollTimer?.cancel();
 
+    WidgetsBinding.instance.removeObserver(this);
     controller.dispose();
     _chatHeyPlayer.dispose();
     _chatScrollController.dispose();
@@ -12526,15 +12556,7 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                                 );
 
                                 if (changed == true && context.mounted) {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => BJoProfilePage(
-                                        user: widget.user,
-                                        token: widget.token,
-                                      ),
-                                    ),
-                                  );
+                                  setState(() {});
                                 }
                               },
                               icon: const Icon(Icons.edit_rounded, size: 19),
