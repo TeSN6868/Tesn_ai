@@ -7669,6 +7669,23 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Future<void> _openChatSummary() async {
+    final p1 = widget.chat["participant_1_pin"]?.toString() ?? "";
+    final p2 = widget.chat["participant_2_pin"]?.toString() ?? "";
+    final other = p1 == widget.myPin ? p2 : p1;
+
+    final rawOtherUser = widget.chat["other_user"];
+    final otherUser = rawOtherUser is Map
+        ? Map<String, dynamic>.from(rawOtherUser)
+        : <String, dynamic>{};
+
+    final otherName =
+        otherUser["name"]?.toString().trim() ?? "";
+
+    final otherPin =
+        otherUser["m8_pin"]?.toString().trim().isNotEmpty == true
+            ? otherUser["m8_pin"].toString().trim()
+            : other;
+
     final texts = messages
         .map(_smartMessageText)
         .where(
