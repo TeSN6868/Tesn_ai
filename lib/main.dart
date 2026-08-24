@@ -2105,9 +2105,11 @@ class _BJoMainShellState extends State<BJoMainShell> {
       case 1:
         return "B'Jo Moments";
       case 2:
-        return "B'Jo Calls";
+        return "B'Jo Navigation";
       case 3:
-        return "B'Jo Tugas";
+        return "B'Jo Calls";
+      case 4:
+        return "B'Jo Pad";
       default:
         return "B'Jo Home";
     }
@@ -2127,9 +2129,12 @@ class _BJoMainShellState extends State<BJoMainShell> {
         );
 
       case 2:
-        return const CallsPage();
+        return const BJoNavigationPage();
 
       case 3:
+        return const CallsPage();
+
+      case 4:
         return TasksPage(
           user: widget.user,
         );
@@ -2261,7 +2266,7 @@ NavigationDestination(
           NavigationDestination(
             icon: Icon(Icons.check_circle_outline, color: m8WhiteSoft),
             selectedIcon: Icon(Icons.check_circle, color: m8White),
-            label: 'Tugas',
+            label: 'Pad',
           ),
         ],
       ),
