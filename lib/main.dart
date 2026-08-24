@@ -1752,6 +1752,11 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
   double? _distanceKm;
   int? _durationMinutes;
 
+  final TextEditingController _destinationController =
+      TextEditingController();
+  final FocusNode _destinationFocusNode = FocusNode();
+
+
   @override
   void initState() {
     super.initState();
@@ -1761,6 +1766,8 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
   @override
   void dispose() {
     _positionSubscription?.cancel();
+    _destinationController.dispose();
+    _destinationFocusNode.dispose();
     super.dispose();
   }
 
@@ -1952,71 +1959,117 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
             ),
           ),
 
-          // ============================================================
-          // SEARCH / TUJUAN
-          // ============================================================
-          Positioned(
-            left: 16,
-            right: 16,
-            top: MediaQuery.of(context).padding.top + 86,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
+            // ============================================================
+            // SEARCH / TUJUAN
+            // ============================================================
+            Positioned(
+              left: 16,
+              right: 16,
+              top: MediaQuery.of(context).padding.top + 86,
+              child: Material(
+                color: m8White,
+                elevation: 5,
                 borderRadius: BorderRadius.circular(18),
-                onTap: () {
-                  setState(() {
-                    _destinationSelected = true;
-                    _destinationLat = _currentLat + 0.018;
-                    _destinationLng = _currentLng + 0.024;
-                    _distanceKm = 3.4;
-                    _durationMinutes = 11;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
+                child: TextField(
+                  controller: _destinationController,
+                  focusNode: _destinationFocusNode,
+                  onTap: () {
+                    _destinationFocusNode.requestFocus();
+                    Future.delayed(
+                      const Duration(milliseconds: 100),
+                      () {
+                        if (mounted &&
+                            _destinationFocusNode.hasFocus) {
+                          SystemChannels.textInput.invokeMethod(
+                            'TextInput.show',
+                          );
+                        }
+                      },
+                    );
+                  },
+
+                  textInputAction: TextInputAction.search,
+                  keyboardType: TextInputType.streetAddress,
+                  style: const TextStyle(
+                    color: m8BlueDark,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
-                  decoration: BoxDecoration(
-                    color: m8White,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: const [
-                      BoxShadow(
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
-                        color: Color(0x30000000),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.search_rounded,
-                        color: m8BlueDark,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _destinationSelected
-                              ? "Tujuan dipilih"
-                              : "Cari tujuan atau tap peta",
-                          style: TextStyle(
+                  decoration: InputDecoration(
+                    hintText: "Cari tujuan atau alamat",
+                    hintStyle: TextStyle(
+                      color: m8BlueDark.withOpacity(0.65),
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: m8BlueDark,
+                    ),
+                    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _destinationController,
+                      builder: (context, value, _) {
+                        if (value.text.isEmpty) {
+                          return const Icon(
+                            Icons.chevron_right_rounded,
                             color: m8BlueDark,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                          );
+                        }
+
+                        return IconButton(
+                          tooltip: "Hapus pencarian",
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: m8BlueDark,
                           ),
-                        ),
+                          onPressed: () {
+                            _destinationController.clear();
+                            _destinationFocusNode.requestFocus();
+                          },
+                        );
+                      },
+                    ),
+                    filled: true,
+                    fillColor: m8White,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      borderSide: const BorderSide(
+                        color: m8Blue,
+                        width: 2,
                       ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        color: m8BlueDark,
-                      ),
-                    ],
+                    ),
                   ),
+                  onSubmitted: (value) {
+                    final destination = value.trim();
+
+                    if (destination.isEmpty) {
+                      _destinationFocusNode.requestFocus();
+                      return;
+                    }
+
+                    setState(() {
+                      _destinationSelected = true;
+                      _destinationLat = _currentLat + 0.018;
+                      _destinationLng = _currentLng + 0.024;
+                      _distanceKm = 3.4;
+                      _durationMinutes = 11;
+                    });
+
+                    FocusScope.of(context).unfocus();
+                  },
                 ),
               ),
             ),
-          ),
 
           // ============================================================
           // INFO RUTE
