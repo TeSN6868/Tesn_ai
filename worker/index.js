@@ -198,7 +198,7 @@ export default {
         headers.set("ETag", object.httpEtag);
         headers.set(
           "Cache-Control",
-          "public, max-age=31536000, immutable"
+          "public, max-age=300, must-revalidate"
         );
         headers.set("Accept-Ranges", "bytes");
 
@@ -3509,10 +3509,16 @@ export default {
         false,
       );
 
-      return json({
+      const response = json({
         success: true,
         user: safeUser,
       });
+
+      response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+      response.headers.set("Pragma", "no-cache");
+      response.headers.set("Expires", "0");
+
+      return response;
     }
 
     // ============================================================
