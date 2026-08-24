@@ -82,6 +82,7 @@ flutter:
     - assets/sounds/bjo_failed.wav
     - assets/sounds/bjo_ended.wav
     - assets/m8_icon-final.png
+    - assets/bjo_ultimate.png
 
 
 
