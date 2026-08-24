@@ -1888,32 +1888,6 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
           }
 
 
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 12,
-                right: 12,
-                child: Material(
-                  color: m8White,
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: _navigationActive
-                        ? _centerOnGps
-                        : _centerOnGps,
-                    child: SizedBox(
-                      width: 44,
-                      height: 44,
-                      child: Icon(
-                        _followingGps
-                            ? Icons.navigation_rounded
-                            : Icons.my_location_rounded,
-                        color: m8BlueDark,
-                        size: 21,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
 
 if (_destinationLat != null && _destinationLng != null) {
             _updateRouteFromCurrentPosition();
@@ -3214,7 +3188,7 @@ Positioned(
                   ],
                 ),
               ),
-            )
+            ),
 
 Positioned(
     top: MediaQuery.of(context).padding.top + 12,
@@ -3246,7 +3220,6 @@ Positioned(
         ),
     ),
 ),
-,
         ],
       ),
     );
