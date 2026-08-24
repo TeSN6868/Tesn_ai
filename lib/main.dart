@@ -2115,36 +2115,53 @@ class _BJoMainShellState extends State<BJoMainShell> {
     }
   }
 
-  Widget page() {
-    switch (currentIndex) {
+  final List<Widget?> _cachedPages = List<Widget?>.filled(5, null);
+
+  Widget _buildPage(int index) {
+    final cached = _cachedPages[index];
+    if (cached != null) {
+      return cached;
+    }
+
+    late final Widget page;
+
+    switch (index) {
       case 0:
-        return HomePage(
+        page = HomePage(
           token: widget.token,
           user: widget.user,
         );
+        break;
 
       case 1:
-        return StoryPage(
+        page = StoryPage(
           user: widget.user,
         );
+        break;
 
       case 2:
-        return const BJoNavigationPage();
+        page = const BJoNavigationPage();
+        break;
 
       case 3:
-        return const CallsPage();
+        page = const CallsPage();
+        break;
 
       case 4:
-        return TasksPage(
+        page = TasksPage(
           user: widget.user,
         );
+        break;
 
       default:
-        return HomePage(
+        page = HomePage(
           token: widget.token,
           user: widget.user,
         );
     }
+
+    _cachedPages[index] = page;
+    return page;
   }
 
   @override
@@ -2220,7 +2237,13 @@ class _BJoMainShellState extends State<BJoMainShell> {
           Expanded(
             child: Container(
               color: currentIndex == 3 ? m8BlueDark : m8WhiteSoft,
-              child: page(),
+              child: IndexedStack(
+                  index: currentIndex,
+                  children: List.generate(
+                    5,
+                    (index) => _buildPage(index),
+                  ),
+                ),
             ),
           ),
         ],
