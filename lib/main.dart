@@ -1887,7 +1887,35 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
             _updateNextManeuver();
           }
 
-          if (_destinationLat != null && _destinationLng != null) {
+
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 12,
+                right: 12,
+                child: Material(
+                  color: m8White,
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _navigationActive
+                        ? _centerOnGps
+                        : _centerOnGps,
+                    child: SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: Icon(
+                        _followingGps
+                            ? Icons.navigation_rounded
+                            : Icons.my_location_rounded,
+                        color: m8BlueDark,
+                        size: 21,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+if (_destinationLat != null && _destinationLng != null) {
             _updateRouteFromCurrentPosition();
           }
         },
@@ -3014,316 +3042,80 @@ Future<void> _requestRoute() async {
           ),
 
           Positioned(
-            top: MediaQuery.of(context).padding.top + 12,
-            left: 12,
-            right: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 7,
+    left: 12,
+    right: 12,
+    bottom: 68,
+    child: SafeArea(
+      top: false,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ChoiceChip(
+            label: const Text(
+              '🚗',
+              style: TextStyle(fontSize: 16),
+            ),
+            selected: _vehicleMode == 'car',
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            onSelected: _navigationActive
+                ? null
+                : (_) {
+                    setState(() {
+                      _vehicleMode = 'car';
+                    });
+                    if (_destinationLat != null &&
+                        _destinationLng != null) {
+                      _requestRoute();
+                    }
+                  },
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            label: const Text(
+              '🏍️',
+              style: TextStyle(fontSize: 16),
+            ),
+            selected: _vehicleMode == 'motor',
+            visualDensity: VisualDensity.compact,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            onSelected: _navigationActive
+                ? null
+                : (_) {
+                    setState(() {
+                      _vehicleMode = 'motor';
+                    });
+                    if (_destinationLat != null &&
+                        _destinationLng != null) {
+                      _requestRoute();
+                    }
+                  },
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 44,
+            height: 40,
+            child: OutlinedButton(
+              onPressed: (_routing || _navigationActive)
+                  ? null
+                  : _startNavigation,
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(11),
+                ),
               ),
-              decoration: BoxDecoration(
-                color: m8Blue.withOpacity(0.90),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: const [
-                  BoxShadow(
-                    blurRadius: 14,
-                    offset: Offset(0, 5),
-                    color: Color(0x33000000),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    tooltip: _locationPermissionDenied
-                        ? "Izin lokasi ditolak"
-                        : "Ikuti GPS",
-                    onPressed: _centerOnGps,
-                    icon: Icon(
-                      _locationReady
-                          ? Icons.my_location_rounded
-                          : Icons.location_searching_rounded,
-                      color: m8White,
-                    ),
-                  ),
-                ],
+              child: const Icon(
+                Icons.directions_rounded,
+                size: 20,
               ),
             ),
           ),
-
-          Positioned(
-            left: 12,
-            right: 12,
-            top: MediaQuery.of(context).padding.top + 68,
-            child: Material(
-              color: m8White,
-              elevation: 2,
-              borderRadius: BorderRadius.circular(13),
-              child: TextField(
-                controller: _destinationController,
-                focusNode: _destinationFocusNode,
-                textInputAction: TextInputAction.search,
-                keyboardType: TextInputType.streetAddress,
-                style: const TextStyle(
-                  color: m8BlueDark,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-                decoration: InputDecoration(
-                  hintText: "Cari tujuan atau alamat",
-                  hintStyle: TextStyle(
-                    color: m8BlueDark.withOpacity(0.65),
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.search_rounded,
-                    color: m8BlueDark,
-                  ),
-                  suffixIcon: _searching
-                      ? const Padding(
-                          padding: EdgeInsets.all(14),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                            ),
-                          ),
-                        )
-                      : IconButton(
-                          tooltip: "Cari tujuan",
-                          onPressed: () => _searchDestination(
-                            _destinationController.text,
-                          ),
-                          icon: const Icon(
-                            Icons.arrow_forward_rounded,
-                            color: m8BlueDark,
-                          ),
-                        ),
-                  filled: true,
-                  fillColor: m8White,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: const BorderSide(
-                      color: m8Blue,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                onSubmitted: _searchDestination,
-              ),
-            ),
-          ),
-
-          if (_routing)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 150,
-              left: 12,
-              right: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: m8White.withOpacity(0.94),
-                  borderRadius: BorderRadius.circular(13),
-                  boxShadow: const [
-                    BoxShadow(
-                      blurRadius: 12,
-                      color: Color(0x33000000),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  children: [
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'B\'Jo sedang mencari rute jalan...',
-                        style: TextStyle(
-                          color: m8BlueDark,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-
-            if (_destinationLat != null &&
-                _destinationLng != null &&
-                _routePoints.length >= 2)
-              Positioned(
-                left: 8,
-                right: 8,
-                bottom: 68,
-                child: SafeArea(
-                  top: false,
-                  child: Container(
-                    height: 44,
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    decoration: BoxDecoration(
-                      color: m8White.withOpacity(0.96),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 6,
-                          offset: Offset(0, 2),
-                          color: Color(0x22000000),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.directions_car_rounded,
-                          color: m8BlueDark,
-                          size: 17,
-                        ),
-
-                        const SizedBox(width: 2),
-
-                        ChoiceChip(
-                          label: const Text(
-                            '🚗',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          selected: _vehicleMode == 'car',
-                          visualDensity: VisualDensity.compact,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          padding: EdgeInsets.zero,
-                          labelPadding:
-                              const EdgeInsets.symmetric(horizontal: 4),
-                          onSelected: _navigationActive
-                              ? null
-                              : (_) {
-                                  setState(() {
-                                    _vehicleMode = 'car';
-                                  });
-                                  if (_destinationLat != null &&
-                                      _destinationLng != null) {
-                                    _requestRoute();
-                                  }
-                                },
-                        ),
-
-                        const SizedBox(width: 2),
-
-                        ChoiceChip(
-                          label: const Text(
-                            '🏍️',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          selected: _vehicleMode == 'motor',
-                          visualDensity: VisualDensity.compact,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          padding: EdgeInsets.zero,
-                          labelPadding:
-                              const EdgeInsets.symmetric(horizontal: 4),
-                          onSelected: _navigationActive
-                              ? null
-                              : (_) {
-                                  setState(() {
-                                    _vehicleMode = 'motor';
-                                  });
-                                  if (_destinationLat != null &&
-                                      _destinationLng != null) {
-                                    _requestRoute();
-                                  }
-                                },
-                        ),
-
-                        const SizedBox(width: 6),
-
-                        Container(
-                          width: 1,
-                          height: 22,
-                          color: m8BlueDark.withOpacity(0.14),
-                        ),
-
-                        const SizedBox(width: 6),
-
-                        Expanded(
-                          child: Text(
-                            '${_distanceKm?.toStringAsFixed(1) ?? '-'} km'
-                            ' • '
-                            '${_durationMinutes ?? '-'} mnt',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: m8BlueDark,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width: 4),
-
-                        SizedBox(
-                          height: 29,
-                          child: FilledButton(
-                            onPressed:
-                                (_navigationActive || _routing)
-                                    ? null
-                                    : _startNavigation,
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                              minimumSize: Size.zero,
-                              visualDensity:
-                                  VisualDensity.compact,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _navigationActive
-                                      ? Icons.navigation_rounded
-                                      : Icons.play_arrow_rounded,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  _navigationActive
-                                      ? 'Aktif'
-                                      : 'Mulai',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
+        ],
+      ),
+    ),
+  ),
 Positioned(
             right: 16,
             bottom: _destinationLat != null &&
@@ -3422,7 +3214,39 @@ Positioned(
                   ],
                 ),
               ),
+            )
+
+Positioned(
+    top: MediaQuery.of(context).padding.top + 12,
+    right: 12,
+    child: SizedBox(
+        width: 52,
+        height: 44,
+        child: FilledButton(
+            onPressed: (_routing ||
+                    _navigationActive ||
+                    _destinationLat == null ||
+                    _destinationLng == null)
+                ? null
+                : _startNavigation,
+            style: FilledButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                ),
             ),
+            child: const Text(
+                'Mulai',
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                ),
+            ),
+        ),
+    ),
+),
+,
         ],
       ),
     );
