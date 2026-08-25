@@ -1797,6 +1797,16 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
 
   List<LatLng> _routePoints = const [];
 
+  // B'Jo Navigation Performance Guard.
+  // GPS tetap live, tetapi routing ulang dibatasi agar navigasi
+  // tidak berat dan tidak mengirim request berulang.
+  double? _lastRerouteLat;
+  double? _lastRerouteLng;
+  DateTime? _lastRerouteAt;
+
+  static const double _rerouteDistanceMeters = 150.0;
+  static const Duration _rerouteMinInterval = Duration(seconds: 15);
+
   @override
   void initState() {
     super.initState();
@@ -2681,6 +2691,39 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
         !_navigationActive) {
       return;
     }
+
+    final now = DateTime.now();
+
+    final lastLat = _lastRerouteLat;
+    final lastLng = _lastRerouteLng;
+    final lastAt = _lastRerouteAt;
+
+    // Batasi frekuensi request routing.
+    if (lastAt != null &&
+        now.difference(lastAt) < _rerouteMinInterval) {
+      return;
+    }
+
+    // Routing ulang hanya jika kendaraan sudah bergeser
+    // minimal 150 meter dari posisi routing sebelumnya.
+    if (lastLat != null && lastLng != null) {
+      final movedMeters = _distanceBetweenMeters(
+        lastLat,
+        lastLng,
+        _currentLat,
+        _currentLng,
+      );
+
+      if (movedMeters < _rerouteDistanceMeters) {
+        return;
+      }
+    }
+
+    // Kunci sebelum request agar update GPS berikutnya
+    // tidak membuat request routing berulang.
+    _lastRerouteLat = _currentLat;
+    _lastRerouteLng = _currentLng;
+    _lastRerouteAt = now;
 
     await _requestRoute();
   }
