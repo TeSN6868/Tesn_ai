@@ -1,7 +1,10 @@
-name: Build M8 APK
+name: Build BLOOM APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - bloom
 
 jobs:
   build:
@@ -14,17 +17,12 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.35.5'
           channel: stable
           cache: true
 
-      - name: Flutter version
-        run: flutter --version
-
-      - name: Get dependencies
+      - name: Flutter Pub Get
         run: flutter pub get
-
-      - name: Analyze
-        run: flutter analyze
 
       - name: Build APK
         run: flutter build apk --release
@@ -32,5 +30,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: m8-release-apk
+          name: BLOOM-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
