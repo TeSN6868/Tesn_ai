@@ -23,7 +23,14 @@ jobs:
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          for i in 1 2 3 4 5; do
+            echo "=== Gradle build attempt $i/5 ==="
+            flutter build apk --release && exit 0
+            echo "Build failed; waiting before retry..."
+            sleep $((i * 20))
+          done
+          exit 1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
