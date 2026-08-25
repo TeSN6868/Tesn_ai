@@ -6,6 +6,7 @@ on:
 jobs:
   inspect:
     runs-on: ubuntu-latest
+
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
@@ -24,10 +25,10 @@ jobs:
       - name: Check Wrangler
         run: ./node_modules/.bin/wrangler --version
 
-      - name: Inspect D1 tables
+      - name: Inspect users schema
         run: |
           ./node_modules/.bin/wrangler d1 execute m8-database --remote \
-            --command="SELECT name, type, sql FROM sqlite_master WHERE type IN ('table','index') ORDER BY type, name;"
+            --command="PRAGMA table_info(users);"
 
       - name: Inspect chats schema
         run: |
@@ -38,3 +39,8 @@ jobs:
         run: |
           ./node_modules/.bin/wrangler d1 execute m8-database --remote \
             --command="PRAGMA table_info(messages);"
+
+      - name: Inspect migrations
+        run: |
+          ./node_modules/.bin/wrangler d1 execute m8-database --remote \
+            --command="SELECT * FROM d1_migrations ORDER BY id;"
