@@ -14035,6 +14035,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
         case 'ringing':
           callStatus = 'Berdering...';
           connecting = true;
+          _m8StartCallRinging();
           break;
 
         case 'connecting':
@@ -14043,6 +14044,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           break;
 
         case 'connected':
+          _m8StopCallSound();
           callStatus = widget.videoCall
               ? 'Video call terhubung'
               : 'Panggilan suara terhubung';
@@ -14056,6 +14058,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           break;
 
         case 'disconnected':
+          _m8StopCallSound();
           timer?.cancel();
           timer = null;
           callStatus = 'Koneksi terputus';
@@ -14063,6 +14066,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           break;
 
         case 'failed':
+          _m8StopCallSound();
           timer?.cancel();
           timer = null;
           callStatus = 'Panggilan gagal';
@@ -14070,6 +14074,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           break;
 
         case 'rejected':
+          _m8StopCallSound();
           timer?.cancel();
           timer = null;
           callStatus = 'Panggilan ditolak';
@@ -14077,6 +14082,7 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           break;
 
         case 'ended':
+          _m8StopCallSound();
           timer?.cancel();
           timer = null;
           callStatus = 'Panggilan berakhir';
