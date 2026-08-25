@@ -15450,6 +15450,282 @@ class _BJoTargetPageState extends State<_BJoTargetPage> {
   }
 }
 
+
+class _BJoJournalPage extends StatefulWidget {
+  const _BJoJournalPage();
+
+  @override
+  State<_BJoJournalPage> createState() => _BJoJournalPageState();
+}
+
+class _BJoJournalPageState extends State<_BJoJournalPage> {
+  final List<Map<String, dynamic>> _journals = [];
+
+  String _dateText(DateTime date) {
+    return "${date.day.toString().padLeft(2, '0')}/"
+        "${date.month.toString().padLeft(2, '0')}/"
+        "${date.year}";
+  }
+
+  Future<void> _addJournal() async {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Jurnal Baru',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Judul',
+                  hintText: 'Contoh: Hari yang indah',
+                  prefixIcon: Icon(Icons.title_rounded),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: contentController,
+                maxLines: 7,
+                decoration: const InputDecoration(
+                  labelText: 'Isi jurnal',
+                  hintText: 'Ceritakan hari atau pengalamanmu...',
+                  prefixIcon: Icon(Icons.menu_book_rounded),
+                  alignLabelWithHint: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (titleController.text.trim().isEmpty &&
+                  contentController.text.trim().isEmpty) {
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      final title = titleController.text.trim();
+      final content = contentController.text.trim();
+
+      if (title.isNotEmpty || content.isNotEmpty) {
+        setState(() {
+          _journals.insert(0, {
+            'title': title.isEmpty ? 'Tanpa judul' : title,
+            'content': content,
+            'date': DateTime.now(),
+            'favorite': false,
+          });
+        });
+      }
+    }
+
+    titleController.dispose();
+    contentController.dispose();
+  }
+
+  void _toggleFavorite(int index) {
+    setState(() {
+      _journals[index]['favorite'] =
+          !(_journals[index]['favorite'] == true);
+    });
+  }
+
+  void _deleteJournal(int index) {
+    setState(() {
+      _journals.removeAt(index);
+    });
+  }
+
+  void _openJournal(Map<String, dynamic> journal) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          journal['title'] as String,
+          style: const TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            journal['content'] as String,
+            style: const TextStyle(fontSize: 15, height: 1.5),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final favorites =
+        _journals.where((e) => e['favorite'] == true).length;
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: const Text(
+          'Jurnal',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        actions: [
+          if (favorites > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 14),
+              child: Center(
+                child: Text(
+                  '★ $favorites',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addJournal,
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        icon: const Icon(Icons.edit_rounded),
+        label: const Text(
+          'Jurnal Baru',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+      body: _journals.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.menu_book_rounded,
+                      size: 72,
+                      color: m8Blue.withOpacity(.35),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Belum ada jurnal',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tuliskan cerita dan perjalanan harianmu di B’Jo.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton.icon(
+                      onPressed: _addJournal,
+                      icon: const Icon(Icons.edit_rounded),
+                      label: const Text('Tulis Jurnal'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 100),
+              itemCount: _journals.length,
+              itemBuilder: (context, index) {
+                final journal = _journals[index];
+                final favorite = journal['favorite'] == true;
+                final date = journal['date'] as DateTime;
+                final content = journal['content'] as String;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
+                    leading: CircleAvatar(
+                      backgroundColor: m8Blue.withOpacity(.10),
+                      child: Icon(
+                        Icons.menu_book_rounded,
+                        color: m8Blue,
+                      ),
+                    ),
+                    title: Text(
+                      journal['title'] as String,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: Text(
+                        content.isEmpty
+                            ? _dateText(date)
+                            : '${_dateText(date)} • $content',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    onTap: () => _openJournal(journal),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'favorite') {
+                          _toggleFavorite(index);
+                        } else if (value == 'delete') {
+                          _deleteJournal(index);
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'favorite',
+                          child: Text(
+                            favorite
+                                ? 'Hapus Favorit'
+                                : 'Jadikan Favorit',
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Hapus'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
+
 class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
@@ -15468,7 +15744,9 @@ class TasksPage extends StatelessWidget {
                           ? const _BJoReminderPage()
                           : title == 'Target'
                               ? const _BJoTargetPage()
-                              : _ProductivityPage(title: title, icon: icon),
+                              : title == 'Jurnal'
+                                  ? const _BJoJournalPage()
+                                  : _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
