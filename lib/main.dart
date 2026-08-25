@@ -15169,6 +15169,287 @@ class _BJoReminderPageState extends State<_BJoReminderPage> {
   }
 }
 
+
+class _BJoTargetPage extends StatefulWidget {
+  const _BJoTargetPage();
+
+  @override
+  State<_BJoTargetPage> createState() => _BJoTargetPageState();
+}
+
+class _BJoTargetPageState extends State<_BJoTargetPage> {
+  final List<Map<String, dynamic>> _targets = [];
+
+  Future<void> _addTarget() async {
+    final titleController = TextEditingController();
+    final detailController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Target Baru',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Nama target',
+                  hintText: 'Contoh: Menabung Rp10 juta',
+                  prefixIcon: Icon(Icons.flag_rounded),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: detailController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Keterangan',
+                  hintText: 'Tulis detail target',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (titleController.text.trim().isEmpty) return;
+              Navigator.pop(context, true);
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && titleController.text.trim().isNotEmpty) {
+      setState(() {
+        _targets.add({
+          'title': titleController.text.trim(),
+          'detail': detailController.text.trim(),
+          'progress': 0.0,
+          'done': false,
+        });
+      });
+    }
+
+    titleController.dispose();
+    detailController.dispose();
+  }
+
+  void _updateProgress(int index, double value) {
+    setState(() {
+      _targets[index]['progress'] = value.clamp(0.0, 1.0);
+      _targets[index]['done'] = value >= 1.0;
+    });
+  }
+
+  void _deleteTarget(int index) {
+    setState(() {
+      _targets.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final active =
+        _targets.where((e) => e['done'] != true).toList();
+    final completed =
+        _targets.where((e) => e['done'] == true).toList();
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: const Text(
+          'Target',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addTarget,
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          'Target Baru',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+      body: _targets.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.flag_rounded,
+                      size: 72,
+                      color: m8Blue.withOpacity(.35),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Belum ada target',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Catat tujuan dan perkembanganmu di B’Jo.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton.icon(
+                      onPressed: _addTarget,
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('Tambah Target'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 100),
+              children: [
+                _section('Target Aktif', active.length),
+                ..._cards(active),
+                if (completed.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  _section('Tercapai', completed.length),
+                  ..._cards(completed),
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget _section(String title, int count) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(Icons.flag_rounded, color: m8Blue),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$count',
+            style: TextStyle(
+              color: m8Blue,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _cards(List<Map<String, dynamic>> source) {
+    return source.map((target) {
+      final index = _targets.indexOf(target);
+      final done = target['done'] == true;
+      final progress = (target['progress'] as num).toDouble();
+      final detail = target['detail'] as String;
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    done
+                        ? Icons.check_circle_rounded
+                        : Icons.flag_rounded,
+                    color: m8Blue,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      target['title'] as String,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        decoration:
+                            done ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    onPressed: () => _deleteTarget(index),
+                  ),
+                ],
+              ),
+              if (detail.isNotEmpty) ...[
+                const SizedBox(height: 5),
+                Text(
+                  detail,
+                  style: const TextStyle(color: Colors.black54),
+                ),
+              ],
+              const SizedBox(height: 12),
+              LinearProgressIndicator(
+                value: progress,
+                minHeight: 8,
+                borderRadius: BorderRadius.circular(10),
+                color: m8Blue,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Slider(
+                      value: progress,
+                      min: 0,
+                      max: 1,
+                      divisions: 10,
+                      onChanged: done
+                          ? null
+                          : (value) => _updateProgress(index, value),
+                    ),
+                  ),
+                  Text(
+                    '${(progress * 100).round()}%',
+                    style: TextStyle(
+                      color: m8Blue,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+}
+
 class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
@@ -15185,7 +15466,9 @@ class TasksPage extends StatelessWidget {
                       ? const _BJoAgendaPage()
                       : title == 'Pengingat'
                           ? const _BJoReminderPage()
-                          : _ProductivityPage(title: title, icon: icon),
+                          : title == 'Target'
+                              ? const _BJoTargetPage()
+                              : _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
