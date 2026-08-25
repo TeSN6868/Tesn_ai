@@ -44,9 +44,7 @@ Future<void> _m8StartCallRinging() async {
       await _m8CallSoundPlayer.setVolume(1.0);
 
       // NADA SAMBUNG: 3 DETIK
-      await _m8CallSoundPlayer.play(
-        AssetSource('sounds/bjo_connecting.wav'),
-      );
+      await _m8CallSoundPlayer.play(AssetSource('sounds/bjo_connecting.wav'));
 
       await Future.delayed(const Duration(seconds: 3));
 
@@ -62,18 +60,13 @@ Future<void> _m8StartCallRinging() async {
 
     if (!_m8RingingActive) return;
 
-    _m8RingingTimer = Timer.periodic(
-      const Duration(seconds: 5),
-      (_) {
-        if (_m8RingingActive) {
-          ringCycle();
-        }
-      },
-    );
+    _m8RingingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (_m8RingingActive) {
+        ringCycle();
+      }
+    });
 
-    debugPrint(
-      '[M8 CALL SOUND] RINGING START: 3s ON / 2s OFF',
-    );
+    debugPrint('[M8 CALL SOUND] RINGING START: 3s ON / 2s OFF');
   } catch (e) {
     debugPrint('[M8 CALL SOUND] RINGING ERROR: $e');
   }
@@ -86,9 +79,7 @@ Future<void> _m8StopCallSound() async {
     _m8RingingTimer = null;
 
     await _m8CallSoundPlayer.stop();
-    await _m8CallSoundPlayer.setReleaseMode(
-      ReleaseMode.release,
-    );
+    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.release);
 
     debugPrint('[M8 CALL SOUND] RINGING STOP');
   } catch (e) {
@@ -4744,9 +4735,9 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
                     ),
                   );
                 },
-                ),
-        ),
-      );
+              ),
+      ),
+    );
   }
 }
 
@@ -14168,6 +14159,9 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           calleePin: widget.otherPin,
           videoCall: widget.videoCall,
         );
+
+        // NADA SAMBUNG: HP PENELEPON
+        await _m8StartCallRinging();
       }
 
       if (!mounted) return;
@@ -14606,7 +14600,6 @@ class _CallButton extends StatelessWidget {
 // B'JO TUGAS / PRODUCTIVITY FULL
 // ============================================================
 
-
 class _BJoTasksPage extends StatefulWidget {
   const _BJoTasksPage();
 
@@ -14658,10 +14651,7 @@ class _BJoTasksPageState extends State<_BJoTasksPage> {
 
     if (title != null && title.isNotEmpty) {
       setState(() {
-        _tasks.add({
-          "title": title,
-          "done": false,
-        });
+        _tasks.add({"title": title, "done": false});
       });
     }
   }
@@ -14716,10 +14706,7 @@ class _BJoTasksPageState extends State<_BJoTasksPage> {
                   const SizedBox(height: 14),
                   const Text(
                     "Belum ada tugas",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 8),
                   const Text("Tambahkan tugas pertama kamu di B’Jo."),
@@ -14756,18 +14743,12 @@ class _BJoTasksPageState extends State<_BJoTasksPage> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
           ),
           const SizedBox(width: 8),
           Text(
             "$count",
-            style: TextStyle(
-              color: m8Blue,
-              fontWeight: FontWeight.w900,
-            ),
+            style: TextStyle(color: m8Blue, fontWeight: FontWeight.w900),
           ),
         ],
       ),
@@ -14803,7 +14784,6 @@ class _BJoTasksPageState extends State<_BJoTasksPage> {
     }).toList();
   }
 }
-
 
 class _BJoAgendaPage extends StatefulWidget {
   const _BJoAgendaPage();
@@ -14856,18 +14836,14 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
 
     if (title != null && title.isNotEmpty) {
       setState(() {
-        _agendas.add({
-          'title': title,
-          'done': false,
-        });
+        _agendas.add({'title': title, 'done': false});
       });
     }
   }
 
   void _toggle(int index) {
     setState(() {
-      _agendas[index]['done'] =
-          !(_agendas[index]['done'] == true);
+      _agendas[index]['done'] = !(_agendas[index]['done'] == true);
     });
   }
 
@@ -14879,10 +14855,8 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final active =
-        _agendas.where((e) => e['done'] != true).toList();
-    final completed =
-        _agendas.where((e) => e['done'] == true).toList();
+    final active = _agendas.where((e) => e['done'] != true).toList();
+    final completed = _agendas.where((e) => e['done'] == true).toList();
 
     return Scaffold(
       backgroundColor: m8WhiteSoft,
@@ -14917,15 +14891,10 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
                   const SizedBox(height: 16),
                   const Text(
                     'Belum ada agenda',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Tambahkan agenda pertama kamu di B’Jo.',
-                  ),
+                  const Text('Tambahkan agenda pertama kamu di B’Jo.'),
                   const SizedBox(height: 20),
                   FilledButton.icon(
                     onPressed: _addAgenda,
@@ -14936,8 +14905,7 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
               ),
             )
           : ListView(
-              padding:
-                  const EdgeInsets.fromLTRB(16, 18, 16, 100),
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 100),
               children: [
                 _section('Agenda Mendatang', active.length),
                 ..._cards(active),
@@ -14960,18 +14928,12 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
           ),
           const SizedBox(width: 8),
           Text(
             '$count',
-            style: TextStyle(
-              color: m8Blue,
-              fontWeight: FontWeight.w900,
-            ),
+            style: TextStyle(color: m8Blue, fontWeight: FontWeight.w900),
           ),
         ],
       ),
@@ -14995,8 +14957,7 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
             agenda['title'] as String,
             style: TextStyle(
               fontWeight: FontWeight.w800,
-              decoration:
-                  done ? TextDecoration.lineThrough : null,
+              decoration: done ? TextDecoration.lineThrough : null,
             ),
           ),
           trailing: IconButton(
@@ -15008,7 +14969,6 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
     }).toList();
   }
 }
-
 
 class _BJoReminderPage extends StatefulWidget {
   const _BJoReminderPage();
@@ -15061,18 +15021,14 @@ class _BJoReminderPageState extends State<_BJoReminderPage> {
 
     if (title != null && title.isNotEmpty) {
       setState(() {
-        _reminders.add({
-          'title': title,
-          'done': false,
-        });
+        _reminders.add({'title': title, 'done': false});
       });
     }
   }
 
   void _toggle(int index) {
     setState(() {
-      _reminders[index]['done'] =
-          !(_reminders[index]['done'] == true);
+      _reminders[index]['done'] = !(_reminders[index]['done'] == true);
     });
   }
 
@@ -15084,10 +15040,8 @@ class _BJoReminderPageState extends State<_BJoReminderPage> {
 
   @override
   Widget build(BuildContext context) {
-    final active =
-        _reminders.where((e) => e['done'] != true).toList();
-    final completed =
-        _reminders.where((e) => e['done'] == true).toList();
+    final active = _reminders.where((e) => e['done'] != true).toList();
+    final completed = _reminders.where((e) => e['done'] == true).toList();
 
     return Scaffold(
       backgroundColor: m8WhiteSoft,
@@ -15145,8 +15099,7 @@ class _BJoReminderPageState extends State<_BJoReminderPage> {
               ),
             )
           : ListView(
-              padding:
-                  const EdgeInsets.fromLTRB(16, 18, 16, 100),
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 100),
               children: [
                 _section('Pengingat Aktif', active.length),
                 ..._cards(active),
@@ -15165,34 +15118,23 @@ class _BJoReminderPageState extends State<_BJoReminderPage> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Icon(
-            Icons.notifications_active_rounded,
-            color: m8Blue,
-          ),
+          Icon(Icons.notifications_active_rounded, color: m8Blue),
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
           ),
           const SizedBox(width: 8),
           Text(
             '$count',
-            style: TextStyle(
-              color: m8Blue,
-              fontWeight: FontWeight.w900,
-            ),
+            style: TextStyle(color: m8Blue, fontWeight: FontWeight.w900),
           ),
         ],
       ),
     );
   }
 
-  List<Widget> _cards(
-    List<Map<String, dynamic>> source,
-  ) {
+  List<Widget> _cards(List<Map<String, dynamic>> source) {
     return source.map((reminder) {
       final index = _reminders.indexOf(reminder);
       final done = reminder['done'] == true;
@@ -15209,14 +15151,11 @@ class _BJoReminderPageState extends State<_BJoReminderPage> {
             reminder['title'] as String,
             style: TextStyle(
               fontWeight: FontWeight.w800,
-              decoration:
-                  done ? TextDecoration.lineThrough : null,
+              decoration: done ? TextDecoration.lineThrough : null,
             ),
           ),
           trailing: IconButton(
-            icon: const Icon(
-              Icons.delete_outline_rounded,
-            ),
+            icon: const Icon(Icons.delete_outline_rounded),
             onPressed: () => _delete(index),
           ),
         ),
@@ -15224,7 +15163,6 @@ class _BJoReminderPageState extends State<_BJoReminderPage> {
     }).toList();
   }
 }
-
 
 class _BJoTargetPage extends StatefulWidget {
   const _BJoTargetPage();
@@ -15319,10 +15257,8 @@ class _BJoTargetPageState extends State<_BJoTargetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final active =
-        _targets.where((e) => e['done'] != true).toList();
-    final completed =
-        _targets.where((e) => e['done'] == true).toList();
+    final active = _targets.where((e) => e['done'] != true).toList();
+    final completed = _targets.where((e) => e['done'] == true).toList();
 
     return Scaffold(
       backgroundColor: m8WhiteSoft,
@@ -15403,18 +15339,12 @@ class _BJoTargetPageState extends State<_BJoTargetPage> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
           ),
           const SizedBox(width: 8),
           Text(
             '$count',
-            style: TextStyle(
-              color: m8Blue,
-              fontWeight: FontWeight.w900,
-            ),
+            style: TextStyle(color: m8Blue, fontWeight: FontWeight.w900),
           ),
         ],
       ),
@@ -15438,9 +15368,7 @@ class _BJoTargetPageState extends State<_BJoTargetPage> {
               Row(
                 children: [
                   Icon(
-                    done
-                        ? Icons.check_circle_rounded
-                        : Icons.flag_rounded,
+                    done ? Icons.check_circle_rounded : Icons.flag_rounded,
                     color: m8Blue,
                   ),
                   const SizedBox(width: 10),
@@ -15450,8 +15378,7 @@ class _BJoTargetPageState extends State<_BJoTargetPage> {
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 16,
-                        decoration:
-                            done ? TextDecoration.lineThrough : null,
+                        decoration: done ? TextDecoration.lineThrough : null,
                       ),
                     ),
                   ),
@@ -15463,10 +15390,7 @@ class _BJoTargetPageState extends State<_BJoTargetPage> {
               ),
               if (detail.isNotEmpty) ...[
                 const SizedBox(height: 5),
-                Text(
-                  detail,
-                  style: const TextStyle(color: Colors.black54),
-                ),
+                Text(detail, style: const TextStyle(color: Colors.black54)),
               ],
               const SizedBox(height: 12),
               LinearProgressIndicator(
@@ -15505,7 +15429,6 @@ class _BJoTargetPageState extends State<_BJoTargetPage> {
     }).toList();
   }
 }
-
 
 class _BJoJournalPage extends StatefulWidget {
   const _BJoJournalPage();
@@ -15602,8 +15525,7 @@ class _BJoJournalPageState extends State<_BJoJournalPage> {
 
   void _toggleFavorite(int index) {
     setState(() {
-      _journals[index]['favorite'] =
-          !(_journals[index]['favorite'] == true);
+      _journals[index]['favorite'] = !(_journals[index]['favorite'] == true);
     });
   }
 
@@ -15639,8 +15561,7 @@ class _BJoJournalPageState extends State<_BJoJournalPage> {
 
   @override
   Widget build(BuildContext context) {
-    final favorites =
-        _journals.where((e) => e['favorite'] == true).length;
+    final favorites = _journals.where((e) => e['favorite'] == true).length;
 
     return Scaffold(
       backgroundColor: m8WhiteSoft,
@@ -15658,9 +15579,7 @@ class _BJoJournalPageState extends State<_BJoJournalPage> {
               child: Center(
                 child: Text(
                   '★ $favorites',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w900),
                 ),
               ),
             ),
@@ -15729,16 +15648,11 @@ class _BJoJournalPageState extends State<_BJoJournalPage> {
                     ),
                     leading: CircleAvatar(
                       backgroundColor: m8Blue.withOpacity(.10),
-                      child: Icon(
-                        Icons.menu_book_rounded,
-                        color: m8Blue,
-                      ),
+                      child: Icon(Icons.menu_book_rounded, color: m8Blue),
                     ),
                     title: Text(
                       journal['title'] as String,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w900),
                     ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 5),
@@ -15763,9 +15677,7 @@ class _BJoJournalPageState extends State<_BJoJournalPage> {
                         PopupMenuItem(
                           value: 'favorite',
                           child: Text(
-                            favorite
-                                ? 'Hapus Favorit'
-                                : 'Jadikan Favorit',
+                            favorite ? 'Hapus Favorit' : 'Jadikan Favorit',
                           ),
                         ),
                         const PopupMenuItem(
@@ -15781,7 +15693,6 @@ class _BJoJournalPageState extends State<_BJoJournalPage> {
     );
   }
 }
-
 
 class _BJoFinancePage extends StatefulWidget {
   const _BJoFinancePage();
@@ -15864,23 +15775,26 @@ class _BJoFinancePageState extends State<_BJoFinancePage> {
                       labelText: 'Kategori',
                       prefixIcon: Icon(Icons.category_outlined),
                     ),
-                    items: const [
-                      'Lainnya',
-                      'Gaji',
-                      'Usaha',
-                      'Makanan',
-                      'Transportasi',
-                      'Tagihan',
-                      'Belanja',
-                      'Kesehatan',
-                      'Hiburan',
-                      'Tabungan',
-                    ].map(
-                      (item) => DropdownMenuItem(
-                        value: item,
-                        child: Text(item),
-                      ),
-                    ).toList(),
+                    items:
+                        const [
+                              'Lainnya',
+                              'Gaji',
+                              'Usaha',
+                              'Makanan',
+                              'Transportasi',
+                              'Tagihan',
+                              'Belanja',
+                              'Kesehatan',
+                              'Hiburan',
+                              'Tabungan',
+                            ]
+                            .map(
+                              (item) => DropdownMenuItem(
+                                value: item,
+                                child: Text(item),
+                              ),
+                            )
+                            .toList(),
                     onChanged: (value) {
                       if (value != null) {
                         setDialogState(() => category = value);
@@ -15955,16 +15869,10 @@ class _BJoFinancePageState extends State<_BJoFinancePage> {
 
     final title = titleController.text.trim();
     final amount = double.tryParse(
-      amountController.text
-          .replaceAll('.', '')
-          .replaceAll(',', '')
-          .trim(),
+      amountController.text.replaceAll('.', '').replaceAll(',', '').trim(),
     );
 
-    if (result == true &&
-        title.isNotEmpty &&
-        amount != null &&
-        amount > 0) {
+    if (result == true && title.isNotEmpty && amount != null && amount > 0) {
       setState(() {
         _transactions.add({
           'title': title,
@@ -16106,18 +16014,12 @@ class _BJoFinancePageState extends State<_BJoFinancePage> {
               const SizedBox(width: 8),
               const Text(
                 'Daftar Transaksi',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900),
               ),
               const Spacer(),
               Text(
                 '${_transactions.length}',
-                style: TextStyle(
-                  color: m8Blue,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: TextStyle(color: m8Blue, fontWeight: FontWeight.w900),
               ),
             ],
           ),
@@ -16165,71 +16067,59 @@ class _BJoFinancePageState extends State<_BJoFinancePage> {
                     DataColumn(label: Text('Jumlah')),
                     DataColumn(label: Text('')),
                   ],
-                  rows: List.generate(
-                    _transactions.length,
-                    (index) {
-                      final item = _transactions[index];
-                      final isIncome = item['type'] == 'Pemasukan';
-                      final amount =
-                          (item['amount'] as num).toDouble();
+                  rows: List.generate(_transactions.length, (index) {
+                    final item = _transactions[index];
+                    final isIncome = item['type'] == 'Pemasukan';
+                    final amount = (item['amount'] as num).toDouble();
 
-                      return DataRow(
-                        cells: [
-                          DataCell(
-                            Text(_dateText(item['date'] as DateTime)),
-                          ),
-                          DataCell(
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item['title'] as String,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                  ),
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(_dateText(item['date'] as DateTime))),
+                        DataCell(
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['title'] as String,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
                                 ),
-                                Text(
-                                  item['category'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.black54,
-                                  ),
+                              ),
+                              Text(
+                                item['category'] as String,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.black54,
                                 ),
-                              ],
-                            ),
-                          ),
-                          DataCell(
-                            Text(
-                              isIncome ? 'Masuk' : 'Keluar',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: m8Blue,
                               ),
+                            ],
+                          ),
+                        ),
+                        DataCell(
+                          Text(
+                            isIncome ? 'Masuk' : 'Keluar',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: m8Blue,
                             ),
                           ),
-                          DataCell(
-                            Text(
-                              '${isIncome ? '+' : '-'}${_money(amount)}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
+                        ),
+                        DataCell(
+                          Text(
+                            '${isIncome ? '+' : '-'}${_money(amount)}',
+                            style: const TextStyle(fontWeight: FontWeight.w900),
                           ),
-                          DataCell(
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline_rounded,
-                              ),
-                              onPressed: () =>
-                                  _deleteTransaction(index),
-                            ),
+                        ),
+                        DataCell(
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline_rounded),
+                            onPressed: () => _deleteTransaction(index),
                           ),
-                        ],
-                      );
-                    },
-                  ),
+                        ),
+                      ],
+                    );
+                  }),
                 ),
               ),
             ),
@@ -16238,11 +16128,7 @@ class _BJoFinancePageState extends State<_BJoFinancePage> {
     );
   }
 
-  Widget _summary(
-    String title,
-    double amount,
-    IconData icon,
-  ) {
+  Widget _summary(String title, double amount, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -16259,18 +16145,13 @@ class _BJoFinancePageState extends State<_BJoFinancePage> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   _money(amount),
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w900),
                 ),
               ],
             ),
@@ -16292,18 +16173,18 @@ class TasksPage extends StatelessWidget {
         builder: (_) => title == 'Catatan'
             ? const _BJoNotesPage()
             : title == 'Tugas'
-                  ? const _BJoTasksPage()
-                  : title == 'Agenda'
-                      ? const _BJoAgendaPage()
-                      : title == 'Pengingat'
-                          ? const _BJoReminderPage()
-                          : title == 'Target'
-                              ? const _BJoTargetPage()
-                              : title == 'Jurnal'
-                                  ? const _BJoJournalPage()
-                                  : title == 'Keuangan'
-                                      ? const _BJoFinancePage()
-                                      : _ProductivityPage(title: title, icon: icon),
+            ? const _BJoTasksPage()
+            : title == 'Agenda'
+            ? const _BJoAgendaPage()
+            : title == 'Pengingat'
+            ? const _BJoReminderPage()
+            : title == 'Target'
+            ? const _BJoTargetPage()
+            : title == 'Jurnal'
+            ? const _BJoJournalPage()
+            : title == 'Keuangan'
+            ? const _BJoFinancePage()
+            : _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
@@ -17897,11 +17778,7 @@ class SettingsPage extends StatelessWidget {
 // SETTINGS DETAIL
 // ============================================================
 
-Widget _identityRow(
-  IconData icon,
-  String label,
-  String value,
-) {
+Widget _identityRow(IconData icon, String label, String value) {
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.all(13),
@@ -17942,7 +17819,6 @@ Widget _identityRow(
   );
 }
 
-
 // ============================================================
 // CHAT & PANGGILAN SETTINGS
 // ============================================================
@@ -17951,10 +17827,7 @@ class _ChatCallSettingsPage extends StatelessWidget {
   final String token;
   final String myPin;
 
-  const _ChatCallSettingsPage({
-    required this.token,
-    required this.myPin,
-  });
+  const _ChatCallSettingsPage({required this.token, required this.myPin});
 
   @override
   Widget build(BuildContext context) {
@@ -17971,26 +17844,15 @@ class _ChatCallSettingsPage extends StatelessWidget {
           ),
           bottom: const TabBar(
             tabs: [
-              Tab(
-                icon: Icon(Icons.chat_bubble_outline_rounded),
-                text: 'Chat',
-              ),
-              Tab(
-                icon: Icon(Icons.call_outlined),
-                text: 'Panggilan',
-              ),
+              Tab(icon: Icon(Icons.chat_bubble_outline_rounded), text: 'Chat'),
+              Tab(icon: Icon(Icons.call_outlined), text: 'Panggilan'),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            ChatsPage(
-              token: token,
-              myPin: myPin,
-            ),
-            CallsPage(
-              myPin: myPin,
-            ),
+            ChatsPage(token: token, myPin: myPin),
+            CallsPage(myPin: myPin),
           ],
         ),
       ),
@@ -19174,9 +19036,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
-                              pin.isEmpty
-                                  ? 'M8 PIN belum tersedia'
-                                  : pin,
+                              pin.isEmpty ? 'M8 PIN belum tersedia' : pin,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 fontSize: 26,
@@ -19210,17 +19070,12 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
                     builder: (_) => AlertDialog(
                       title: const Row(
                         children: [
-                          Icon(
-                            Icons.account_circle_outlined,
-                            color: m8Blue,
-                          ),
+                          Icon(Icons.account_circle_outlined, color: m8Blue),
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               'Identitas Akun',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w900),
                             ),
                           ),
                         ],
@@ -19278,9 +19133,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
 
                 // ===== MENU LAIN =====
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('$title siap digunakan.'),
-                  ),
+                  SnackBar(content: Text('$title siap digunakan.')),
                 );
               },
             ),
