@@ -14953,6 +14953,222 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
   }
 }
 
+
+class _BJoReminderPage extends StatefulWidget {
+  const _BJoReminderPage();
+
+  @override
+  State<_BJoReminderPage> createState() => _BJoReminderPageState();
+}
+
+class _BJoReminderPageState extends State<_BJoReminderPage> {
+  final List<Map<String, dynamic>> _reminders = [];
+
+  Future<void> _addReminder() async {
+    final controller = TextEditingController();
+
+    final title = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Pengingat Baru',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Apa yang ingin diingat?',
+            hintText: 'Contoh: Bayar listrik',
+            prefixIcon: Icon(Icons.notifications_active_rounded),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = controller.text.trim();
+              if (value.isNotEmpty) {
+                Navigator.pop(context, value);
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+
+    controller.dispose();
+
+    if (title != null && title.isNotEmpty) {
+      setState(() {
+        _reminders.add({
+          'title': title,
+          'done': false,
+        });
+      });
+    }
+  }
+
+  void _toggle(int index) {
+    setState(() {
+      _reminders[index]['done'] =
+          !(_reminders[index]['done'] == true);
+    });
+  }
+
+  void _delete(int index) {
+    setState(() {
+      _reminders.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final active =
+        _reminders.where((e) => e['done'] != true).toList();
+    final completed =
+        _reminders.where((e) => e['done'] == true).toList();
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: const Text(
+          'Pengingat',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addReminder,
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          'Pengingat Baru',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+      body: _reminders.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.notifications_active_rounded,
+                      size: 72,
+                      color: m8Blue.withOpacity(.35),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Belum ada pengingat',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tambahkan sesuatu yang tidak boleh terlupa.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton.icon(
+                      onPressed: _addReminder,
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('Tambah Pengingat'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView(
+              padding:
+                  const EdgeInsets.fromLTRB(16, 18, 16, 100),
+              children: [
+                _section('Pengingat Aktif', active.length),
+                ..._cards(active),
+                if (completed.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  _section('Selesai', completed.length),
+                  ..._cards(completed),
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget _section(String title, int count) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(
+            Icons.notifications_active_rounded,
+            color: m8Blue,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$count',
+            style: TextStyle(
+              color: m8Blue,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _cards(
+    List<Map<String, dynamic>> source,
+  ) {
+    return source.map((reminder) {
+      final index = _reminders.indexOf(reminder);
+      final done = reminder['done'] == true;
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: ListTile(
+          leading: Checkbox(
+            value: done,
+            activeColor: m8Blue,
+            onChanged: (_) => _toggle(index),
+          ),
+          title: Text(
+            reminder['title'] as String,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              decoration:
+                  done ? TextDecoration.lineThrough : null,
+            ),
+          ),
+          trailing: IconButton(
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+            ),
+            onPressed: () => _delete(index),
+          ),
+        ),
+      );
+    }).toList();
+  }
+}
+
 class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
@@ -14967,7 +15183,9 @@ class TasksPage extends StatelessWidget {
                   ? const _BJoTasksPage()
                   : title == 'Agenda'
                       ? const _BJoAgendaPage()
-                      : _ProductivityPage(title: title, icon: icon),
+                      : title == 'Pengingat'
+                          ? const _BJoReminderPage()
+                          : _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
