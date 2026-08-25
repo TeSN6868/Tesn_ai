@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' show LatLng;
 
@@ -439,7 +440,7 @@ class M8App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'M8 Messenger',
+      title: 'BLOOM',
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: true,
@@ -520,23 +521,11 @@ class _BJoStartupPageState extends State<BJoStartupPage> {
     return Scaffold(
       backgroundColor: m8PremiumBlue,
       body: Center(
-        child: Image.asset(
-          'assets/bjo_ultimate.png',
+        child: SvgPicture.asset(
+          'assets/logo/bloom_logo.svg',
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.width,
           fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) {
-            return const Center(
-              child: Text(
-                "B'Jo",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 58,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            );
-          },
         ),
       ),
     );
@@ -14077,21 +14066,28 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
   void _handleCallStatus(String status) {
     if (!mounted) return;
 
-    setState(() {
-      switch (status) {
-        case 'ringing':
+    switch (status) {
+      case 'ringing':
+        _m8StartCallRinging();
+
+        setState(() {
           callStatus = 'Berdering...';
           connecting = true;
-          _m8StartCallRinging();
-          break;
+        });
+        break;
 
-        case 'connecting':
+      case 'connecting':
+        setState(() {
           callStatus = 'Menghubungkan...';
           connecting = true;
-          break;
+        });
+        break;
 
-        case 'connected':
-          _m8StopCallSound();
+      case 'connected':
+        _m8StopCallSound();
+        _m8CallConnectedSound();
+
+        setState(() {
           callStatus = widget.videoCall
               ? 'Video call terhubung'
               : 'Panggilan suara terhubung';
@@ -14102,45 +14098,62 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
               setState(() => seconds++);
             }
           });
-          break;
+        });
+        break;
 
-        case 'disconnected':
-          _m8StopCallSound();
+      case 'disconnected':
+        _m8StopCallSound();
+
+        setState(() {
           timer?.cancel();
           timer = null;
           callStatus = 'Koneksi terputus';
           connecting = false;
-          break;
+        });
+        break;
 
-        case 'failed':
-          _m8StopCallSound();
+      case 'failed':
+        _m8StopCallSound();
+        _m8CallFailedSound();
+
+        setState(() {
           timer?.cancel();
           timer = null;
           callStatus = 'Panggilan gagal';
           connecting = false;
-          break;
+        });
+        break;
 
-        case 'rejected':
-          _m8StopCallSound();
+      case 'rejected':
+        _m8StopCallSound();
+        _m8CallRejectedSound();
+
+        setState(() {
           timer?.cancel();
           timer = null;
           callStatus = 'Panggilan ditolak';
           connecting = false;
-          break;
+        });
+        break;
 
-        case 'ended':
-          _m8StopCallSound();
+      case 'ended':
+        _m8StopCallSound();
+        _m8CallEndedSound();
+
+        setState(() {
           timer?.cancel();
           timer = null;
           callStatus = 'Panggilan berakhir';
           connecting = false;
-          break;
+        });
+        break;
 
-        default:
+      default:
+        setState(() {
           callStatus = status;
           connecting = true;
-      }
-    });
+        });
+    }
   }
 
   Future<void> _startCall() async {
@@ -14160,8 +14173,6 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           videoCall: widget.videoCall,
         );
 
-        // NADA SAMBUNG: HP PENELEPON
-        await _m8StartCallRinging();
       }
 
       if (!mounted) return;

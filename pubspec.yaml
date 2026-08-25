@@ -1,5 +1,5 @@
-name: m8_messenger
-description: "A new Flutter project."
+name: bloom
+description: "BLOOM — Connect • Create • Grow"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -53,6 +53,7 @@ dependencies:
   latlong2: ^0.10.1
   record: ^7.1.1
   path_provider: ^2.1.6
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -83,6 +84,7 @@ flutter:
     - assets/sounds/bjo_ended.wav
     - assets/m8_icon-final.png
     - assets/bjo_ultimate.png
+    - assets/logo/bloom_logo.svg
 
 
 

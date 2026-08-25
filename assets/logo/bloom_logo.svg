@@ -1,0 +1,49 @@
+<svg width="900" height="360" viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F4D3A"/>
+      <stop offset="55%" stop-color="#2E7D5B"/>
+      <stop offset="100%" stop-color="#8BCFAD"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="360" fill="white"/>
+
+  <!-- BLOOM mark -->
+  <path d="M145 265
+           C105 235 92 180 110 135
+           C130 85 178 62 226 75
+           C260 84 283 110 290 142
+           C297 176 281 207 254 226
+           C227 245 190 249 163 233
+           C145 222 135 204 136 185
+           C138 164 151 147 170 139
+           C190 130 212 135 225 150
+           C237 165 237 184 226 198
+           C214 214 190 218 174 207"
+        fill="none"
+        stroke="url(#g)"
+        stroke-width="30"
+        stroke-linecap="round"/>
+
+  <!-- leaves -->
+  <path d="M211 105 C230 60 273 45 315 52 C298 91 267 113 211 105Z"
+        fill="#2E7D5B"/>
+  <path d="M237 118 C278 93 318 98 348 123 C313 147 276 145 237 118Z"
+        fill="#8BCFAD"/>
+
+  <!-- wordmark -->
+  <text x="365" y="190"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="82"
+        font-weight="700"
+        letter-spacing="8"
+        fill="#123F32">BLOOM</text>
+
+  <!-- tagline -->
+  <text x="370" y="235"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="25"
+        letter-spacing="5"
+        fill="#5F8F7A">CONNECT • CREATE • GROW</text>
+</svg>
