@@ -127,6 +127,42 @@ class M8CallService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getCallHistory(String pin) async {
+    if (pin.trim().isEmpty) return <Map<String, dynamic>>[];
+
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$apiBase/api/calls/history'
+          '?m8_pin=${Uri.encodeComponent(pin.trim())}',
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        return <Map<String, dynamic>>[];
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (data['success'] != true) {
+        return <Map<String, dynamic>>[];
+      }
+
+      final calls = data['calls'];
+
+      if (calls is! List) {
+        return <Map<String, dynamic>>[];
+      }
+
+      return calls
+          .whereType<Map>()
+          .map<Map<String, dynamic>>((item) => Map<String, dynamic>.from(item))
+          .toList();
+    } catch (_) {
+      return <Map<String, dynamic>>[];
+    }
+  }
+
   Future<void> startCall({
     required String callerPin,
     required String calleePin,

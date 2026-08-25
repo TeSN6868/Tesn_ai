@@ -462,9 +462,9 @@ class _BJoStartupPageState extends State<BJoStartupPage> {
         ),
       );
     } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
     }
   }
 
@@ -602,7 +602,11 @@ class _LoginPageState extends State<LoginPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: <Color>[m8PremiumBlue, m8PremiumBlueLight, m8PremiumBlueSoft],
+            colors: <Color>[
+              m8PremiumBlue,
+              m8PremiumBlueLight,
+              m8PremiumBlueSoft,
+            ],
             stops: <double>[0.0, 0.48, 1.0],
           ),
         ),
@@ -2705,8 +2709,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     final lastAt = _lastRerouteAt;
 
     // Batasi frekuensi request routing.
-    if (lastAt != null &&
-        now.difference(lastAt) < _rerouteMinInterval) {
+    if (lastAt != null && now.difference(lastAt) < _rerouteMinInterval) {
       return;
     }
 
@@ -3268,7 +3271,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
         break;
 
       case 3:
-        page = const CallsPage();
+        page = CallsPage(myPin: myPin);
         break;
 
       case 4:
@@ -3306,8 +3309,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
   Future<void> _openBJoProfile() async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) =>
-            BJoProfilePage(user: widget.user, token: widget.token),
+        builder: (_) => BJoProfilePage(user: widget.user, token: widget.token),
       ),
     );
 
@@ -4051,7 +4053,7 @@ class _ChatsPageState extends State<ChatsPage> {
         );
       },
       onLongPress: () => deleteChat(chat),
-        child: Padding(
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         child: Row(
           children: [
@@ -7243,7 +7245,8 @@ class _BjoVoiceBubbleState extends State<_BjoVoiceBubble> {
   }
 }
 
-class _ChatRoomPageState extends State<ChatRoomPage> with WidgetsBindingObserver {
+class _ChatRoomPageState extends State<ChatRoomPage>
+    with WidgetsBindingObserver {
   final AudioPlayer _chatHeyPlayer = AudioPlayer();
 
   // B'Jo Voice Message
@@ -7354,8 +7357,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> with WidgetsBindingObserver
   void didChangeMetrics() {
     if (!mounted) return;
 
-    final bottomInset =
-        WidgetsBinding.instance.platformDispatcher.views.first.viewInsets.bottom;
+    final bottomInset = WidgetsBinding
+        .instance
+        .platformDispatcher
+        .views
+        .first
+        .viewInsets
+        .bottom;
 
     if (bottomInset > 0) {
       _scrollChatToBottom();
@@ -12187,11 +12195,12 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
   }
 
   String get backgroundUrl {
-    final raw = (widget.user['profile_background_url'] ??
-            widget.user['background_url'] ??
-            '')
-        .toString()
-        .trim();
+    final raw =
+        (widget.user['profile_background_url'] ??
+                widget.user['background_url'] ??
+                '')
+            .toString()
+            .trim();
 
     if (raw.isEmpty) return '';
 
@@ -13325,8 +13334,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
       final version =
           widget.user['profile_background_updated_at']?.toString() ?? '';
 
-      final separator =
-          currentBackgroundUrl.contains('?') ? '&' : '?';
+      final separator = currentBackgroundUrl.contains('?') ? '&' : '?';
 
       final cacheBustedUrl = version.isEmpty
           ? currentBackgroundUrl
@@ -15079,28 +15087,254 @@ class _ProductivityPageState extends State<_ProductivityPage> {
   }
 }
 
-class CallsPage extends StatelessWidget {
-  const CallsPage({super.key});
+class CallsPage extends StatefulWidget {
+  final String myPin;
+
+  const CallsPage({super.key, required this.myPin});
+
+  @override
+  State<CallsPage> createState() => _CallsPageState();
+}
+
+class _CallsPageState extends State<CallsPage> {
+  final M8CallService _callService = M8CallService();
+
+  List<Map<String, dynamic>> _calls = <Map<String, dynamic>>[];
+  bool _loading = true;
+  bool _refreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory({bool refreshing = false}) async {
+    if (widget.myPin.trim().isEmpty) {
+      if (mounted) {
+        setState(() {
+          _calls = <Map<String, dynamic>>[];
+          _loading = false;
+          _refreshing = false;
+        });
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        if (refreshing) {
+          _refreshing = true;
+        } else {
+          _loading = true;
+        }
+      });
+    }
+
+    final calls = await _callService.getCallHistory(widget.myPin);
+
+    if (!mounted) return;
+
+    setState(() {
+      _calls = calls;
+      _loading = false;
+      _refreshing = false;
+    });
+  }
+
+  String _otherPin(Map<String, dynamic> call) {
+    final caller = call['caller_pin']?.toString() ?? '';
+    final callee = call['callee_pin']?.toString() ?? '';
+
+    return caller == widget.myPin ? callee : caller;
+  }
+
+  bool _isOutgoing(Map<String, dynamic> call) {
+    return call['caller_pin']?.toString() == widget.myPin;
+  }
+
+  bool _isVideo(Map<String, dynamic> call) {
+    return call['call_type']?.toString().toLowerCase() == 'video';
+  }
+
+  String _statusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'accepted':
+        return 'Terhubung';
+      case 'rejected':
+        return 'Ditolak';
+      case 'ended':
+        return 'Berakhir';
+      case 'ringing':
+        return 'Tidak terjawab';
+      default:
+        return status.isEmpty ? 'Panggilan' : status;
+    }
+  }
+
+  IconData _statusIcon(Map<String, dynamic> call) {
+    final status = call['status']?.toString().toLowerCase() ?? '';
+    final outgoing = _isOutgoing(call);
+    final video = _isVideo(call);
+
+    if (status == 'rejected') {
+      return Icons.call_end_rounded;
+    }
+
+    if (status == 'ringing') {
+      return Icons.phone_missed_rounded;
+    }
+
+    if (video) {
+      return outgoing ? Icons.videocam_rounded : Icons.videocam_outlined;
+    }
+
+    return outgoing ? Icons.call_made_rounded : Icons.call_received_rounded;
+  }
+
+  String _dateText(dynamic value) {
+    final milliseconds = value is num
+        ? value.toInt()
+        : int.tryParse(value?.toString() ?? '');
+
+    if (milliseconds == null) return '';
+
+    final date = DateTime.fromMillisecondsSinceEpoch(milliseconds).toLocal();
+    final now = DateTime.now();
+
+    final hh = date.hour.toString().padLeft(2, '0');
+    final mm = date.minute.toString().padLeft(2, '0');
+
+    if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day) {
+      return 'Hari ini, $hh:$mm';
+    }
+
+    final dd = date.day.toString().padLeft(2, '0');
+    final mo = date.month.toString().padLeft(2, '0');
+
+    if (date.year == now.year) {
+      return '$dd/$mo, $hh:$mm';
+    }
+
+    return '$dd/$mo/${date.year}, $hh:$mm';
+  }
+
+  Widget _buildCallItem(Map<String, dynamic> call) {
+    final otherPin = _otherPin(call);
+    final outgoing = _isOutgoing(call);
+    final video = _isVideo(call);
+    final status = call['status']?.toString() ?? '';
+    final statusText = _statusText(status);
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      elevation: 0,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        leading: CircleAvatar(
+          radius: 24,
+          backgroundColor: m8Blue.withOpacity(0.12),
+          child: Icon(_statusIcon(call), color: m8Blue),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'PIN $otherPin',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+            Icon(
+              video ? Icons.videocam_outlined : Icons.phone_outlined,
+              size: 18,
+              color: m8TextMuted,
+            ),
+          ],
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            '${outgoing ? 'Keluar' : 'Masuk'} • '
+            '$statusText • '
+            '${_dateText(call['created_at'])}',
+            style: TextStyle(
+              color: status.toLowerCase() == 'rejected'
+                  ? Colors.redAccent
+                  : m8TextMuted,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.call_outlined,
+              size: 72,
+              color: m8Blue.withOpacity(0.45),
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'Belum ada riwayat panggilan',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Panggilan suara dan video B’Jo akan muncul di sini.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: m8TextMuted, height: 1.4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.call, size: 70, color: m8Blue),
-          const SizedBox(height: 18),
-          const Text(
-            'Panggilan M8',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Fitur panggilan akan kita aktifkan berikutnya.',
-            style: TextStyle(color: m8TextMuted),
-          ),
-        ],
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: RefreshIndicator(
+        onRefresh: () => _loadHistory(refreshing: true),
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _calls.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.65,
+                    child: _buildEmpty(),
+                  ),
+                ],
+              )
+            : ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 8, bottom: 24),
+                itemCount: _calls.length,
+                itemBuilder: (context, index) {
+                  return _buildCallItem(_calls[index]);
+                },
+              ),
       ),
+      floatingActionButton: _refreshing
+          ? null
+          : FloatingActionButton.small(
+              onPressed: () => _loadHistory(refreshing: true),
+              tooltip: 'Muat ulang riwayat',
+              child: const Icon(Icons.refresh_rounded),
+            ),
     );
   }
 }

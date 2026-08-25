@@ -2476,6 +2476,38 @@ export default {
       }, 201);
     }
 
+    // CALL HISTORY
+    if (url.pathname === "/api/calls/history" && request.method === "GET") {
+        const pin = url.searchParams.get("m8_pin")?.trim();
+
+        if (!pin) {
+          return json({
+            success: false,
+            error: "m8_pin wajib diisi.",
+          }, 400);
+        }
+
+        const result = await env.DB.prepare(`
+          SELECT
+            id,
+            caller_pin,
+            callee_pin,
+            call_type,
+            status,
+            created_at,
+            updated_at
+          FROM call_sessions
+          WHERE caller_pin = ? OR callee_pin = ?
+          ORDER BY created_at DESC
+          LIMIT 100
+        `).bind(pin, pin).all();
+
+        return json({
+          success: true,
+          calls: result.results || [],
+        });
+      }
+
     // INCOMING CALLS
     if (url.pathname === "/api/calls/incoming" && request.method === "GET") {
       const pin = url.searchParams.get("m8_pin")?.trim();
