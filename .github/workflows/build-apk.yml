@@ -19,7 +19,6 @@ jobs:
         with:
           flutter-version: '3.35.5'
           channel: stable
-          cache: true
 
       - name: Flutter Pub Get
         run: flutter pub get
