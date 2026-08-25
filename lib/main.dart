@@ -89,6 +89,12 @@ const String apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
 
 const m8Blue = Color(0xFF3D7EEB);
 const m8BlueDark = Color(0xFF0B1D2E);
+
+// B'Jo Premium Blue
+const m8PremiumBlue = Color(0xFF1769AA);
+const m8PremiumBlueLight = Color(0xFF5FA4D5);
+const m8PremiumBlueSoft = Color(0xFFDCEAF3);
+
 const m8BlueLight = Color(0xFF3D7EEB);
 
 const m8White = Color(0xFFFFFFFF);
@@ -465,7 +471,7 @@ class _BJoStartupPageState extends State<BJoStartupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF051C4E),
+      backgroundColor: m8PremiumBlue,
       body: Center(
         child: Image.asset(
           'assets/bjo_ultimate.png',
@@ -590,13 +596,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: m8BlueDark,
+      backgroundColor: m8PremiumBlue,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: <Color>[m8BlueDark, m8Blue, Color(0xFF0E5C91)],
+            colors: <Color>[m8PremiumBlue, m8PremiumBlueLight, m8PremiumBlueSoft],
             stops: <double>[0.0, 0.48, 1.0],
           ),
         ),
@@ -3374,7 +3380,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
           ),
           Expanded(
             child: Container(
-              color: currentIndex == 3 ? m8BlueDark : m8WhiteSoft,
+              color: currentIndex == 3 ? m8PremiumBlue : m8WhiteSoft,
               child: RepaintBoundary(child: _buildPage(currentIndex)),
             ),
           ),
@@ -3382,7 +3388,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
       ),
       bottomNavigationBar: NavigationBar(
         backgroundColor: m8Blue,
-        indicatorColor: m8BlueDark,
+        indicatorColor: m8PremiumBlue,
         surfaceTintColor: Colors.transparent,
         selectedIndex: currentIndex,
         onDestinationSelected: _selectTab,
@@ -4981,7 +4987,7 @@ class _BJoContactRequestsPageState extends State<BJoContactRequestsPage> {
                                       ? null
                                       : () => _handleRequest(request, 'accept'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: m8BlueDark,
+                                    backgroundColor: m8PremiumBlue,
                                     foregroundColor: m8White,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
@@ -5676,7 +5682,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                       _startingChat ? 'MEMBUAT CHAT...' : 'MULAI CHAT',
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: m8BlueDark,
+                      backgroundColor: m8PremiumBlue,
                       foregroundColor: m8White,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(17),
@@ -5735,7 +5741,7 @@ class _M8GroupInfoPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: m8BlueDark,
+        backgroundColor: m8PremiumBlue,
         foregroundColor: m8White,
         elevation: 0,
         title: const Text(
@@ -6247,7 +6253,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: success ? m8BlueDark : Colors.red.shade700,
+          backgroundColor: success ? m8PremiumBlue : Colors.red.shade700,
           content: Text(
             success
                 ? (data['message']?.toString() ??
@@ -6355,7 +6361,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            backgroundColor: m8BlueDark,
+            backgroundColor: m8PremiumBlue,
             content: Text(
               'Nama grup berhasil diperbarui.',
               style: TextStyle(color: m8White, fontWeight: FontWeight.w700),
@@ -6571,7 +6577,7 @@ class _M8GroupChatPageState extends State<M8GroupChatPage> {
     return Scaffold(
       backgroundColor: bjoChatBackground,
       appBar: AppBar(
-        backgroundColor: m8BlueDark,
+        backgroundColor: m8PremiumBlue,
         foregroundColor: m8Text,
         elevation: 0,
         titleSpacing: 0,
@@ -8922,7 +8928,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> with WidgetsBindingObserver
                 children: [
                   CircleAvatar(
                     radius: 21,
-                    backgroundColor: m8BlueDark,
+                    backgroundColor: m8PremiumBlue,
                     backgroundImage: otherPhotoUrl.isNotEmpty
                         ? NetworkImage(otherPhotoUrl)
                         : null,
@@ -10713,7 +10719,7 @@ class _BJoComposerCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 23,
-            backgroundColor: m8BlueDark,
+            backgroundColor: m8PremiumBlue,
             backgroundImage: photo.isNotEmpty ? NetworkImage(photo) : null,
             child: photo.isEmpty
                 ? const Icon(Icons.person_rounded, color: m8White)
@@ -11053,7 +11059,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
 
                               return ListTile(
                                 leading: const CircleAvatar(
-                                  backgroundColor: m8BlueDark,
+                                  backgroundColor: m8PremiumBlue,
                                   child: Icon(
                                     Icons.person_rounded,
                                     color: m8White,
@@ -11266,7 +11272,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
             children: [
               CircleAvatar(
                 radius: 23,
-                backgroundColor: m8BlueDark,
+                backgroundColor: m8PremiumBlue,
                 backgroundImage:
                     post['user_photo_url']?.toString().trim().isNotEmpty == true
                     ? NetworkImage(post['user_photo_url'].toString().trim())
@@ -13895,7 +13901,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
               child: ElevatedButton(
                 onPressed: _uploading ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: m8BlueDark,
+                  backgroundColor: m8PremiumBlue,
                   foregroundColor: m8White,
                   disabledBackgroundColor: m8BlueDark.withValues(alpha: 0.45),
                   shape: RoundedRectangleBorder(
