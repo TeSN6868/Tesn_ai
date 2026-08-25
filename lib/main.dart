@@ -1737,7 +1737,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final pages = [
       ChatsPage(token: widget.token, myPin: pin),
-      const CallsPage(),
+      CallsPage(myPin: pin),
       BJoProfilePage(user: widget.user, token: widget.token),
     ];
 
@@ -15510,6 +15510,7 @@ class SettingsPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           Card(
+            color: m8White,
             child: ListTile(
               leading: const Icon(
                 Icons.logout_rounded,
@@ -15537,7 +15538,6 @@ class SettingsPage extends StatelessWidget {
 // ============================================================
 // SETTINGS DETAIL
 // ============================================================
-
 class _SettingsDetailPage extends StatefulWidget {
   final String title;
   final IconData icon;
@@ -15768,6 +15768,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
     required void Function(String) update,
   }) {
     return Card(
+      color: m8White,
       child: ListTile(
         leading: Icon(icon, color: m8Blue),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
@@ -15877,7 +15878,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
           Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: m8Blue.withOpacity(.08),
+              color: m8White,
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Row(
@@ -16182,7 +16183,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
                 const SizedBox(height: 14),
                 Card(
                   elevation: 0,
-                  color: m8Blue.withOpacity(.06),
+                  color: m8White,
                   child: ListTile(
                     leading: const CircleAvatar(
                       backgroundColor: m8Blue,
@@ -16245,6 +16246,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
     required String type,
   }) {
     return Card(
+      color: m8White,
       child: ListTile(
         leading: Icon(icon, color: m8Blue),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
@@ -16266,6 +16268,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
     required void Function() update,
   }) {
     return Card(
+      color: m8White,
       child: SwitchListTile(
         secondary: Icon(icon, color: m8Blue),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
@@ -16416,7 +16419,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
           Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: m8Blue.withOpacity(.08),
+              color: m8White,
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Row(
@@ -16471,6 +16474,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
           padding: const EdgeInsets.all(16),
           children: [
             Card(
+              color: m8White,
               child: ListTile(
                 leading: const Icon(Icons.dark_mode_outlined, color: m8Blue),
                 title: const Text(
@@ -16492,6 +16496,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
             const SizedBox(height: 8),
 
             Card(
+              color: m8White,
               child: ListTile(
                 leading: const Icon(Icons.color_lens_outlined, color: m8Blue),
                 title: const Text(
@@ -16507,6 +16512,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
             const SizedBox(height: 8),
 
             Card(
+              color: m8White,
               child: ListTile(
                 leading: const Icon(Icons.format_size_rounded, color: m8Blue),
                 title: const Text(
@@ -16522,6 +16528,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
             const SizedBox(height: 8),
 
             Card(
+              color: m8White,
               child: SwitchListTile(
                 secondary: const Icon(
                   Icons.view_agenda_outlined,
@@ -16540,6 +16547,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
             const SizedBox(height: 8),
 
             Card(
+              color: m8White,
               child: SwitchListTile(
                 secondary: const Icon(
                   Icons.account_circle_outlined,
@@ -16560,7 +16568,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: m8Blue.withOpacity(.08),
+                color: m8White,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
