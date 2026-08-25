@@ -1,0 +1,109 @@
+import 'bhre_command_router.dart';
+import 'bhre_voice_core.dart';
+
+class BhreConversationTurn {
+  final String userText;
+  final BhreCommand command;
+  final String response;
+  final DateTime timestamp;
+
+  const BhreConversationTurn({
+    required this.userText,
+    required this.command,
+    required this.response,
+    required this.timestamp,
+  });
+}
+
+class BhreConversationEngine {
+  final BhreVoiceCore voice;
+
+  final List<BhreConversationTurn> _history = [];
+
+  BhreConversationEngine({
+    BhreVoiceCore? voice,
+  }) : voice = voice ?? BhreVoiceCore();
+
+  List<BhreConversationTurn> get history =>
+      List.unmodifiable(_history);
+
+  Future<bool> initialize() async {
+    return voice.initialize();
+  }
+
+  Future<BhreConversationTurn?> processText(String text) async {
+    final clean = text.trim();
+
+    if (clean.isEmpty) return null;
+
+    final command = BhreCommandRouter.parse(clean);
+    final response = _buildResponse(command);
+
+    final turn = BhreConversationTurn(
+      userText: clean,
+      command: command,
+      response: response,
+      timestamp: DateTime.now(),
+    );
+
+    _history.add(turn);
+
+    return turn;
+  }
+
+  Future<BhreConversationTurn?> listenAndProcess() async {
+    final text = await voice.listen();
+
+    if (text == null || text.trim().isEmpty) {
+      return null;
+    }
+
+    final turn = await processText(text);
+
+    if (turn != null) {
+      await voice.speak(turn.response);
+    }
+
+    return turn;
+  }
+
+  Future<void> say(String text) async {
+    await voice.speak(text);
+  }
+
+  void clearHistory() {
+    _history.clear();
+  }
+
+  String _buildResponse(BhreCommand command) {
+    switch (command.type) {
+      case BhreCommandType.security:
+        return 'Baik. Saya siap memeriksa keamanan perangkat.';
+
+      case BhreCommandType.deviceStatus:
+        return 'Baik. Saya siap memeriksa kondisi perangkat.';
+
+      case BhreCommandType.navigation:
+        return 'Baik. Saya siap membuka sistem navigasi.';
+
+      case BhreCommandType.call:
+        final name = command.argument;
+
+        if (name == null || name.isEmpty) {
+          return 'Siapa yang ingin kamu panggil?';
+        }
+
+        return 'Baik. Saya siapkan panggilan untuk $name.';
+
+      case BhreCommandType.chat:
+        return 'Saya mendengarkan. Silakan lanjutkan.';
+
+      case BhreCommandType.unknown:
+        return 'Saya belum memahami perintah itu.';
+    }
+  }
+
+  Future<void> dispose() async {
+    await voice.dispose();
+  }
+}
