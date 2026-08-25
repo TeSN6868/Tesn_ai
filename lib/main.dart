@@ -14558,7 +14558,9 @@ class TasksPage extends StatelessWidget {
   void _open(BuildContext context, String title, IconData icon) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => _ProductivityPage(title: title, icon: icon),
+        builder: (_) => title == 'Catatan'
+            ? const _BJoNotesPage()
+            : _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
@@ -14568,38 +14570,38 @@ class TasksPage extends StatelessWidget {
     final items = <Map<String, dynamic>>[
       {
         'title': 'Catatan',
-        'subtitle': 'Ide dan informasi penting',
-        'icon': Icons.note_alt_outlined,
-      },
-      {
-        'title': 'Agenda',
-        'subtitle': 'Jadwal dan kegiatan',
-        'icon': Icons.event_note_outlined,
+        'subtitle': 'Simpan tulisan, informasi dan hal penting',
+        'icon': Icons.note_alt_rounded,
       },
       {
         'title': 'Tugas',
-        'subtitle': 'Pekerjaan yang harus diselesaikan',
-        'icon': Icons.check_circle_outline,
+        'subtitle': 'Kelola pekerjaan dan tandai yang selesai',
+        'icon': Icons.task_alt_rounded,
+      },
+      {
+        'title': 'Agenda',
+        'subtitle': 'Atur jadwal dan kegiatan',
+        'icon': Icons.calendar_month_rounded,
       },
       {
         'title': 'Pengingat',
-        'subtitle': 'Sesuatu yang tidak boleh terlupa',
-        'icon': Icons.notifications_none_rounded,
+        'subtitle': 'Simpan sesuatu yang tidak boleh terlupa',
+        'icon': Icons.notifications_active_rounded,
       },
       {
         'title': 'Target',
-        'subtitle': 'Tujuan dan pencapaiannya',
-        'icon': Icons.flag_outlined,
+        'subtitle': 'Catat tujuan dan perkembanganmu',
+        'icon': Icons.flag_rounded,
       },
       {
         'title': 'Jurnal',
-        'subtitle': 'Catatan perjalanan harian',
-        'icon': Icons.menu_book_outlined,
+        'subtitle': 'Tuliskan cerita dan perjalanan harian',
+        'icon': Icons.menu_book_rounded,
       },
       {
         'title': 'Keuangan',
-        'subtitle': 'Pemasukan dan pengeluaran',
-        'icon': Icons.account_balance_wallet_outlined,
+        'subtitle': 'Catat pemasukan dan pengeluaran',
+        'icon': Icons.account_balance_wallet_rounded,
       },
     ];
 
@@ -14607,23 +14609,23 @@ class TasksPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
       children: [
         const Text(
-          'Kelola aktivitasmu',
+          'B’Jo Pad',
           style: TextStyle(
             color: Color(0xFF102A43),
-            fontSize: 25,
+            fontSize: 27,
             fontWeight: FontWeight.w900,
           ),
         ),
         const SizedBox(height: 5),
         const Text(
-          'Semua yang kamu butuhkan dalam satu tempat.',
-          style: TextStyle(color: Color(0xFF71808C), fontSize: 13),
+          'Satu ruang untuk mencatat, mengatur dan menyimpan hal penting.',
+          style: TextStyle(color: Color(0xFF71808C), fontSize: 13, height: 1.4),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 22),
 
         ...items.map(
           (item) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: 11),
             child: Material(
               color: m8White,
               borderRadius: BorderRadius.circular(18),
@@ -14643,11 +14645,11 @@ class TasksPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Container(
-                        width: 48,
-                        height: 48,
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
                           color: m8Blue.withOpacity(.10),
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           item['icon'] as IconData,
@@ -14668,12 +14670,13 @@ class TasksPage extends StatelessWidget {
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
-                            const SizedBox(height: 3),
+                            const SizedBox(height: 4),
                             Text(
                               item['subtitle'] as String,
                               style: const TextStyle(
                                 color: Color(0xFF71808C),
                                 fontSize: 12,
+                                height: 1.35,
                               ),
                             ),
                           ],
@@ -14691,6 +14694,612 @@ class TasksPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ============================================================
+// B'JO CATATAN
+// ============================================================
+
+class _BJoNotesPage extends StatefulWidget {
+  const _BJoNotesPage();
+
+  @override
+  State<_BJoNotesPage> createState() => _BJoNotesPageState();
+}
+
+class _BJoNotesPageState extends State<_BJoNotesPage> {
+  static const String _storageKey = 'bjo_pad_catatan';
+
+  final TextEditingController _searchController = TextEditingController();
+
+  List<Map<String, dynamic>> _notes = [];
+  bool _loading = true;
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    _searchController.addListener(() {
+      if (!mounted) return;
+
+      setState(() {
+        _query = _searchController.text.trim().toLowerCase();
+      });
+    });
+
+    _loadNotes();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadNotes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_storageKey);
+
+    if (raw != null && raw.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(raw);
+
+        if (decoded is List) {
+          _notes = decoded
+              .map((item) => Map<String, dynamic>.from(item as Map))
+              .toList();
+        }
+      } catch (_) {
+        _notes = [];
+      }
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _loading = false;
+    });
+  }
+
+  Future<void> _saveNotes() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(_storageKey, jsonEncode(_notes));
+  }
+
+  String _dateText(dynamic value) {
+    final milliseconds = value is num
+        ? value.toInt()
+        : int.tryParse(value?.toString() ?? '');
+
+    if (milliseconds == null) return '';
+
+    final date = DateTime.fromMillisecondsSinceEpoch(milliseconds).toLocal();
+
+    final dd = date.day.toString().padLeft(2, '0');
+    final mm = date.month.toString().padLeft(2, '0');
+    final hh = date.hour.toString().padLeft(2, '0');
+    final min = date.minute.toString().padLeft(2, '0');
+
+    return '$dd/$mm/${date.year} $hh:$min';
+  }
+
+  List<Map<String, dynamic>> get _filteredNotes {
+    if (_query.isEmpty) return _notes;
+
+    return _notes.where((note) {
+      final title = note['title']?.toString().toLowerCase() ?? '';
+      final body = note['body']?.toString().toLowerCase() ?? '';
+
+      return title.contains(_query) || body.contains(_query);
+    }).toList();
+  }
+
+  Future<void> _showEditor({Map<String, dynamic>? existing}) async {
+    final titleController = TextEditingController(
+      text: existing?['title']?.toString() ?? '',
+    );
+
+    final bodyController = TextEditingController(
+      text: existing?['body']?.toString() ?? '',
+    );
+
+    final editing = existing != null;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: m8White,
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 18,
+            right: 18,
+            top: 20,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: m8Blue.withOpacity(.10),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(Icons.note_alt_rounded, color: m8Blue),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      editing ? 'Edit Catatan' : 'Catatan Baru',
+                      style: const TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                TextField(
+                  controller: titleController,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: 'Judul catatan',
+                    hintText: 'Contoh: Ide usaha B’Jo',
+                    prefixIcon: const Icon(Icons.title_rounded),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                TextField(
+                  controller: bodyController,
+                  minLines: 7,
+                  maxLines: 14,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    labelText: 'Isi catatan',
+                    hintText: 'Tulis catatanmu di sini...',
+                    alignLabelWithHint: true,
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.only(bottom: 115),
+                      child: Icon(Icons.edit_note_rounded),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final title = titleController.text.trim();
+                      final body = bodyController.text.trim();
+
+                      if (title.isEmpty && body.isEmpty) {
+                        return;
+                      }
+
+                      final now = DateTime.now().millisecondsSinceEpoch;
+
+                      if (editing) {
+                        existing!['title'] = title.isEmpty
+                            ? 'Tanpa judul'
+                            : title;
+                        existing['body'] = body;
+                        existing['updated_at'] = now;
+                      } else {
+                        _notes.insert(0, {
+                          'id': now.toString(),
+                          'title': title.isEmpty ? 'Tanpa judul' : title,
+                          'body': body,
+                          'created_at': now,
+                          'updated_at': now,
+                        });
+                      }
+
+                      await _saveNotes();
+
+                      if (!mounted) return;
+
+                      setState(() {});
+
+                      Navigator.of(sheetContext).pop();
+                    },
+                    icon: Icon(
+                      editing ? Icons.check_rounded : Icons.save_outlined,
+                    ),
+                    label: Text(
+                      editing ? 'Simpan Perubahan' : 'Simpan Catatan',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    titleController.dispose();
+    bodyController.dispose();
+  }
+
+  Future<void> _deleteNote(Map<String, dynamic> note) async {
+    final title = note['title']?.toString() ?? 'catatan ini';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Hapus catatan?'),
+          content: Text('Catatan "$title" akan dihapus secara permanen.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    _notes.remove(note);
+
+    await _saveNotes();
+
+    if (!mounted) return;
+
+    setState(() {});
+  }
+
+  void _openNote(Map<String, dynamic> note) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _BJoNoteReaderPage(
+          title: note['title']?.toString() ?? 'Tanpa judul',
+          body: note['body']?.toString() ?? '',
+          date: _dateText(note['updated_at'] ?? note['created_at']),
+          onEdit: () {
+            Navigator.of(context).pop();
+            _showEditor(existing: note);
+          },
+          onDelete: () {
+            Navigator.of(context).pop();
+            _deleteNote(note);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoteItem(Map<String, dynamic> note) {
+    final title = note['title']?.toString() ?? 'Tanpa judul';
+    final body = note['body']?.toString() ?? '';
+
+    final preview = body.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    final date = _dateText(note['updated_at'] ?? note['created_at']);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(17)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(17),
+        onTap: () => _openNote(note),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(15, 14, 8, 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: m8Blue.withOpacity(.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(Icons.note_alt_rounded, color: m8Blue, size: 23),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF102A43),
+                      ),
+                    ),
+
+                    if (preview.isNotEmpty) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        preview,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF71808C),
+                          fontSize: 13,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 7),
+
+                    Text(
+                      date,
+                      style: TextStyle(color: m8TextMuted, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _showEditor(existing: note);
+                  } else if (value == 'delete') {
+                    _deleteNote(note);
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined),
+                        SizedBox(width: 10),
+                        Text('Edit'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline),
+                        SizedBox(width: 10),
+                        Text('Hapus'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    final searching = _query.isNotEmpty;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              searching ? Icons.search_off_rounded : Icons.note_alt_rounded,
+              size: 68,
+              color: m8Blue.withOpacity(.40),
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              searching ? 'Catatan tidak ditemukan' : 'Belum ada catatan',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              searching
+                  ? 'Coba gunakan kata pencarian lain.'
+                  : 'Simpan ide, informasi dan hal pentingmu di B’Jo.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: m8TextMuted, fontSize: 13, height: 1.4),
+            ),
+
+            if (!searching) ...[
+              const SizedBox(height: 18),
+              ElevatedButton.icon(
+                onPressed: () => _showEditor(),
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Buat Catatan'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = _filteredNotes;
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        elevation: 0,
+        title: const Text(
+          'Catatan',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        tooltip: 'Catatan baru',
+        onPressed: () => _showEditor(),
+        child: const Icon(Icons.add_rounded),
+      ),
+
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Cari catatan...',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: _query.isNotEmpty
+                          ? IconButton(
+                              onPressed: () {
+                                _searchController.clear();
+                              },
+                              icon: const Icon(Icons.clear_rounded),
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: m8White,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: filtered.isEmpty
+                      ? _buildEmpty()
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                          itemCount: filtered.length,
+                          itemBuilder: (_, index) {
+                            return _buildNoteItem(filtered[index]);
+                          },
+                        ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+// ============================================================
+// B'JO CATATAN READER
+// ============================================================
+
+class _BJoNoteReaderPage extends StatelessWidget {
+  final String title;
+  final String body;
+  final String date;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _BJoNoteReaderPage({
+    required this.title,
+    required this.body,
+    required this.date,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: const Text(
+          'Catatan',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Edit',
+            onPressed: onEdit,
+            icon: const Icon(Icons.edit_outlined),
+          ),
+          IconButton(
+            tooltip: 'Hapus',
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_outline),
+          ),
+        ],
+      ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF102A43),
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                height: 1.15,
+              ),
+            ),
+
+            if (date.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(date, style: TextStyle(color: m8TextMuted, fontSize: 12)),
+            ],
+
+            const SizedBox(height: 24),
+
+            SelectableText(
+              body.isEmpty ? 'Catatan ini belum memiliki isi.' : body,
+              style: const TextStyle(
+                color: Color(0xFF263238),
+                fontSize: 16,
+                height: 1.65,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
