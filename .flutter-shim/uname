@@ -1,0 +1,2 @@
+#!/data/data/com.termux/files/usr/bin/sh
+[ "$1" = "-m" ] && printf '%s\n' aarch64

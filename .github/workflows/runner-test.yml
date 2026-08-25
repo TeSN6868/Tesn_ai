@@ -1,0 +1,14 @@
+name: Runner Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Runner
+        run: |
+          echo "M8 Runner OK"
+          uname -a
+          node --version

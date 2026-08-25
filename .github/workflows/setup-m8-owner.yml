@@ -1,0 +1,95 @@
+name: Setup M8 Owner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  owner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Setup Owner M8
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OWNER_PASSWORD: ${{ secrets.M8_OWNER_PASSWORD }}
+        run: |
+          node <<'NODE'
+          const crypto = require('crypto');
+          const { execFileSync } = require('child_process');
+
+          const password = process.env.OWNER_PASSWORD;
+
+          if (!password) {
+            throw new Error('M8_OWNER_PASSWORD belum diset.');
+          }
+
+          function hashPassword(password) {
+            const iterations = 100000;
+            const salt = crypto.randomBytes(16).toString('base64');
+
+            const derived = crypto.pbkdf2Sync(
+              Buffer.from(password, 'utf8'),
+              Buffer.from(salt, 'utf8'),
+              iterations,
+              32,
+              'sha256'
+            );
+
+            return `pbkdf2$${iterations}$${salt}$${derived.toString('base64')}`;
+          }
+
+          const hash = hashPassword(password);
+
+          const sql = `
+            INSERT INTO users
+              (m8_pin, name, email, phone, password_hash, created_at, role, active)
+            SELECT
+              'M8000001',
+              'M8 Owner',
+              NULL,
+              NULL,
+              '${hash.replace(/'/g, "''")}',
+              unixepoch(),
+              'owner',
+              1
+            WHERE NOT EXISTS (
+              SELECT 1 FROM users WHERE m8_pin = 'M8000001'
+            );
+
+            UPDATE users
+            SET
+              name = 'M8 Owner',
+              password_hash = '${hash.replace(/'/g, "''")}',
+              role = 'owner',
+              active = 1
+            WHERE m8_pin = 'M8000001';
+          `;
+
+          execFileSync(
+            'npx',
+            [
+              'wrangler',
+              'd1',
+              'execute',
+              'm8-database',
+              '--remote',
+              '--command',
+              sql
+            ],
+            {
+              stdio: 'inherit',
+              env: process.env
+            }
+          );
+
+          console.log('M8 Owner berhasil dibuat/diperbarui.');
+          NODE

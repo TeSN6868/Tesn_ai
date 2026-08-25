@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+
+<defs>
+
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#051C4E"/>
+    <stop offset="48%" stop-color="#1769AA"/>
+    <stop offset="100%" stop-color="#56C0F5"/>
+  </linearGradient>
+
+  <radialGradient id="glow">
+    <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".25"/>
+    <stop offset="55%" stop-color="#FFFFFF" stop-opacity=".07"/>
+    <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+  </radialGradient>
+
+  <linearGradient id="text" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#FFFFFF"/>
+    <stop offset="100%" stop-color="#DDF5FF"/>
+  </linearGradient>
+
+  <filter id="shadow">
+    <feGaussianBlur stdDeviation="8"/>
+  </filter>
+
+</defs>
+
+<!-- PREMIUM BLUE BACKGROUND -->
+<rect width="1024" height="1024" rx="145" fill="url(#bg)"/>
+
+<!-- CENTRAL LIGHT -->
+<circle cx="512" cy="365" r="390" fill="url(#glow)"/>
+
+<!-- PREMIUM EMBLEM -->
+<circle
+  cx="512" cy="365" r="235"
+  fill="none"
+  stroke="#E8F8FF"
+  stroke-opacity=".18"
+  stroke-width="10"/>
+
+<circle
+  cx="512" cy="365" r="210"
+  fill="none"
+  stroke="#F5FCFF"
+  stroke-opacity=".85"
+  stroke-width="6"/>
+
+<circle
+  cx="512" cy="365" r="180"
+  fill="none"
+  stroke="#D8F3FF"
+  stroke-opacity=".35"
+  stroke-width="3"/>
+
+<!-- B'Jo SHADOW -->
+<text
+  x="512"
+  y="420"
+  text-anchor="middle"
+  font-family="sans-serif"
+  font-size="185"
+  font-weight="900"
+  fill="#001633"
+  fill-opacity=".35"
+  transform="translate(7 10)">
+  B'Jo
+</text>
+
+<!-- B'Jo -->
+<text
+  x="512"
+  y="420"
+  text-anchor="middle"
+  font-family="sans-serif"
+  font-size="185"
+  font-weight="900"
+  fill="url(#text)"
+  stroke="#A8E3FA"
+  stroke-width="3">
+  B'Jo
+</text>
+
+<!-- ULTIMATE -->
+<text
+  x="512"
+  y="550"
+  text-anchor="middle"
+  font-family="sans-serif"
+  font-size="82"
+  font-weight="800"
+  letter-spacing="2"
+  fill="#F5FCFF">
+  Ultimate
+</text>
+
+<!-- DIVIDER -->
+<rect
+  x="310"
+  y="590"
+  width="404"
+  height="6"
+  rx="3"
+  fill="#E9FAFF"
+  fill-opacity=".75"/>
+
+<!-- SLOGAN -->
+<text
+  x="512"
+  y="665"
+  text-anchor="middle"
+  font-family="sans-serif"
+  font-size="38"
+  font-weight="500"
+  letter-spacing="1"
+  fill="#F1FBFF">
+  Connect. Share. Belong.
+</text>
+
+<!-- LOWER LIGHT -->
+<ellipse
+  cx="512"
+  cy="920"
+  rx="410"
+  ry="150"
+  fill="#FFFFFF"
+  fill-opacity=".06"/>
+
+</svg>

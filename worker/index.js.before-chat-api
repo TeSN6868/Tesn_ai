@@ -1,0 +1,216 @@
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders,
+      });
+    }
+
+    try {
+      // HEALTH CHECK
+      if (url.pathname === "/" && request.method === "GET") {
+        return json({
+          success: true,
+          app: "M8 Messenger",
+          status: "online",
+          database: "M8 D1",
+        });
+      }
+
+      // REGISTER
+      if (url.pathname === "/api/register" && request.method === "POST") {
+        const body = await request.json();
+
+        const name = String(body.name || "").trim();
+        const identifier = String(
+          body.identifier || body.email_or_phone || ""
+        ).trim();
+        const password = String(body.password || "");
+        const confirmPassword = String(body.confirm_password || "");
+        const m8Pin = String(body.m8_pin || "").trim();
+
+        if (!name || !identifier || !password || !confirmPassword || !m8Pin) {
+          return json({
+            success: false,
+            error: "Semua data wajib diisi.",
+          }, 400);
+        }
+
+        if (password !== confirmPassword) {
+          return json({
+            success: false,
+            error: "Konfirmasi password tidak cocok.",
+          }, 400);
+        }
+
+        if (m8Pin.length < 4) {
+          return json({
+            success: false,
+            error: "PIN M8 minimal 4 karakter.",
+          }, 400);
+        }
+
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        const existing = await env.DB.prepare(
+          "SELECT id FROM users WHERE email = ? OR phone = ? OR m8_pin = ? LIMIT 1"
+        )
+          .bind(identifier, identifier, m8Pin)
+          .first();
+
+        if (existing) {
+          return json({
+            success: false,
+            error: "Email/nomor HP atau PIN M8 sudah terdaftar.",
+          }, 409);
+        }
+
+        const passwordHash = await sha256(password);
+
+        const result = await env.DB.prepare(
+          `INSERT INTO users
+           (name, email, password_hash, m8_pin, created_at)
+           VALUES (?, ?, ?, ?, datetime('now'))`
+        )
+          .bind(name, identifier, passwordHash, m8Pin)
+          .run();
+
+        if (!result.success) {
+          throw new Error("Gagal menyimpan akun M8.");
+        }
+
+        return json({
+          success: true,
+          message: "Akun M8 berhasil dibuat.",
+        }, 201);
+      }
+
+      // LOGIN
+      if (url.pathname === "/api/login" && request.method === "POST") {
+        const body = await request.json();
+
+        const identifier = String(
+          body.identifier || body.email_or_phone || ""
+        ).trim();
+
+        const m8Pin = String(body.m8_pin || "").trim();
+        const password = String(body.password || "");
+
+        if ((!identifier && !m8Pin) || !password) {
+          return json({
+            success: false,
+            error: "Identitas/PIN dan password wajib diisi.",
+          }, 400);
+        }
+
+        if (!env.DB) {
+          return json({
+            success: false,
+            error: "Binding D1 DB belum tersedia.",
+          }, 500);
+        }
+
+        const passwordHash = await sha256(password);
+
+        let user;
+
+        if (identifier) {
+          user = await env.DB.prepare(
+            `SELECT id, name, email, phone, m8_pin
+             FROM users
+             WHERE (email = ? OR phone = ?) AND password_hash = ?
+             LIMIT 1`
+          )
+            .bind(identifier, identifier, passwordHash)
+            .first();
+        } else {
+          user = await env.DB.prepare(
+            `SELECT id, name, email, phone, m8_pin
+             FROM users
+             WHERE m8_pin = ? AND password_hash = ?
+             LIMIT 1`
+          )
+            .bind(m8Pin, passwordHash)
+            .first();
+        }
+
+        if (!user) {
+          return json({
+            success: false,
+            error: "Identitas/PIN atau password salah.",
+          }, 401);
+        }
+
+        const token = await createToken();
+
+        return json({
+          success: true,
+          token,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+          phone: user.phone,
+            m8_pin: user.m8_pin,
+          },
+        });
+      }
+
+      return json({
+        success: false,
+        error: "Endpoint M8 tidak ditemukan.",
+      }, 404);
+
+    } catch (error) {
+      return json({
+        success: false,
+        error: "M8 server error.",
+        message: error instanceof Error
+          ? error.message
+          : String(error),
+      }, 500);
+    }
+  },
+};
+
+async function sha256(text) {
+  const data = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+
+  return [...new Uint8Array(hash)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function createToken() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+
+  return [...bytes]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json; charset=UTF-8",
+    },
+  });
+}

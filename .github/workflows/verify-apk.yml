@@ -1,0 +1,41 @@
+name: Verify M8 APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download APK artifact 9215309401
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p verify-apk
+          gh api "repos/${{ github.repository }}/actions/artifacts/9215309401/zip" > verify-apk/artifact.zip
+          unzip -o verify-apk/artifact.zip -d verify-apk
+
+      - name: Verify APK signature
+        run: |
+          APK=$(find verify-apk -type f -name "*.apk" | head -1)
+
+          if [ -z "$APK" ]; then
+            echo "APK TIDAK DITEMUKAN"
+            exit 1
+          fi
+
+          echo "=== APK ==="
+          ls -lh "$APK"
+
+          echo
+          echo "=== SIGNATURE ==="
+
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+
+          "$APKSIGNER" verify --verbose --print-certs "$APK"
+
+          echo
+          echo "=== BADGING ==="
+
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -E "package:|sdkVersion|targetSdkVersion"

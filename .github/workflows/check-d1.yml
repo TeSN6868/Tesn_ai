@@ -1,0 +1,55 @@
+name: Check BJo D1
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler
+        run: npm install -g wrangler@4.123.0
+
+      - name: D1 LIST
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "===== D1 LIST ====="
+          wrangler d1 list
+
+      - name: TABLES
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "===== TABLES ====="
+          wrangler d1 execute m8-database --remote --command \
+          "SELECT name, type FROM sqlite_master WHERE type IN ('table','index') ORDER BY type,name;"
+
+      - name: USERS SCHEMA
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "===== USERS SCHEMA ====="
+          wrangler d1 execute m8-database --remote --command \
+          "SELECT sql FROM sqlite_master WHERE type='table' AND name='users';"
+
+      - name: DIAGNOSTIC USER
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "===== DIAGNOSTIC USER ====="
+          wrangler d1 execute m8-database --remote --command \
+          "SELECT id,m8_pin,name,email,phone,active,password_hash FROM users WHERE m8_pin='diag0001';"

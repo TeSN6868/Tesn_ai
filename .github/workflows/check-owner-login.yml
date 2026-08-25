@@ -1,0 +1,35 @@
+name: Check M8 Owner Login
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Check Owner account
+        run: |
+          echo "===== OWNER ACCOUNT ====="
+          wrangler d1 execute m8-database --remote --command "SELECT id, name, email, phone, m8_pin, role, active, CASE WHEN password_hash IS NULL OR password_hash = '' THEN 'MISSING' ELSE 'PRESENT' END AS password_status, CASE WHEN password_hash LIKE 'pbkdf2$%' THEN 'PBKDF2' ELSE 'LEGACY_OR_OTHER' END AS password_type FROM users WHERE id = 10;"
+
+          echo ""
+          echo "===== LOGIN QUERY CHECK ====="
+          grep -n -A8 -B3 'api/login' worker/index.js | head -80
+
+          echo ""
+          echo "===== ACTIVE COLUMN CHECK ====="
+          wrangler d1 execute m8-database --remote --command "PRAGMA table_info(users);"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

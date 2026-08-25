@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1024" height="1024" viewBox="0 0 1024 1024">
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#063B73"/>
+      <stop offset="48%" stop-color="#1598D1"/>
+      <stop offset="100%" stop-color="#F8FCFF"/>
+    </linearGradient>
+
+    <linearGradient id="text" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#F4FBFF"/>
+      <stop offset="100%" stop-color="#D8F2FF"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18"
+                    flood-color="#002B52" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+
+  <!-- Premium blue gradient background -->
+  <rect width="1024" height="1024" rx="210" fill="url(#bg)"/>
+
+  <!-- Very subtle highlight -->
+  <ellipse cx="300" cy="180" rx="420" ry="230"
+           fill="#FFFFFF" opacity="0.08"/>
+
+  <!-- ONLY BRAND NAME -->
+  <text x="512" y="610"
+        text-anchor="middle"
+        font-family="DejaVu Sans, sans-serif"
+        font-size="310"
+        font-weight="700"
+        letter-spacing="-18"
+        fill="url(#text)"
+        filter="url(#shadow)">B’Jo</text>
+
+</svg>
