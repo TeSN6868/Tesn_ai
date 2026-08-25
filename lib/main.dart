@@ -359,7 +359,15 @@ class M8DenimBackground extends StatelessWidget {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await M8NotificationService.initialize();
+
+  // Notification initialization must never prevent BLOOM from starting.
+  try {
+    await M8NotificationService.initialize();
+  } catch (e, stack) {
+    debugPrint('BLOOM notification initialization failed: $e');
+    debugPrint('$stack');
+  }
+
   runApp(const M8App());
 }
 
