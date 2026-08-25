@@ -3899,6 +3899,77 @@ class _ChatsPageState extends State<ChatsPage> {
     );
   }
 
+  Future<void> deleteChat(Map<String, dynamic> chat) async {
+    final chatId = int.tryParse(chat['id']?.toString() ?? '');
+
+    if (chatId == null) return;
+
+    final otherUser = chat['other_user'];
+
+    final name = otherUser is Map
+        ? ((otherUser['name']?.toString().trim().isNotEmpty == true)
+              ? otherUser['name'].toString().trim()
+              : (otherUser['m8_pin']?.toString() ?? 'teman'))
+        : 'teman';
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus chat?'),
+        content: Text('Hapus seluruh percakapan dengan $name?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('BATAL'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('HAPUS'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiBase/api/chats?chat_id=$chatId'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        setState(() {
+          chats.removeWhere(
+            (item) => item['id']?.toString() == chatId.toString(),
+          );
+        });
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Chat berhasil dihapus.')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error']?.toString() ?? 'Gagal menghapus chat.'),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('M8 deleteChat error: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat menghapus chat.')),
+        );
+      }
+    }
+  }
+
   Widget _buildPrivateChatTile(Map<String, dynamic> chat) {
     final p1 = chat['participant_1_pin']?.toString() ?? '';
     final p2 = chat['participant_2_pin']?.toString() ?? '';
@@ -3973,7 +4044,8 @@ class _ChatsPageState extends State<ChatsPage> {
           ),
         );
       },
-      child: Padding(
+      onLongPress: () => deleteChat(chat),
+        child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         child: Row(
           children: [

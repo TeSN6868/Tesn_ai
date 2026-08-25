@@ -1786,7 +1786,87 @@ export default {
     // MESSAGES - GET
       // ============================================================
 
-      if (url.pathname === "/api/messages" && request.method === "GET") {
+              // ============================================================
+        // DELETE CHAT
+        // ============================================================
+
+        if (
+          url.pathname === "/api/chats" &&
+          request.method === "DELETE"
+        ) {
+          const session = await getSessionUser(request, env);
+
+          if (!session) {
+            return json({
+              success: false,
+              error: "Sesi login tidak valid."
+            }, 401);
+          }
+
+          const chatId = Number(
+            url.searchParams.get("chat_id")
+          );
+
+          if (!chatId) {
+            return json({
+              success: false,
+              error: "chat_id wajib diisi."
+            }, 400);
+          }
+
+          const myUser = await env.DB.prepare(`
+            SELECT m8_pin
+            FROM users
+            WHERE id = ?
+            LIMIT 1
+          `).bind(session.user_id).first();
+
+          if (!myUser) {
+            return json({
+              success: false,
+              error: "Pengguna tidak ditemukan."
+            }, 404);
+          }
+
+          const chat = await env.DB.prepare(`
+            SELECT id
+            FROM chats
+            WHERE id = ?
+              AND (
+                participant_1_pin = ?
+                OR participant_2_pin = ?
+              )
+            LIMIT 1
+          `).bind(
+            chatId,
+            myUser.m8_pin,
+            myUser.m8_pin
+          ).first();
+
+          if (!chat) {
+            return json({
+              success: false,
+              error: "Chat tidak ditemukan."
+            }, 404);
+          }
+
+          await env.DB.prepare(`
+            DELETE FROM messages
+            WHERE chat_id = ?
+          `).bind(chatId).run();
+
+          await env.DB.prepare(`
+            DELETE FROM chats
+            WHERE id = ?
+          `).bind(chatId).run();
+
+          return json({
+            success: true,
+            message: "Chat berhasil dihapus."
+          });
+        }
+
+        if (url.pathname === "/api/messages" && request.method === "GET") {
         const chatId = Number(url.searchParams.get("chat_id"));
 
         if (!chatId) {
