@@ -14748,6 +14748,211 @@ class _BJoTasksPageState extends State<_BJoTasksPage> {
   }
 }
 
+
+class _BJoAgendaPage extends StatefulWidget {
+  const _BJoAgendaPage();
+
+  @override
+  State<_BJoAgendaPage> createState() => _BJoAgendaPageState();
+}
+
+class _BJoAgendaPageState extends State<_BJoAgendaPage> {
+  final List<Map<String, dynamic>> _agendas = [];
+
+  Future<void> _addAgenda() async {
+    final controller = TextEditingController();
+
+    final title = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Agenda Baru',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Nama kegiatan',
+            hintText: 'Contoh: Rapat keluarga',
+            prefixIcon: Icon(Icons.event_rounded),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = controller.text.trim();
+              if (value.isNotEmpty) {
+                Navigator.pop(context, value);
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+
+    controller.dispose();
+
+    if (title != null && title.isNotEmpty) {
+      setState(() {
+        _agendas.add({
+          'title': title,
+          'done': false,
+        });
+      });
+    }
+  }
+
+  void _toggle(int index) {
+    setState(() {
+      _agendas[index]['done'] =
+          !(_agendas[index]['done'] == true);
+    });
+  }
+
+  void _delete(int index) {
+    setState(() {
+      _agendas.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final active =
+        _agendas.where((e) => e['done'] != true).toList();
+    final completed =
+        _agendas.where((e) => e['done'] == true).toList();
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: const Text(
+          'Agenda',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addAgenda,
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          'Agenda Baru',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+      body: _agendas.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.event_available_rounded,
+                    size: 72,
+                    color: m8Blue.withOpacity(.35),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Belum ada agenda',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Tambahkan agenda pertama kamu di B’Jo.',
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton.icon(
+                    onPressed: _addAgenda,
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('Tambah Agenda'),
+                  ),
+                ],
+              ),
+            )
+          : ListView(
+              padding:
+                  const EdgeInsets.fromLTRB(16, 18, 16, 100),
+              children: [
+                _section('Agenda Mendatang', active.length),
+                ..._cards(active),
+                if (completed.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  _section('Selesai', completed.length),
+                  ..._cards(completed),
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget _section(String title, int count) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(Icons.event_rounded, color: m8Blue),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$count',
+            style: TextStyle(
+              color: m8Blue,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _cards(List<Map<String, dynamic>> source) {
+    return source.map((agenda) {
+      final index = _agendas.indexOf(agenda);
+      final done = agenda['done'] == true;
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: ListTile(
+          leading: Checkbox(
+            value: done,
+            activeColor: m8Blue,
+            onChanged: (_) => _toggle(index),
+          ),
+          title: Text(
+            agenda['title'] as String,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              decoration:
+                  done ? TextDecoration.lineThrough : null,
+            ),
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete_outline_rounded),
+            onPressed: () => _delete(index),
+          ),
+        ),
+      );
+    }).toList();
+  }
+}
+
 class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
@@ -14760,7 +14965,9 @@ class TasksPage extends StatelessWidget {
             ? const _BJoNotesPage()
             : title == 'Tugas'
                   ? const _BJoTasksPage()
-                  : _ProductivityPage(title: title, icon: icon),
+                  : title == 'Agenda'
+                      ? const _BJoAgendaPage()
+                      : _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
