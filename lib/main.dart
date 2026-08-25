@@ -15726,6 +15726,505 @@ class _BJoJournalPageState extends State<_BJoJournalPage> {
   }
 }
 
+
+class _BJoFinancePage extends StatefulWidget {
+  const _BJoFinancePage();
+
+  @override
+  State<_BJoFinancePage> createState() => _BJoFinancePageState();
+}
+
+class _BJoFinancePageState extends State<_BJoFinancePage> {
+  final List<Map<String, dynamic>> _transactions = [];
+
+  Future<void> _addTransaction() async {
+    final titleController = TextEditingController();
+    final amountController = TextEditingController();
+    final noteController = TextEditingController();
+
+    String type = 'Pemasukan';
+    String category = 'Lainnya';
+    DateTime date = DateTime.now();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text(
+              'Tambah Transaksi',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(
+                        value: 'Pemasukan',
+                        label: Text('Pemasukan'),
+                        icon: Icon(Icons.arrow_downward_rounded),
+                      ),
+                      ButtonSegment(
+                        value: 'Pengeluaran',
+                        label: Text('Pengeluaran'),
+                        icon: Icon(Icons.arrow_upward_rounded),
+                      ),
+                    ],
+                    selected: {type},
+                    onSelectionChanged: (value) {
+                      setDialogState(() => type = value.first);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Keterangan',
+                      hintText: 'Contoh: Gaji / Belanja',
+                      prefixIcon: Icon(Icons.description_outlined),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Jumlah',
+                      hintText: 'Contoh: 500000',
+                      prefixIcon: Icon(Icons.payments_outlined),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  DropdownButtonFormField<String>(
+                    value: category,
+                    decoration: const InputDecoration(
+                      labelText: 'Kategori',
+                      prefixIcon: Icon(Icons.category_outlined),
+                    ),
+                    items: const [
+                      'Lainnya',
+                      'Gaji',
+                      'Usaha',
+                      'Makanan',
+                      'Transportasi',
+                      'Tagihan',
+                      'Belanja',
+                      'Kesehatan',
+                      'Hiburan',
+                      'Tabungan',
+                    ].map(
+                      (item) => DropdownMenuItem(
+                        value: item,
+                        child: Text(item),
+                      ),
+                    ).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() => category = value);
+                      }
+                    },
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.calendar_today_rounded),
+                    title: Text(
+                      '${date.day.toString().padLeft(2, '0')}/'
+                      '${date.month.toString().padLeft(2, '0')}/'
+                      '${date.year}',
+                    ),
+                    onTap: () async {
+                      final selected = await showDatePicker(
+                        context: context,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                        initialDate: date,
+                      );
+
+                      if (selected != null) {
+                        setDialogState(() => date = selected);
+                      }
+                    },
+                  ),
+
+                  TextField(
+                    controller: noteController,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Catatan',
+                      hintText: 'Opsional',
+                      prefixIcon: Icon(Icons.notes_rounded),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Batal'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final title = titleController.text.trim();
+                  final amount = double.tryParse(
+                    amountController.text
+                        .replaceAll('.', '')
+                        .replaceAll(',', '')
+                        .trim(),
+                  );
+
+                  if (title.isEmpty || amount == null || amount <= 0) {
+                    return;
+                  }
+
+                  Navigator.pop(context, true);
+                },
+                child: const Text('Simpan'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    final title = titleController.text.trim();
+    final amount = double.tryParse(
+      amountController.text
+          .replaceAll('.', '')
+          .replaceAll(',', '')
+          .trim(),
+    );
+
+    if (result == true &&
+        title.isNotEmpty &&
+        amount != null &&
+        amount > 0) {
+      setState(() {
+        _transactions.add({
+          'title': title,
+          'amount': amount,
+          'type': type,
+          'category': category,
+          'date': date,
+          'note': noteController.text.trim(),
+        });
+      });
+    }
+
+    titleController.dispose();
+    amountController.dispose();
+    noteController.dispose();
+  }
+
+  void _deleteTransaction(int index) {
+    setState(() {
+      _transactions.removeAt(index);
+    });
+  }
+
+  String _money(num value) {
+    final text = value.round().toString();
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < text.length; i++) {
+      if (i > 0 && (text.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+      buffer.write(text[i]);
+    }
+
+    return 'Rp${buffer.toString()}';
+  }
+
+  String _dateText(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/'
+        '${date.month.toString().padLeft(2, '0')}/'
+        '${date.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double income = 0;
+    double expense = 0;
+
+    for (final item in _transactions) {
+      final amount = (item['amount'] as num).toDouble();
+
+      if (item['type'] == 'Pemasukan') {
+        income += amount;
+      } else {
+        expense += amount;
+      }
+    }
+
+    final balance = income - expense;
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: const Text(
+          'Keuangan',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addTransaction,
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          'Tambah Transaksi',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 100),
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Saldo',
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    _money(balance),
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF102A43),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _summary(
+                          'Pemasukan',
+                          income,
+                          Icons.arrow_downward_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _summary(
+                          'Pengeluaran',
+                          expense,
+                          Icons.arrow_upward_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              Icon(Icons.table_chart_rounded, color: m8Blue),
+              const SizedBox(width: 8),
+              const Text(
+                'Daftar Transaksi',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${_transactions.length}',
+                style: TextStyle(
+                  color: m8Blue,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          if (_transactions.isEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet_outlined,
+                      size: 62,
+                      color: m8Blue.withOpacity(.35),
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Belum ada transaksi',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    const Text(
+                      'Tekan + untuk mencatat pemasukan atau pengeluaran.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: const [
+                    DataColumn(label: Text('Tanggal')),
+                    DataColumn(label: Text('Keterangan')),
+                    DataColumn(label: Text('Jenis')),
+                    DataColumn(label: Text('Jumlah')),
+                    DataColumn(label: Text('')),
+                  ],
+                  rows: List.generate(
+                    _transactions.length,
+                    (index) {
+                      final item = _transactions[index];
+                      final isIncome = item['type'] == 'Pemasukan';
+                      final amount =
+                          (item['amount'] as num).toDouble();
+
+                      return DataRow(
+                        cells: [
+                          DataCell(
+                            Text(_dateText(item['date'] as DateTime)),
+                          ),
+                          DataCell(
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['title'] as String,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  item['category'] as String,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          DataCell(
+                            Text(
+                              isIncome ? 'Masuk' : 'Keluar',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                color: m8Blue,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Text(
+                              '${isIncome ? '+' : '-'}${_money(amount)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline_rounded,
+                              ),
+                              onPressed: () =>
+                                  _deleteTransaction(index),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summary(
+    String title,
+    double amount,
+    IconData icon,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: m8Blue.withOpacity(.07),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: m8Blue, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _money(amount),
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
@@ -15746,7 +16245,9 @@ class TasksPage extends StatelessWidget {
                               ? const _BJoTargetPage()
                               : title == 'Jurnal'
                                   ? const _BJoJournalPage()
-                                  : _ProductivityPage(title: title, icon: icon),
+                                  : title == 'Keuangan'
+                                      ? const _BJoFinancePage()
+                                      : _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
