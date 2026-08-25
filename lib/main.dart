@@ -35,7 +35,7 @@ Future<void> _m8StartCallRinging() async {
     await _m8CallSoundPlayer.stop();
     await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.loop);
     await _m8CallSoundPlayer.setVolume(1.0);
-    await _m8CallSoundPlayer.play(AssetSource('sounds/bjo_ringtone.wav'));
+    await _m8CallSoundPlayer.play(AssetSource('sounds/bjo_connecting.wav'));
 
     debugPrint('[M8 CALL SOUND] RINGING START');
   } catch (e) {
