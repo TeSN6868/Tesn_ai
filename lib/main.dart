@@ -466,6 +466,23 @@ class M8App extends StatelessWidget {
           foregroundColor: m8White,
           elevation: 0,
         ),
+        inputDecorationTheme: const InputDecorationTheme(
+          filled: true,
+          fillColor: m8BlueDark,
+          labelStyle: TextStyle(color: m8White),
+          floatingLabelStyle: TextStyle(color: m8White),
+          hintStyle: TextStyle(color: m8White),
+          prefixIconColor: m8White,
+          suffixIconColor: m8White,
+          border: OutlineInputBorder(),
+          enabledBorder: OutlineInputBorder(),
+          focusedBorder: OutlineInputBorder(),
+        ),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: m8White,
+          selectionColor: m8BlueLight,
+          selectionHandleColor: m8White,
+        ),
       ),
       home: const BJoStartupPage(),
     );
