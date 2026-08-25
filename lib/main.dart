@@ -3400,7 +3400,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
           NavigationDestination(
             icon: Icon(Icons.navigation_outlined, color: m8WhiteSoft),
             selectedIcon: Icon(Icons.navigation, color: m8White),
-            label: 'Navigation',
+            label: 'Navigasi',
           ),
           NavigationDestination(
             icon: Icon(Icons.call_outlined, color: m8WhiteSoft),
