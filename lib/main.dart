@@ -14550,6 +14550,204 @@ class _CallButton extends StatelessWidget {
 // B'JO TUGAS / PRODUCTIVITY FULL
 // ============================================================
 
+
+class _BJoTasksPage extends StatefulWidget {
+  const _BJoTasksPage();
+
+  @override
+  State<_BJoTasksPage> createState() => _BJoTasksPageState();
+}
+
+class _BJoTasksPageState extends State<_BJoTasksPage> {
+  final List<Map<String, dynamic>> _tasks = [];
+
+  Future<void> _addTask() async {
+    final controller = TextEditingController();
+
+    final title = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          "Tugas Baru",
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: "Nama tugas",
+            hintText: "Contoh: Bayar listrik",
+            prefixIcon: Icon(Icons.task_alt_rounded),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = controller.text.trim();
+              if (value.isNotEmpty) {
+                Navigator.pop(context, value);
+              }
+            },
+            child: const Text("Simpan"),
+          ),
+        ],
+      ),
+    );
+
+    controller.dispose();
+
+    if (title != null && title.isNotEmpty) {
+      setState(() {
+        _tasks.add({
+          "title": title,
+          "done": false,
+        });
+      });
+    }
+  }
+
+  void _toggleTask(int index) {
+    setState(() {
+      _tasks[index]["done"] = !(_tasks[index]["done"] == true);
+    });
+  }
+
+  void _deleteTask(int index) {
+    setState(() {
+      _tasks.removeAt(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final active = _tasks.where((e) => e["done"] != true).toList();
+    final completed = _tasks.where((e) => e["done"] == true).toList();
+
+    return Scaffold(
+      backgroundColor: m8WhiteSoft,
+      appBar: AppBar(
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        title: const Text(
+          "Tugas",
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addTask,
+        backgroundColor: m8Blue,
+        foregroundColor: m8White,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          "Tugas Baru",
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+      body: _tasks.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.task_alt_rounded,
+                    size: 70,
+                    color: m8Blue.withOpacity(0.35),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    "Belum ada tugas",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text("Tambahkan tugas pertama kamu di B’Jo."),
+                  const SizedBox(height: 20),
+                  FilledButton.icon(
+                    onPressed: _addTask,
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text("Tambah Tugas"),
+                  ),
+                ],
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 100),
+              children: [
+                _section("Tugas Aktif", active.length),
+                ..._cards(active),
+                if (completed.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  _section("Selesai", completed.length),
+                  ..._cards(completed),
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget _section(String title, int count) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(Icons.task_alt_rounded, color: m8Blue),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            "$count",
+            style: TextStyle(
+              color: m8Blue,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _cards(List<Map<String, dynamic>> source) {
+    return source.map((task) {
+      final index = _tasks.indexOf(task);
+      final done = task["done"] == true;
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: ListTile(
+          leading: Checkbox(
+            value: done,
+            activeColor: m8Blue,
+            onChanged: (_) => _toggleTask(index),
+          ),
+          title: Text(
+            task["title"] as String,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              decoration: done ? TextDecoration.lineThrough : null,
+            ),
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete_outline_rounded),
+            onPressed: () => _deleteTask(index),
+          ),
+        ),
+      );
+    }).toList();
+  }
+}
+
 class TasksPage extends StatelessWidget {
   final Map<String, dynamic> user;
 
@@ -14560,7 +14758,9 @@ class TasksPage extends StatelessWidget {
       MaterialPageRoute(
         builder: (_) => title == 'Catatan'
             ? const _BJoNotesPage()
-            : _ProductivityPage(title: title, icon: icon),
+            : title == 'Tugas'
+                  ? const _BJoTasksPage()
+                  : _ProductivityPage(title: title, icon: icon),
       ),
     );
   }
