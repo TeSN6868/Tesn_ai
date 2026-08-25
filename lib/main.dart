@@ -28,16 +28,52 @@ final AudioPlayer _m8CallSoundPlayer = AudioPlayer();
 /// ================= M8 CALL SOUNDS =================
 
 Timer? _m8RingingTimer;
+bool _m8RingingActive = false;
 
 Future<void> _m8StartCallRinging() async {
   try {
     _m8RingingTimer?.cancel();
-    await _m8CallSoundPlayer.stop();
-    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.loop);
-    await _m8CallSoundPlayer.setVolume(1.0);
-    await _m8CallSoundPlayer.play(AssetSource('sounds/bjo_connecting.wav'));
+    _m8RingingTimer = null;
+    _m8RingingActive = true;
 
-    debugPrint('[M8 CALL SOUND] RINGING START');
+    Future<void> ringCycle() async {
+      if (!_m8RingingActive) return;
+
+      await _m8CallSoundPlayer.stop();
+      await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.release);
+      await _m8CallSoundPlayer.setVolume(1.0);
+
+      // NADA SAMBUNG: 3 DETIK
+      await _m8CallSoundPlayer.play(
+        AssetSource('sounds/bjo_connecting.wav'),
+      );
+
+      await Future.delayed(const Duration(seconds: 3));
+
+      if (!_m8RingingActive) return;
+
+      // JEDA: 2 DETIK
+      await _m8CallSoundPlayer.stop();
+
+      await Future.delayed(const Duration(seconds: 2));
+    }
+
+    await ringCycle();
+
+    if (!_m8RingingActive) return;
+
+    _m8RingingTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) {
+        if (_m8RingingActive) {
+          ringCycle();
+        }
+      },
+    );
+
+    debugPrint(
+      '[M8 CALL SOUND] RINGING START: 3s ON / 2s OFF',
+    );
   } catch (e) {
     debugPrint('[M8 CALL SOUND] RINGING ERROR: $e');
   }
@@ -45,11 +81,14 @@ Future<void> _m8StartCallRinging() async {
 
 Future<void> _m8StopCallSound() async {
   try {
+    _m8RingingActive = false;
     _m8RingingTimer?.cancel();
     _m8RingingTimer = null;
 
     await _m8CallSoundPlayer.stop();
-    await _m8CallSoundPlayer.setReleaseMode(ReleaseMode.release);
+    await _m8CallSoundPlayer.setReleaseMode(
+      ReleaseMode.release,
+    );
 
     debugPrint('[M8 CALL SOUND] RINGING STOP');
   } catch (e) {
@@ -4688,9 +4727,9 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
                     ),
                   );
                 },
-              ),
-      ),
-    );
+                ),
+        ),
+      );
   }
 }
 
@@ -17840,6 +17879,108 @@ class SettingsPage extends StatelessWidget {
 // ============================================================
 // SETTINGS DETAIL
 // ============================================================
+
+Widget _identityRow(
+  IconData icon,
+  String label,
+  String value,
+) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(13),
+    decoration: BoxDecoration(
+      color: m8WhiteSoft,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: m8Blue),
+        const SizedBox(width: 11),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: m8TextMuted,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+// ============================================================
+// CHAT & PANGGILAN SETTINGS
+// ============================================================
+
+class _ChatCallSettingsPage extends StatelessWidget {
+  final String token;
+  final String myPin;
+
+  const _ChatCallSettingsPage({
+    required this.token,
+    required this.myPin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: m8WhiteSoft,
+        appBar: AppBar(
+          backgroundColor: m8Blue,
+          foregroundColor: m8White,
+          title: const Text(
+            'Chat & Panggilan',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+          bottom: const TabBar(
+            tabs: [
+              Tab(
+                icon: Icon(Icons.chat_bubble_outline_rounded),
+                text: 'Chat',
+              ),
+              Tab(
+                icon: Icon(Icons.call_outlined),
+                text: 'Panggilan',
+              ),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            ChatsPage(
+              token: token,
+              myPin: myPin,
+            ),
+            CallsPage(
+              myPin: myPin,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SettingsDetailPage extends StatefulWidget {
   final String title;
   final IconData icon;
@@ -18963,8 +19104,166 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
               subtitle: Text(item['subtitle'] as String),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () {
+                final title = item['title'] as String;
+
+                // ===== AKUN & PROFIL =====
+                if (title == 'Edit Nama' ||
+                    title == 'Foto Profil' ||
+                    title == 'Background Profil') {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => BJoProfilePage(
+                        user: widget.user,
+                        token: widget.token,
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
+                // ===== M8 PIN =====
+                if (title == 'M8 PIN') {
+                  final pin = widget.user['m8_pin']?.toString().trim() ?? '';
+
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Row(
+                        children: [
+                          Icon(Icons.pin_outlined, color: m8Blue),
+                          SizedBox(width: 10),
+                          Text(
+                            'M8 PIN',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
+                        ],
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'M8 PIN adalah identitas akunmu di B’Jo.',
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 18),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              color: m8WhiteSoft,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              pin.isEmpty
+                                  ? 'M8 PIN belum tersedia'
+                                  : pin,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 2,
+                                color: m8Blue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Tutup'),
+                        ),
+                      ],
+                    ),
+                  );
+                  return;
+                }
+
+                // ===== IDENTITAS AKUN =====
+                if (title == 'Identitas Akun') {
+                  final name = widget.user['name']?.toString().trim() ?? '';
+                  final pin = widget.user['m8_pin']?.toString().trim() ?? '';
+                  final bio = widget.user['bio']?.toString().trim() ?? '';
+
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Row(
+                        children: [
+                          Icon(
+                            Icons.account_circle_outlined,
+                            color: m8Blue,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Identitas Akun',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      content: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _identityRow(
+                              Icons.badge_outlined,
+                              'Nama',
+                              name.isEmpty ? '-' : name,
+                            ),
+                            const SizedBox(height: 12),
+                            _identityRow(
+                              Icons.pin_outlined,
+                              'M8 PIN',
+                              pin.isEmpty ? '-' : pin,
+                            ),
+                            if (bio.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              _identityRow(
+                                Icons.edit_note_rounded,
+                                'Tentang Aku',
+                                bio,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Tutup'),
+                        ),
+                        FilledButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => BJoProfilePage(
+                                  user: widget.user,
+                                  token: widget.token,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text('Edit Profil'),
+                        ),
+                      ],
+                    ),
+                  );
+                  return;
+                }
+
+                // ===== MENU LAIN =====
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${item['title']} siap diaktifkan.')),
+                  SnackBar(
+                    content: Text('$title siap digunakan.'),
+                  ),
                 );
               },
             ),
