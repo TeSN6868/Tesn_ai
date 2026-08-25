@@ -657,7 +657,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 12),
 
                     const Text(
-                      "B'Jo",
+                      "BLOOM",
                       style: TextStyle(
                         color: m8White,
                         fontSize: 48,
@@ -728,7 +728,7 @@ class _LoginPageState extends State<LoginPage> {
                               fontWeight: FontWeight.w700,
                             ),
                             decoration: InputDecoration(
-                              labelText: "B'Jo PIN",
+                              labelText: "BLOOM PIN",
                               hintText: "Masukkan PIN kamu",
                               prefixIcon: const Icon(
                                 Icons.key_rounded,
@@ -900,7 +900,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 22),
 
                     Text(
-                      "B'Jo • Tempat Kita Terhubung",
+                      "BLOOM • Tempat Kita Terhubung",
                       style: TextStyle(
                         color: m8White.withValues(alpha: 0.68),
                         fontSize: 11,
@@ -1296,7 +1296,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       alignment: Alignment.center,
                       child: const Text(
-                        "B'Jo",
+                        "BLOOM",
                         style: TextStyle(
                           color: m8BlueDark,
                           fontSize: 25,
@@ -1518,7 +1518,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 17),
 
                     const Text(
-                      "B'Jo • Tempat Kita Terhubung",
+                      "BLOOM • Tempat Kita Terhubung",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: m8BlueDark,
@@ -1615,14 +1615,14 @@ class _HomePageState extends State<HomePage> {
 
       final prefs = await SharedPreferences.getInstance();
       final selected =
-          prefs.getString('m8_selected_ringtone') ?? "B'Jo Tone 01";
+          prefs.getString('m8_selected_ringtone') ?? "BLOOM Tone 01";
 
       const ringtoneAssets = <String, String>{
-        "B'Jo Tone 01": 'sounds/m8_ringtone_02.wav',
-        "B'Jo Tone 02": 'sounds/m8_ringtone_03.wav',
-        "B'Jo Tone 03": 'sounds/m8_ringtone_04.wav',
-        "B'Jo Tone 04": 'sounds/m8_ringtone_05.wav',
-        "B'Jo Tone 05": 'sounds/m8_ringtone_06.wav',
+        "BLOOM Tone 01": 'sounds/m8_ringtone_02.wav',
+        "BLOOM Tone 02": 'sounds/m8_ringtone_03.wav',
+        "BLOOM Tone 03": 'sounds/m8_ringtone_04.wav',
+        "BLOOM Tone 04": 'sounds/m8_ringtone_05.wav',
+        "BLOOM Tone 05": 'sounds/m8_ringtone_06.wav',
       };
 
       final asset = ringtoneAssets[selected] ?? 'sounds/m8_ringtone_02.wav';
@@ -2787,7 +2787,7 @@ class _BJoNavigationPageState extends State<BJoNavigationPage> {
     }
 
     if (_routing) {
-      _showMessage("B'Jo masih menghitung rute.");
+      _showMessage("BLOOM masih menghitung rute.");
       return;
     }
 
@@ -3269,17 +3269,17 @@ class _BJoMainShellState extends State<BJoMainShell> {
   String get title {
     switch (currentIndex) {
       case 0:
-        return "B'Jo Home";
+        return "BLOOM Home";
       case 1:
-        return "B'Jo Moments";
+        return "BLOOM Moments";
       case 2:
-        return "B'Jo Navigation";
+        return "BLOOM Navigation";
       case 3:
-        return "B'Jo Calls";
+        return "BLOOM Calls";
       case 4:
-        return "B'Jo Pad";
+        return "BLOOM Pad";
       default:
-        return "B'Jo Home";
+        return "BLOOM Home";
     }
   }
 
@@ -4200,7 +4200,7 @@ class _ChatsPageState extends State<ChatsPage> {
   Widget _buildGroupChatTile(Map<String, dynamic> group) {
     final name = group['name']?.toString().trim().isNotEmpty == true
         ? group['name'].toString().trim()
-        : 'Grup B’Jo';
+        : 'Grup BLOOM';
 
     final description = group['description']?.toString().trim() ?? '';
 
@@ -4523,7 +4523,7 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
       builder: (context) => AlertDialog(
         title: const Text('Hapus kontak?'),
         content: Text(
-          'Hapus ${contact['name']?.toString() ?? pin} dari kontak B’Jo?',
+          'Hapus ${contact['name']?.toString() ?? pin} dari kontak BLOOM?',
         ),
         actions: [
           TextButton(
@@ -4614,7 +4614,7 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
         foregroundColor: m8White,
         elevation: 0,
         title: const Text(
-          'Kontak B’Jo',
+          'Kontak BLOOM',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
         actions: [
@@ -4666,7 +4666,7 @@ class _BJoContactsPageState extends State<BJoContactsPage> {
                   final name =
                       contact['name']?.toString().trim().isNotEmpty == true
                       ? contact['name'].toString().trim()
-                      : 'B’Jo User';
+                      : 'BLOOM User';
 
                   final pin = contact['m8_pin']?.toString().trim() ?? '';
 
@@ -4960,7 +4960,7 @@ class _BJoContactRequestsPageState extends State<BJoContactRequestsPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      name.isEmpty ? 'Pengguna B’Jo' : name,
+                                      name.isEmpty ? 'Pengguna BLOOM' : name,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
@@ -5207,7 +5207,7 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
                         ),
                         SizedBox(height: 12),
                         Text(
-                          'Cari teman di B’Jo',
+                          'Cari teman di BLOOM',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
@@ -5277,7 +5277,7 @@ class _BJoUserSearchPageState extends State<BJoUserSearchPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        name.isEmpty ? 'Pengguna B’Jo' : name,
+                                        name.isEmpty ? 'Pengguna BLOOM' : name,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
@@ -5616,7 +5616,7 @@ class _BJoPublicUserPageState extends State<BJoPublicUserPage> {
                 const SizedBox(height: 14),
                 Center(
                   child: Text(
-                    name.isEmpty ? 'Pengguna B’Jo' : name,
+                    name.isEmpty ? 'Pengguna BLOOM' : name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: m8BlueDark,
@@ -8754,7 +8754,7 @@ class _ChatRoomPageState extends State<ChatRoomPage>
             children: [
               Icon(Icons.favorite_rounded),
               SizedBox(width: 8),
-              Text("B'Jo Memory"),
+              Text("BLOOM Memory"),
             ],
           ),
           content: SizedBox(
@@ -9112,7 +9112,7 @@ class _ChatRoomPageState extends State<ChatRoomPage>
                   children: [
                     Icon(Icons.favorite_border_rounded),
                     SizedBox(width: 12),
-                    Text("B'Jo Memory"),
+                    Text("BLOOM Memory"),
                   ],
                 ),
               ),
@@ -10117,7 +10117,7 @@ class _StoryPageState extends State<StoryPage> {
 
   String get name => widget.user['name']?.toString().trim().isNotEmpty == true
       ? widget.user['name'].toString()
-      : "Pengguna B'Jo";
+      : "Pengguna BLOOM";
 
   String get username => widget.user['username']?.toString().trim() ?? '';
 
@@ -10145,7 +10145,7 @@ class _StoryPageState extends State<StoryPage> {
   Future<void> _loadPosts() async {
     try {
       if (myPin.isEmpty) {
-        throw Exception("B'Jo PIN tidak ditemukan.");
+        throw Exception("BLOOM PIN tidak ditemukan.");
       }
 
       final response = await http
@@ -10747,7 +10747,7 @@ class _BJoComposerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = user['name']?.toString().trim().isNotEmpty == true
         ? user['name'].toString()
-        : "Pengguna B'Jo";
+        : "Pengguna BLOOM";
 
     final photo = user['profile_photo_url']?.toString() ?? '';
 
@@ -10954,7 +10954,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
         return AlertDialog(
           title: const Text('Hapus Moment?'),
           content: const Text(
-            'Moment ini akan dihapus dari feed B’Jo. '
+            'Moment ini akan dihapus dari feed BLOOM. '
             'Data Love dan penonton juga akan dihapus.',
           ),
           actions: [
@@ -11112,7 +11112,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
                                 title: Text(
                                   name?.isNotEmpty == true
                                       ? name!
-                                      : 'Pengguna B’Jo',
+                                      : 'Pengguna BLOOM',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -11278,7 +11278,7 @@ class _BJoPostCardState extends State<_BJoPostCard> {
 
     final name = post['user_name']?.toString().trim().isNotEmpty == true
         ? post['user_name'].toString()
-        : "Pengguna B'Jo";
+        : "Pengguna BLOOM";
 
     final pin = post['user_pin']?.toString() ?? '';
     final type = post['media_type']?.toString() ?? 'text';
@@ -12211,7 +12211,7 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
 
   String get name {
     final v = widget.user['name']?.toString().trim();
-    return v == null || v.isEmpty ? "Pengguna B'Jo" : v;
+    return v == null || v.isEmpty ? "Pengguna BLOOM" : v;
   }
 
   String get pin {
@@ -12646,7 +12646,7 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    "B'Jo ID",
+                                    "BLOOM ID",
                                     style: TextStyle(
                                       color: Color(0xFF17384D),
                                       fontSize: 14,
@@ -12683,7 +12683,7 @@ class _BJoProfilePageState extends State<BJoProfilePage> {
                                       ).showSnackBar(
                                         const SnackBar(
                                           content: Text(
-                                            "B'Jo ID berhasil disalin",
+                                            "BLOOM ID berhasil disalin",
                                           ),
                                         ),
                                       );
@@ -12934,7 +12934,7 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
         content: Text(
-          'Perangkat "$deviceName" akan dikeluarkan dari akun B’Jo.',
+          'Perangkat "$deviceName" akan dikeluarkan dari akun BLOOM.',
         ),
         actions: [
           TextButton(
@@ -13067,7 +13067,7 @@ class _BJoSessionsPageState extends State<BJoSessionsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Perangkat B’Jo',
+                                'Perangkat BLOOM',
                                 style: TextStyle(
                                   color: m8White,
                                   fontSize: 19,
@@ -13184,7 +13184,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
 
   String get displayName {
     final name = widget.user['name']?.toString().trim() ?? '';
-    return name.isEmpty ? "Pengguna B'Jo" : name;
+    return name.isEmpty ? "Pengguna BLOOM" : name;
   }
 
   String get displayPin => widget.user['m8_pin']?.toString().trim() ?? '';
@@ -13653,7 +13653,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
       final userId = widget.user['id'];
 
       if (userId == null) {
-        throw Exception('ID akun B’Jo tidak tersedia.');
+        throw Exception('ID akun BLOOM tidak tersedia.');
       }
 
       if (nameChanged) {
@@ -13786,7 +13786,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
         foregroundColor: m8BlueDark,
         elevation: 0,
         title: const Text(
-          'Profil B’Jo',
+          'Profil BLOOM',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
       ),
@@ -13824,7 +13824,7 @@ class _BJoProfileMediaPageState extends State<BJoProfileMediaPage> {
                       Icon(Icons.badge_rounded, color: m8Blue),
                       SizedBox(width: 10),
                       Text(
-                        'Nama B’Jo',
+                        'Nama BLOOM',
                         style: TextStyle(
                           color: m8Text,
                           fontWeight: FontWeight.w800,
@@ -14720,7 +14720,7 @@ class _BJoTasksPageState extends State<_BJoTasksPage> {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 8),
-                  const Text("Tambahkan tugas pertama kamu di B’Jo."),
+                  const Text("Tambahkan tugas pertama kamu di BLOOM."),
                   const SizedBox(height: 20),
                   FilledButton.icon(
                     onPressed: _addTask,
@@ -14905,7 +14905,7 @@ class _BJoAgendaPageState extends State<_BJoAgendaPage> {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 8),
-                  const Text('Tambahkan agenda pertama kamu di B’Jo.'),
+                  const Text('Tambahkan agenda pertama kamu di BLOOM.'),
                   const SizedBox(height: 20),
                   FilledButton.icon(
                     onPressed: _addAgenda,
@@ -15313,7 +15313,7 @@ class _BJoTargetPageState extends State<_BJoTargetPage> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Catat tujuan dan perkembanganmu di B’Jo.',
+                      'Catat tujuan dan perkembanganmu di BLOOM.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
@@ -15628,7 +15628,7 @@ class _BJoJournalPageState extends State<_BJoJournalPage> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Tuliskan cerita dan perjalanan harianmu di B’Jo.',
+                      'Tuliskan cerita dan perjalanan harianmu di BLOOM.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
@@ -16244,7 +16244,7 @@ class TasksPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
       children: [
         const Text(
-          'B’Jo Pad',
+          'BLOOM Pad',
           style: TextStyle(
             color: Color(0xFF102A43),
             fontSize: 27,
@@ -16489,7 +16489,7 @@ class _BJoNotesPageState extends State<_BJoNotesPage> {
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: 'Judul catatan',
-                    hintText: 'Contoh: Ide usaha B’Jo',
+                    hintText: 'Contoh: Ide usaha BLOOM',
                     prefixIcon: const Icon(Icons.title_rounded),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -16767,7 +16767,7 @@ class _BJoNotesPageState extends State<_BJoNotesPage> {
             Text(
               searching
                   ? 'Coba gunakan kata pencarian lain.'
-                  : 'Simpan ide, informasi dan hal pentingmu di B’Jo.',
+                  : 'Simpan ide, informasi dan hal pentingmu di BLOOM.',
               textAlign: TextAlign.center,
               style: TextStyle(color: m8TextMuted, fontSize: 13, height: 1.4),
             ),
@@ -17541,7 +17541,7 @@ class _CallsPageState extends State<CallsPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Panggilan suara dan video B’Jo akan muncul di sini.',
+              'Panggilan suara dan video BLOOM akan muncul di sini.',
               textAlign: TextAlign.center,
               style: TextStyle(color: m8TextMuted, height: 1.4),
             ),
@@ -18471,7 +18471,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
 
     final asset = isNotification ? 'bjo_notification.wav' : 'bjo_ringtone.wav';
 
-    final name = isNotification ? "B'Jo Notification" : "B'Jo Ringtone";
+    final name = isNotification ? "BLOOM Notification" : "BLOOM Ringtone";
 
     final current = isNotification ? _notificationSound : _ringtoneSound;
 
@@ -18709,7 +18709,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
             icon: Icons.notifications_active_outlined,
             title: 'Nada Notifikasi',
             subtitle: _notificationSound == 'bjo_notification.wav'
-                ? "B'Jo Notification"
+                ? "BLOOM Notification"
                 : _notificationSound,
             type: 'notification',
           ),
@@ -18720,7 +18720,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
             icon: Icons.ring_volume_outlined,
             title: 'Nada Dering',
             subtitle: _ringtoneSound == 'bjo_ringtone.wav'
-                ? "B'Jo Ringtone"
+                ? "BLOOM Ringtone"
                 : _ringtoneSound,
             type: 'ringtone',
           ),
@@ -19032,7 +19032,7 @@ class _SettingsDetailPageState extends State<_SettingsDetailPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text(
-                            'M8 PIN adalah identitas akunmu di B’Jo.',
+                            'M8 PIN adalah identitas akunmu di BLOOM.',
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 18),
