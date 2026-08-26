@@ -142,7 +142,6 @@ class BhreKnowledgeRetriever {
       'pada',
       'dalam',
       'ini',
-      'itu',
       'saya',
       'aku',
       'bisa',
