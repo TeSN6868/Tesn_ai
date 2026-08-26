@@ -1,0 +1,118 @@
+import 'dart:convert';
+
+import '../connectivity/network/bhre_http_client.dart';
+import '../source/bhre_source_kind.dart';
+import 'bhre_knowledge_provider.dart';
+import 'bhre_knowledge_record.dart';
+import 'bhre_knowledge_request.dart';
+import 'bhre_knowledge_source.dart';
+
+class BhreWorldSearchProvider implements BhreKnowledgeProvider {
+  final BhreHttpClient httpClient;
+
+  BhreWorldSearchProvider({required this.httpClient});
+
+  @override
+  String get id => 'world_search';
+
+  @override
+  String get name => 'World Search';
+
+  @override
+  BhreSourceKind get sourceKind => BhreSourceKind.generalWeb;
+
+  @override
+  bool supports(BhreKnowledgeRequest request) {
+    return request.query.trim().isNotEmpty;
+  }
+
+  @override
+  Future<List<BhreKnowledgeRecord>> search(BhreKnowledgeRequest request) async {
+    final query = request.query.trim();
+
+    if (query.isEmpty) {
+      return const [];
+    }
+
+    try {
+      final encoded = Uri.encodeQueryComponent(query);
+
+      final response = await httpClient.get('/api/world-search?q=$encoded');
+
+      if (!response.isSuccess || response.body.trim().isEmpty) {
+        return const [];
+      }
+
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is! Map) {
+        return const [];
+      }
+
+      final rawResults = decoded['results'];
+
+      if (rawResults is! List) {
+        return const [];
+      }
+
+      final now = DateTime.now();
+      final records = <BhreKnowledgeRecord>[];
+
+      for (var i = 0; i < rawResults.length; i++) {
+        final raw = rawResults[i];
+
+        if (raw is! Map) {
+          continue;
+        }
+
+        final title = (raw['title'] ?? 'Pengetahuan dunia').toString().trim();
+
+        final content =
+            (raw['content'] ?? raw['snippet'] ?? raw['description'] ?? '')
+                .toString()
+                .trim();
+
+        final sourceName = (raw['source'] ?? 'World Search').toString().trim();
+
+        final uri = (raw['url'] ?? raw['uri'] ?? '').toString().trim();
+
+        if (content.isEmpty) {
+          continue;
+        }
+
+        final fullContent = title.isEmpty ? content : '$title\n$content';
+
+        records.add(
+          BhreKnowledgeRecord(
+            id: 'world_${now.microsecondsSinceEpoch}_$i',
+            topic: title.isEmpty ? query : title,
+            content: fullContent,
+            domain: request.domain,
+            sources: [
+              BhreKnowledgeSource(
+                id: sourceName.isEmpty ? 'world_search' : sourceName,
+                name: sourceName.isEmpty ? 'World Search' : sourceName,
+                description: uri.isEmpty
+                    ? 'Pengetahuan dari pencarian dunia.'
+                    : uri,
+              ),
+            ],
+            createdAt: now,
+            observedAt: now,
+            confidence: 0.80,
+            verified: false,
+            generatedBy: 'BhreWorldSearchProvider',
+          ),
+        );
+
+        if (records.length >= request.maxSources) {
+          break;
+        }
+      }
+
+      return List.unmodifiable(records);
+    } catch (_) {
+      return const [];
+    }
+  }
+}

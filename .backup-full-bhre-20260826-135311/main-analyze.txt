@@ -1,0 +1,91 @@
+Analyzing main.dart...
+
+  error - main.dart:3318:8 - The name 'initState' is already defined. Try renaming one of the declarations. - duplicate_definition
+           - The first definition of this name at main.dart:3252:8.
+  error - main.dart:3330:8 - The name 'dispose' is already defined. Try renaming one of the declarations. - duplicate_definition
+           - The first definition of this name at main.dart:3292:8.
+warning - main.dart:226:18 - The value of the local variable 'threadStep' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - main.dart:1826:8 - The value of the field '_locationPermissionDenied' isn't used. Try removing the field, or using it. - unused_field
+warning - main.dart:1840:11 - The value of the field '_distanceKm' isn't used. Try removing the field, or using it. - unused_field
+warning - main.dart:1841:8 - The value of the field '_durationMinutes' isn't used. Try removing the field, or using it. - unused_field
+warning - main.dart:1843:11 - The value of the field '_destinationName' isn't used. Try removing the field, or using it. - unused_field
+warning - main.dart:1855:8 - The value of the field '_intersectionGuardActive' isn't used. Try removing the field, or using it. - unused_field
+warning - main.dart:1856:10 - The value of the field '_intersectionDistanceMeters' isn't used. Try removing the field, or using it. - unused_field
+warning - main.dart:1860:8 - The value of the field '_branchGuardActive' isn't used. Try removing the field, or using it. - unused_field
+warning - main.dart:2846:8 - The declaration '_clearDestination' isn't referenced. Try removing the declaration of '_clearDestination'. - unused_element
+warning - main.dart:3272:14 - The declaration '_breeVoiceStatus' isn't referenced. Try removing the declaration of '_breeVoiceStatus'. - unused_element
+warning - main.dart:3546:7 - The declaration '_BJoHomeDivider' isn't referenced. Try removing the declaration of '_BJoHomeDivider'. - unused_element
+warning - main.dart:5433:8 - The value of the field '_loadingProfile' isn't used. Try removing the field, or using it. - unused_field
+warning - main.dart:7155:8 - The declaration '_bonang' isn't referenced. Try removing the declaration of '_bonang'. - unused_element
+warning - main.dart:7828:10 - The declaration '_formatChatDate' isn't referenced. Try removing the declaration of '_formatChatDate'. - unused_element
+warning - main.dart:7851:10 - The declaration '_formatChatTime' isn't referenced. Try removing the declaration of '_formatChatTime'. - unused_element
+warning - main.dart:10075:7 - The declaration '_M8StoryRail' isn't referenced. Try removing the declaration of '_M8StoryRail'. - unused_element
+warning - main.dart:10829:11 - The value of the local variable 'name' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - main.dart:11468:54 - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator. - unnecessary_non_null_assertion
+warning - main.dart:11468:66 - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator. - unnecessary_non_null_assertion
+warning - main.dart:11708:7 - The declaration '_M8LiveStoryCard' isn't referenced. Try removing the declaration of '_M8LiveStoryCard'. - unused_element
+warning - main.dart:14644:7 - The declaration '_CallButton' isn't referenced. Try removing the declaration of '_CallButton'. - unused_element
+warning - main.dart:16617:33 - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator. - unnecessary_non_null_assertion
+warning - main.dart:17917:7 - The declaration '_ChatCallSettingsPage' isn't referenced. Try removing the declaration of '_ChatCallSettingsPage'. - unused_element
+   info - main.dart:598:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - main.dart:599:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - main.dart:600:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - main.dart:1711:11 - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check. - use_build_context_synchronously
+   info - main.dart:2991:58 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:4743:39 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:4998:39 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:5319:43 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:5649:35 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:5649:39 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:5998:43 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:8518:53 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:8831:7 - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check. - use_build_context_synchronously
+   info - main.dart:8855:43 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:9304:57 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:11539:39 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:11539:43 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:11758:43 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:11758:47 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:12030:50 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:12394:33 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:12394:37 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:12526:55 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:12526:59 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - main.dart:14386:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - main.dart:14795:35 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:14980:35 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:15167:37 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:15384:37 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:15699:37 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:15741:47 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:15864:21 - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:16129:37 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:16226:23 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:16366:41 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:16549:39 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:16638:36 - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext. - use_build_context_synchronously
+   info - main.dart:16737:33 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:16834:29 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:17232:23 - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:17384:53 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:17568:35 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:17614:29 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:17795:43 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18146:15 - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18149:15 - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18155:15 - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18158:15 - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18333:15 - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18335:15 - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18341:15 - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18343:15 - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18349:15 - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18351:15 - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18380:7 - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check. - use_build_context_synchronously
+   info - main.dart:18429:45 - 'textScaleFactor' is deprecated and shouldn't be used. Use textScaler instead. Use of textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was deprecated after v3.12.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18575:35 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18629:27 - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:18630:27 - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:19063:31 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+
+85 issues found.
