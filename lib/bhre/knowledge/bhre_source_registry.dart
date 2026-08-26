@@ -35,13 +35,9 @@ class BhreSourceRegistry {
     return List.unmodifiable(_providers);
   }
 
-  List<BhreKnowledgeProvider> resolve(
-    BhreKnowledgeRequest request,
-  ) {
+  List<BhreKnowledgeProvider> resolve(BhreKnowledgeRequest request) {
     return List.unmodifiable(
-      _providers.where(
-        (provider) => provider.supports(request),
-      ),
+      _providers.where((provider) => provider.supports(request)),
     );
   }
 

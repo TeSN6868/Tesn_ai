@@ -18,14 +18,11 @@ class BhreUnderstanding {
   bool get hasAmbiguity {
     return referenceDecisions.any(
       (decision) =>
-          decision.type ==
-          BhreReferenceDecisionType.clarificationRequired,
+          decision.type == BhreReferenceDecisionType.clarificationRequired,
     );
   }
 
   bool get hasResolvedReference {
-    return referenceDecisions.any(
-      (decision) => decision.resolved,
-    );
+    return referenceDecisions.any((decision) => decision.resolved);
   }
 }

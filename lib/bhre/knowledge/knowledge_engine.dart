@@ -20,9 +20,7 @@ class BhreKnowledgeEngine {
       }
     }
 
-    results.sort(
-      (a, b) => b.confidence.compareTo(a.confidence),
-    );
+    results.sort((a, b) => b.confidence.compareTo(a.confidence));
 
     return results;
   }

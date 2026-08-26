@@ -19,6 +19,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'm8_call_service.dart';
 import 'm8_notification_service.dart';
+import 'integration/bhre_app_controller.dart';
 import 'm8_voice_service.dart';
 import 'bjo_device_security.dart';
 import 'package:http/http.dart' as http;
@@ -365,6 +366,16 @@ void main() async {
     await M8NotificationService.initialize();
   } catch (e, stack) {
     debugPrint('BLOOM notification initialization failed: $e');
+    debugPrint('$stack');
+  }
+
+  final bhreController = BhreAppController();
+
+  try {
+    await bhreController.initialize();
+    debugPrint('[Bree] Runtime initialized');
+  } catch (e, stack) {
+    debugPrint('[Bree] Runtime initialization failed: $e');
     debugPrint('$stack');
   }
 
@@ -14180,7 +14191,6 @@ class _VoiceCallPageState extends State<VoiceCallPage> {
           calleePin: widget.otherPin,
           videoCall: widget.videoCall,
         );
-
       }
 
       if (!mounted) return;

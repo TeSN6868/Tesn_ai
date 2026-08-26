@@ -5,9 +5,7 @@ class BhreBootstrap {
   static BhreToolRegistry createToolRegistry() {
     final registry = BhreToolRegistry();
 
-    registry.register(
-      BhreAlarmTool(),
-    );
+    registry.register(BhreAlarmTool());
 
     return registry;
   }

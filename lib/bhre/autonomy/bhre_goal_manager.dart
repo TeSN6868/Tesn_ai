@@ -9,15 +9,11 @@ class BhreGoalManager {
 
   BhreGoalManager(this.contextStore);
 
-  List<BhreGoal> get goals =>
-      List.unmodifiable(_goals);
+  List<BhreGoal> get goals => List.unmodifiable(_goals);
 
-  BhreGoal? get latest =>
-      _goals.isEmpty ? null : _goals.last;
+  BhreGoal? get latest => _goals.isEmpty ? null : _goals.last;
 
-  BhreGoal? createFromUnderstanding(
-    BhreUnderstanding understanding,
-  ) {
+  BhreGoal? createFromUnderstanding(BhreUnderstanding understanding) {
     final action = _findAction(understanding.details);
 
     if (action == null) {
@@ -26,29 +22,22 @@ class BhreGoalManager {
 
     final target = _resolveTarget(understanding);
 
-    final scheduledTime = _findTemporal(
-      understanding.details,
-    );
+    final scheduledTime = _findTemporal(understanding.details);
 
     final goal = BhreGoal(
-      id:
-          'goal-${DateTime.now().microsecondsSinceEpoch}',
+      id: 'goal-${DateTime.now().microsecondsSinceEpoch}',
       action: action,
       target: target,
       scheduledTime: scheduledTime,
       createdAt: DateTime.now(),
-      confidence: _goalConfidence(
-        understanding.details,
-      ),
+      confidence: _goalConfidence(understanding.details),
     );
 
     _goals.add(goal);
     return goal;
   }
 
-  String? _findAction(
-    List<BhreDetail> details,
-  ) {
+  String? _findAction(List<BhreDetail> details) {
     for (final detail in details) {
       if (detail.type == BhreDetailType.action) {
         return detail.value;
@@ -58,9 +47,7 @@ class BhreGoalManager {
     return null;
   }
 
-  String? _findTemporal(
-    List<BhreDetail> details,
-  ) {
+  String? _findTemporal(List<BhreDetail> details) {
     for (final detail in details) {
       if (detail.type == BhreDetailType.date ||
           detail.type == BhreDetailType.time) {
@@ -71,9 +58,7 @@ class BhreGoalManager {
     return null;
   }
 
-  String? _resolveTarget(
-    BhreUnderstanding understanding,
-  ) {
+  String? _resolveTarget(BhreUnderstanding understanding) {
     final details = understanding.details;
 
     // ============================================================
@@ -92,10 +77,9 @@ class BhreGoalManager {
     );
 
     if (hasReference) {
-      final previousObjects = contextStore.facts.where(
-        (fact) =>
-            fact.metadata['entityType'] == 'object',
-      ).toList();
+      final previousObjects = contextStore.facts
+          .where((fact) => fact.metadata['entityType'] == 'object')
+          .toList();
 
       if (previousObjects.isNotEmpty) {
         // Pilih object yang merupakan benda utama.
@@ -124,10 +108,9 @@ class BhreGoalManager {
     // ============================================================
     // 3. Fallback object dari memory.
     // ============================================================
-    final previousObjects = contextStore.facts.where(
-      (fact) =>
-          fact.metadata['entityType'] == 'object',
-    ).toList();
+    final previousObjects = contextStore.facts
+        .where((fact) => fact.metadata['entityType'] == 'object')
+        .toList();
 
     if (previousObjects.isNotEmpty) {
       return previousObjects.last.value;
@@ -139,8 +122,7 @@ class BhreGoalManager {
     for (final entity in understanding.graph.entities) {
       final type = entity.type.name;
 
-      if (type == 'person' ||
-          type == 'place') {
+      if (type == 'person' || type == 'place') {
         return entity.value;
       }
     }
@@ -148,9 +130,7 @@ class BhreGoalManager {
     return null;
   }
 
-  double _goalConfidence(
-    List<BhreDetail> details,
-  ) {
+  double _goalConfidence(List<BhreDetail> details) {
     final relevant = details.where(
       (detail) =>
           detail.type == BhreDetailType.action ||
@@ -165,8 +145,7 @@ class BhreGoalManager {
 
     return relevant.fold<double>(
           0.0,
-          (sum, detail) =>
-              sum + detail.confidence,
+          (sum, detail) => sum + detail.confidence,
         ) /
         relevant.length;
   }

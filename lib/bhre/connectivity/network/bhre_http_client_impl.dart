@@ -6,9 +6,8 @@ import 'bhre_network_config.dart';
 class BhreHttpClientImpl implements BhreHttpClient {
   final BhreNetworkConfig config;
 
-  BhreHttpClientImpl({
-    BhreNetworkConfig? config,
-  }) : config = config ?? const BhreNetworkConfig();
+  BhreHttpClientImpl({BhreNetworkConfig? config})
+    : config = config ?? const BhreNetworkConfig();
 
   @override
   Future<BhreHttpResponse> get(
@@ -16,10 +15,7 @@ class BhreHttpClientImpl implements BhreHttpClient {
     Map<String, String>? headers,
   }) async {
     final response = await http
-        .get(
-          Uri.parse(url),
-          headers: headers,
-        )
+        .get(Uri.parse(url), headers: headers)
         .timeout(config.receiveTimeout);
 
     return BhreHttpResponse(

@@ -1,10 +1,4 @@
-enum BhreFactType {
-  entity,
-  relation,
-  temporal,
-  action,
-  goal,
-}
+enum BhreFactType { entity, relation, temporal, action, goal }
 
 class BhreContextFact {
   final String id;

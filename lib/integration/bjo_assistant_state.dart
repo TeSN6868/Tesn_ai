@@ -1,9 +1,4 @@
-enum BJoAssistantStatus {
-  idle,
-  thinking,
-  responding,
-  error,
-}
+enum BJoAssistantStatus { idle, thinking, responding, error }
 
 class BJoAssistantState {
   final BJoAssistantStatus status;

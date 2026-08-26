@@ -39,11 +39,7 @@ class BhreDetailExtractor {
       if (value.isEmpty) continue;
 
       details.add(
-        BhreDetail(
-          type: BhreDetailType.person,
-          value: value,
-          confidence: 0.98,
-        ),
+        BhreDetail(type: BhreDetailType.person, value: value, confidence: 0.98),
       );
     }
   }
@@ -107,11 +103,7 @@ class BhreDetailExtractor {
     }
   }
 
-  void _extractTime(
-    String text,
-    String normalized,
-    List<BhreDetail> details,
-  ) {
+  void _extractTime(String text, String normalized, List<BhreDetail> details) {
     const expressions = [
       'pagi',
       'siang',
@@ -127,32 +119,21 @@ class BhreDetailExtractor {
 
     for (final expression in expressions) {
       if (normalized.contains(expression)) {
-        final type = expression == 'besok' ||
+        final type =
+            expression == 'besok' ||
                 expression == 'lusa' ||
                 expression == 'kemarin' ||
                 expression == 'tadi'
             ? BhreDetailType.date
             : BhreDetailType.time;
 
-        details.add(
-          BhreDetail(
-            type: type,
-            value: expression,
-            confidence: 0.9,
-          ),
-        );
+        details.add(BhreDetail(type: type, value: expression, confidence: 0.9));
       }
     }
   }
 
-  void _extractDates(
-    String text,
-    String normalized,
-    List<BhreDetail> details,
-  ) {
-    final datePattern = RegExp(
-      r'\b\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?\b',
-    );
+  void _extractDates(String text, String normalized, List<BhreDetail> details) {
+    final datePattern = RegExp(r'\b\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?\b');
 
     for (final match in datePattern.allMatches(text)) {
       details.add(
@@ -271,9 +252,7 @@ class BhreDetailExtractor {
             type: BhreDetailType.reference,
             value: reference,
             confidence: 0.8,
-            metadata: const {
-              'kind': 'entityReference',
-            },
+            metadata: const {'kind': 'entityReference'},
           ),
         );
       }
@@ -288,10 +267,7 @@ class BhreDetailExtractor {
     //
     // "-nya" berarti benda/orang yang sudah disebut
     // sebelumnya dalam konteks.
-    final nyaPattern = RegExp(
-      r'\b[a-zA-ZÀ-ÿ]{4,}nya\b',
-      caseSensitive: false,
-    );
+    final nyaPattern = RegExp(r'\b[a-zA-ZÀ-ÿ]{4,}nya\b', caseSensitive: false);
 
     for (final match in nyaPattern.allMatches(normalized)) {
       final word = match.group(0);

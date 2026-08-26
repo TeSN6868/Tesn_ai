@@ -20,11 +20,7 @@ class BhreIntentRouter {
       'hubungi',
       'call',
     ])) {
-      return BJoIntent(
-        type: BJoIntentType.call,
-        text: text,
-        confidence: 0.95,
-      );
+      return BJoIntent(type: BJoIntentType.call, text: text, confidence: 0.95);
     }
 
     if (_containsAny(normalized, [
@@ -73,11 +69,7 @@ class BhreIntentRouter {
       );
     }
 
-    return BJoIntent(
-      type: BJoIntentType.chat,
-      text: text,
-      confidence: 0.70,
-    );
+    return BJoIntent(type: BJoIntentType.chat, text: text, confidence: 0.70);
   }
 
   bool _containsAny(String text, List<String> keywords) {

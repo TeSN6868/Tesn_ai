@@ -9,9 +9,7 @@ abstract interface class BhreKnowledgeProvider {
 
   BhreSourceKind get sourceKind;
 
-  Future<List<BhreKnowledgeRecord>> search(
-    BhreKnowledgeRequest request,
-  );
+  Future<List<BhreKnowledgeRecord>> search(BhreKnowledgeRequest request);
 
   bool supports(BhreKnowledgeRequest request);
 }

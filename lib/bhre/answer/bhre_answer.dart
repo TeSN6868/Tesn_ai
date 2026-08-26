@@ -19,7 +19,7 @@ class BhreAnswer {
     required this.verified,
     required this.knowledge,
     required this.generatedAt,
-    this.generatedBy = 'BHRE_ANSWER_ASSEMBLER',
+    this.generatedBy = 'Bree_ANSWER_ASSEMBLER',
   });
 
   @override

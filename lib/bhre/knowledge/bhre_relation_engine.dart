@@ -26,8 +26,7 @@ class BhreKnowledgeGraph {
     return List.unmodifiable(
       relations.where(
         (relation) =>
-            relation.subjectId == entityId ||
-            relation.objectId == entityId,
+            relation.subjectId == entityId || relation.objectId == entityId,
       ),
     );
   }
@@ -36,10 +35,7 @@ class BhreKnowledgeGraph {
 class BhreRelationEngine {
   const BhreRelationEngine();
 
-  BhreKnowledgeGraph build(
-    String input,
-    List<BhreDetail> details,
-  ) {
+  BhreKnowledgeGraph build(String input, List<BhreDetail> details) {
     final entities = <BhreEntity>[];
     final relations = <BhreRelation>[];
 
@@ -63,12 +59,7 @@ class BhreRelationEngine {
       final id = 'entity-${++counter}';
 
       entities.add(
-        BhreEntity(
-          id: id,
-          type: type,
-          value: value,
-          confidence: confidence,
-        ),
+        BhreEntity(id: id, type: type, value: value, confidence: confidence),
       );
 
       return id;
@@ -173,10 +164,7 @@ class BhreRelationEngine {
     );
   }
 
-  BhreEntity? _findEntity(
-    List<BhreEntity> entities,
-    String value,
-  ) {
+  BhreEntity? _findEntity(List<BhreEntity> entities, String value) {
     final normalized = value.toLowerCase();
 
     for (final entity in entities) {
@@ -188,10 +176,7 @@ class BhreRelationEngine {
     return null;
   }
 
-  BhreEntity? _findPerson(
-    List<BhreEntity> entities,
-    String value,
-  ) {
+  BhreEntity? _findPerson(List<BhreEntity> entities, String value) {
     final normalized = value.toLowerCase();
 
     for (final entity in entities) {

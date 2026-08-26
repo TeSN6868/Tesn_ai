@@ -9,14 +9,11 @@ class BhreAgentController {
   final BhreEngine engine;
   final BhreToolExecutor toolExecutor;
 
-  BhreAgentController({
-    BhreEngine? engine,
-    BhreToolExecutor? toolExecutor,
-  })  : engine = engine ?? BhreEngine(),
-        toolExecutor = toolExecutor ??
-            BhreToolExecutor(
-              registry: BhreBootstrap.createToolRegistry(),
-            );
+  BhreAgentController({BhreEngine? engine, BhreToolExecutor? toolExecutor})
+    : engine = engine ?? BhreEngine(),
+      toolExecutor =
+          toolExecutor ??
+          BhreToolExecutor(registry: BhreBootstrap.createToolRegistry());
 
   Future<BhreResponse> receive(BhreGoal goal) async {
     final event = BhreEvent(

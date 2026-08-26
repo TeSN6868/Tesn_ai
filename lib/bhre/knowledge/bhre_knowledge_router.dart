@@ -244,11 +244,7 @@ class BhreKnowledgeRouter {
     }
 
     // Pertanyaan waktu kejadian.
-    if (_containsAny(text, [
-      'kapan',
-      'kapan terjadi',
-      'kapan berlangsung',
-    ])) {
+    if (_containsAny(text, ['kapan', 'kapan terjadi', 'kapan berlangsung'])) {
       return BhreKnowledgeRequestType.event;
     }
 
@@ -295,10 +291,7 @@ class BhreKnowledgeRouter {
     return null;
   }
 
-  bool _containsAny(
-    String text,
-    List<String> patterns,
-  ) {
+  bool _containsAny(String text, List<String> patterns) {
     return patterns.any(text.contains);
   }
 }

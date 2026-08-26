@@ -33,11 +33,8 @@ class _BhreRootAppState extends State<BhreRootApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'BHRE',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
+      title: 'Bree',
+      theme: ThemeData(brightness: Brightness.dark, useMaterial3: true),
       home: BhreHomePage(bhre: _bhre),
     );
   }
@@ -46,10 +43,7 @@ class _BhreRootAppState extends State<BhreRootApp> {
 class BhreHomePage extends StatefulWidget {
   final BhreApp bhre;
 
-  const BhreHomePage({
-    super.key,
-    required this.bhre,
-  });
+  const BhreHomePage({super.key, required this.bhre});
 
   @override
   State<BhreHomePage> createState() => _BhreHomePageState();
@@ -57,7 +51,7 @@ class BhreHomePage extends StatefulWidget {
 
 class _BhreHomePageState extends State<BhreHomePage> {
   final TextEditingController _controller = TextEditingController();
-  String _response = 'BHRE siap mendengarkan.';
+  String _response = 'Bree siap mendengarkan.';
 
   Future<void> _send() async {
     final message = _controller.text.trim();
@@ -78,9 +72,7 @@ class _BhreHomePageState extends State<BhreHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('BHRE'),
-      ),
+      appBar: AppBar(title: const Text('Bree')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -102,16 +94,13 @@ class _BhreHomePageState extends State<BhreHomePage> {
                       controller: _controller,
                       onSubmitted: (_) => _send(),
                       decoration: const InputDecoration(
-                        hintText: 'Tulis pesan untuk BHRE...',
+                        hintText: 'Tulis pesan untuk Bree...',
                         border: OutlineInputBorder(),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  IconButton(
-                    onPressed: _send,
-                    icon: const Icon(Icons.send),
-                  ),
+                  IconButton(onPressed: _send, icon: const Icon(Icons.send)),
                 ],
               ),
             ],

@@ -22,9 +22,7 @@ class BhreSecurityReport {
   String get summary {
     final parts = <String>[];
 
-    parts.add(
-      isAndroid ? 'Android terdeteksi.' : 'Platform bukan Android.',
-    );
+    parts.add(isAndroid ? 'Android terdeteksi.' : 'Platform bukan Android.');
 
     parts.add(
       isPhysicalDevice
@@ -32,11 +30,7 @@ class BhreSecurityReport {
           : 'Kemungkinan emulator.',
     );
 
-    parts.add(
-      isDebugBuild
-          ? 'Mode debug aktif.'
-          : 'Mode produksi terdeteksi.',
-    );
+    parts.add(isDebugBuild ? 'Mode debug aktif.' : 'Mode produksi terdeteksi.');
 
     parts.add(
       hasInternet
@@ -55,9 +49,7 @@ class BhreSecurityIntelligence {
 
     final isAndroid = Platform.isAndroid;
 
-    final isPhysicalDevice = isAndroid
-        ? !_looksLikeEmulator()
-        : true;
+    final isPhysicalDevice = isAndroid ? !_looksLikeEmulator() : true;
 
     final isDebugBuild = _detectDebugMode();
 
@@ -97,12 +89,9 @@ class BhreSecurityIntelligence {
     try {
       final result = await InternetAddress.lookup(
         'example.com',
-      ).timeout(
-        const Duration(seconds: 3),
-      );
+      ).timeout(const Duration(seconds: 3));
 
-      return result.isNotEmpty &&
-          result.first.rawAddress.isNotEmpty;
+      return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
     } catch (_) {
       return false;
     }

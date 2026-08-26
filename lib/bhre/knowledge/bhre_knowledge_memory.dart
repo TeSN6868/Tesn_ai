@@ -7,27 +7,20 @@ class BhreKnowledgeMemory {
   final List<BhreKnowledgeRecord> _records = [];
   final List<BhreKnowledgeGraph> _graphs = [];
 
-  BhreKnowledgeMemory({
-    this.maxRecords = 500,
-  }) : assert(maxRecords > 0);
+  BhreKnowledgeMemory({this.maxRecords = 500}) : assert(maxRecords > 0);
 
   /// Knowledge records yang sudah disimpan.
-  List<BhreKnowledgeRecord> get records =>
-      List.unmodifiable(_records);
+  List<BhreKnowledgeRecord> get records => List.unmodifiable(_records);
 
-  /// Knowledge graphs yang sudah diingat BHRE.
-  List<BhreKnowledgeGraph> get graphs =>
-      List.unmodifiable(_graphs);
+  /// Knowledge graphs yang sudah diingat Bree.
+  List<BhreKnowledgeGraph> get graphs => List.unmodifiable(_graphs);
 
   /// Menyimpan knowledge record lama.
   void store(BhreKnowledgeRecord record) {
     _records.add(record);
 
     if (_records.length > maxRecords) {
-      _records.removeRange(
-        0,
-        _records.length - maxRecords,
-      );
+      _records.removeRange(0, _records.length - maxRecords);
     }
   }
 
@@ -36,10 +29,7 @@ class BhreKnowledgeMemory {
     _graphs.add(graph);
 
     if (_graphs.length > maxRecords) {
-      _graphs.removeRange(
-        0,
-        _graphs.length - maxRecords,
-      );
+      _graphs.removeRange(0, _graphs.length - maxRecords);
     }
   }
 

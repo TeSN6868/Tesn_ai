@@ -11,19 +11,11 @@ class BhreAnswerAssembler {
     DateTime? now,
   }) {
     if (query.trim().isEmpty) {
-      throw ArgumentError.value(
-        query,
-        'query',
-        'Query tidak boleh kosong.',
-      );
+      throw ArgumentError.value(query, 'query', 'Query tidak boleh kosong.');
     }
 
     if (answer.trim().isEmpty) {
-      throw ArgumentError.value(
-        answer,
-        'answer',
-        'Answer tidak boleh kosong.',
-      );
+      throw ArgumentError.value(answer, 'answer', 'Answer tidak boleh kosong.');
     }
 
     if (candidates.isEmpty) {
@@ -41,9 +33,7 @@ class BhreAnswerAssembler {
         .reduce((a, b) => a > b ? a : b)
         .clamp(0.0, 1.0);
 
-    final verified = knowledge.every(
-      (record) => record.verified,
-    );
+    final verified = knowledge.every((record) => record.verified);
 
     return BhreAnswer(
       query: query,

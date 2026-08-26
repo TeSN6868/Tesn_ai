@@ -54,9 +54,7 @@ class BhreWorldEvent {
     };
   }
 
-  factory BhreWorldEvent.fromMap(
-    Map<String, Object?> map,
-  ) {
+  factory BhreWorldEvent.fromMap(Map<String, Object?> map) {
     final categoryName = map['category'] as String? ?? 'other';
 
     final category = BhreWorldCategory.values.firstWhere(

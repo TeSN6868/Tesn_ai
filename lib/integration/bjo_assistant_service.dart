@@ -7,16 +7,13 @@ class BJoAssistantService {
   BJoAssistantState _state = const BJoAssistantState();
 
   BJoAssistantService({BJoIntelligenceGateway? gateway})
-      : _gateway = gateway ?? BJoIntelligenceGateway();
+    : _gateway = gateway ?? BJoIntelligenceGateway();
 
   BJoAssistantState get state => _state;
 
   Future<void> start() async {
     await _gateway.start();
-    _state = _state.copyWith(
-      status: BJoAssistantStatus.idle,
-      clearError: true,
-    );
+    _state = _state.copyWith(status: BJoAssistantStatus.idle, clearError: true);
   }
 
   Future<String> ask(String message) async {
@@ -34,9 +31,7 @@ class BJoAssistantService {
         lastResponse: response,
       );
 
-      _state = _state.copyWith(
-        status: BJoAssistantStatus.idle,
-      );
+      _state = _state.copyWith(status: BJoAssistantStatus.idle);
 
       return response;
     } catch (error) {
@@ -50,8 +45,6 @@ class BJoAssistantService {
 
   Future<void> stop() async {
     await _gateway.stop();
-    _state = _state.copyWith(
-      status: BJoAssistantStatus.idle,
-    );
+    _state = _state.copyWith(status: BJoAssistantStatus.idle);
   }
 }

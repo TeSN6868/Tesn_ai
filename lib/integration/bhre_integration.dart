@@ -3,9 +3,7 @@ import '../bhre/core/bhre_app.dart';
 class BhreIntegration {
   final BhreApp app;
 
-  BhreIntegration({
-    BhreApp? app,
-  }) : app = app ?? BhreApp();
+  BhreIntegration({BhreApp? app}) : app = app ?? BhreApp();
 
   Future<void> start() {
     return app.start();

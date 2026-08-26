@@ -24,14 +24,11 @@ class BhreConversationEngine {
 
   final List<BhreConversationTurn> _history = [];
 
-  BhreConversationEngine({
-    BhreVoiceCore? voice,
-    BhreKnowledgeCore? knowledge,
-  })  : voice = voice ?? BhreVoiceCore(),
-        knowledge = knowledge ?? BhreKnowledgeCore();
+  BhreConversationEngine({BhreVoiceCore? voice, BhreKnowledgeCore? knowledge})
+    : voice = voice ?? BhreVoiceCore(),
+      knowledge = knowledge ?? BhreKnowledgeCore();
 
-  List<BhreConversationTurn> get history =>
-      List.unmodifiable(_history);
+  List<BhreConversationTurn> get history => List.unmodifiable(_history);
 
   Future<bool> initialize() async {
     return voice.initialize();
@@ -84,10 +81,7 @@ class BhreConversationEngine {
     return knowledge.search(text).take(5).toList(growable: false);
   }
 
-  String _buildResponse(
-    BhreCommand command,
-    List<BhreKnowledgeItem> matches,
-  ) {
+  String _buildResponse(BhreCommand command, List<BhreKnowledgeItem> matches) {
     switch (command.type) {
       case BhreCommandType.security:
         return 'Baik. Saya siap memeriksa keamanan perangkat.';

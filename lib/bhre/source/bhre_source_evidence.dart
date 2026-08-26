@@ -22,9 +22,7 @@ class BhreSourceEvidence {
     this.usable = true,
   });
 
-  factory BhreSourceEvidence.fromFetch(
-    BhreSourceFetchResult result,
-  ) {
+  factory BhreSourceEvidence.fromFetch(BhreSourceFetchResult result) {
     return BhreSourceEvidence(
       sourceId: result.sourceId,
       sourceName: result.sourceName,
@@ -33,7 +31,8 @@ class BhreSourceEvidence {
       content: result.content ?? '',
       uri: result.uri,
       observedAt: result.fetchedAt,
-      usable: result.success &&
+      usable:
+          result.success &&
           result.content != null &&
           result.content!.trim().isNotEmpty,
     );

@@ -36,7 +36,7 @@ class BhreWorldIntelligenceSnapshot {
       return 'Belum ada peristiwa dunia yang tercatat untuk hari ini.';
     }
 
-    return 'Hari ini BHRE mencatat $todayEvents peristiwa '
+    return 'Hari ini Bree mencatat $todayEvents peristiwa '
         'dengan $importantEvents peristiwa penting '
         'dan ${clusters.length} kelompok peristiwa.';
   }
@@ -55,19 +55,14 @@ class BhreWorldIntelligenceEngine {
     BhreWorldAnalyzer? analyzer,
     BhreWorldIntelligence? intelligence,
     BhreWorldSourceManager? sourceManager,
-  })  : database = database ?? BhreWorldDatabase(),
-        ingestor = ingestor ?? BhreWorldIngestor(),
-        analyzer = analyzer ?? BhreWorldAnalyzer(),
-        intelligence = intelligence ?? BhreWorldIntelligence(),
-        sourceManager =
-            sourceManager ?? BhreWorldSourceManager();
+  }) : database = database ?? BhreWorldDatabase(),
+       ingestor = ingestor ?? BhreWorldIngestor(),
+       analyzer = analyzer ?? BhreWorldAnalyzer(),
+       intelligence = intelligence ?? BhreWorldIntelligence(),
+       sourceManager = sourceManager ?? BhreWorldSourceManager();
 
-  Future<BhreWorldSyncReport> synchronize({
-    DateTime? since,
-  }) async {
-    final report = await sourceManager.sync(
-      since: since,
-    );
+  Future<BhreWorldSyncReport> synchronize({DateTime? since}) async {
+    final report = await sourceManager.sync(since: since);
 
     if (report.addedEvents > 0) {
       final events = sourceManager.ingestor.events;
@@ -78,66 +73,51 @@ class BhreWorldIntelligenceEngine {
     return report;
   }
 
-  Future<BhreWorldIntelligenceSnapshot> analyze({
-    int eventLimit = 1000,
-  }) async {
-    final events = await database.latest(
-      limit: eventLimit,
-    );
+  Future<BhreWorldIntelligenceSnapshot> analyze({int eventLimit = 1000}) async {
+    final events = await database.latest(limit: eventLimit);
 
     final now = DateTime.now();
 
-    final startOfToday = DateTime(
-      now.year,
-      now.month,
-      now.day,
-    );
+    final startOfToday = DateTime(now.year, now.month, now.day);
 
-    final startOfTomorrow =
-        startOfToday.add(const Duration(days: 1));
+    final startOfTomorrow = startOfToday.add(const Duration(days: 1));
 
-    final startOfYesterday =
-        startOfToday.subtract(const Duration(days: 1));
+    final startOfYesterday = startOfToday.subtract(const Duration(days: 1));
 
-    final today = events.where((event) {
-      return !event.publishedAt.isBefore(startOfToday) &&
-          event.publishedAt.isBefore(startOfTomorrow);
-    }).toList(growable: false);
+    final today = events
+        .where((event) {
+          return !event.publishedAt.isBefore(startOfToday) &&
+              event.publishedAt.isBefore(startOfTomorrow);
+        })
+        .toList(growable: false);
 
-    final yesterday = events.where((event) {
-      return !event.publishedAt.isBefore(startOfYesterday) &&
-          event.publishedAt.isBefore(startOfToday);
-    }).toList(growable: false);
+    final yesterday = events
+        .where((event) {
+          return !event.publishedAt.isBefore(startOfYesterday) &&
+              event.publishedAt.isBefore(startOfToday);
+        })
+        .toList(growable: false);
 
     final clusters = analyzer.cluster(today);
 
-    final trends = analyzer.detectTrends(
-      current: today,
-      previous: yesterday,
-    );
+    final trends = analyzer.detectTrends(current: today, previous: yesterday);
 
     final importantEvents = today
         .where((event) => event.importance >= 0.70)
         .toList(growable: false);
 
     final topEvents = [...today]
-      ..sort(
-        (a, b) {
-          final importance =
-              b.importance.compareTo(a.importance);
+      ..sort((a, b) {
+        final importance = b.importance.compareTo(a.importance);
 
-          if (importance != 0) {
-            return importance;
-          }
+        if (importance != 0) {
+          return importance;
+        }
 
-          return b.publishedAt.compareTo(
-            a.publishedAt,
-          );
-        },
-      );
+        return b.publishedAt.compareTo(a.publishedAt);
+      });
 
-    final dailyReport =
-        await _buildDailyReport(startOfToday);
+    final dailyReport = await _buildDailyReport(startOfToday);
 
     return BhreWorldIntelligenceSnapshot(
       generatedAt: DateTime.now(),
@@ -146,41 +126,23 @@ class BhreWorldIntelligenceEngine {
       importantEvents: importantEvents.length,
       clusters: List.unmodifiable(clusters),
       trends: List.unmodifiable(trends),
-      topEvents: List.unmodifiable(
-        topEvents.take(20),
-      ),
+      topEvents: List.unmodifiable(topEvents.take(20)),
       dailyReport: dailyReport,
     );
   }
 
-  Future<BhreWorldDailyReport> _buildDailyReport(
-    DateTime date,
-  ) async {
-    final start = DateTime(
-      date.year,
-      date.month,
-      date.day,
-    );
+  Future<BhreWorldDailyReport> _buildDailyReport(DateTime date) async {
+    final start = DateTime(date.year, date.month, date.day);
 
     return intelligence.analyzeDate(start);
   }
 
-  Future<List<BhreWorldEvent>> search(
-    String query, {
-    int limit = 50,
-  }) async {
-    return database.search(
-      query,
-      limit: limit,
-    );
+  Future<List<BhreWorldEvent>> search(String query, {int limit = 50}) async {
+    return database.search(query, limit: limit);
   }
 
-  Future<List<BhreWorldEvent>> latest({
-    int limit = 50,
-  }) async {
-    return database.latest(
-      limit: limit,
-    );
+  Future<List<BhreWorldEvent>> latest({int limit = 50}) async {
+    return database.latest(limit: limit);
   }
 
   Future<List<BhreWorldEvent>> important({
@@ -201,8 +163,7 @@ class BhreWorldIntelligenceEngine {
     sourceManager.unregister(sourceId);
   }
 
-  List<BhreWorldSource> get sources =>
-      sourceManager.sources;
+  List<BhreWorldSource> get sources => sourceManager.sources;
 
   Future<void> close() async {
     await database.close();

@@ -47,9 +47,11 @@ class BhreSourceResolver {
     final result = <BhreResolvedSource>[];
     final usedProviderIds = <String>{};
 
-    for (var priorityIndex = 0;
-        priorityIndex < plan.preferredSources.length;
-        priorityIndex++) {
+    for (
+      var priorityIndex = 0;
+      priorityIndex < plan.preferredSources.length;
+      priorityIndex++
+    ) {
       final preferredKind = plan.preferredSources[priorityIndex];
 
       for (final provider in providers) {

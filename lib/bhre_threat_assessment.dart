@@ -1,11 +1,6 @@
 import 'bhre_advanced_security.dart';
 
-enum BhreThreatLevel {
-  normal,
-  warning,
-  high,
-  critical,
-}
+enum BhreThreatLevel { normal, warning, high, critical }
 
 class BhreThreatFactor {
   final String id;
@@ -58,8 +53,7 @@ class BhreThreatAssessment {
   }
 
   bool get requiresAttention =>
-      level == BhreThreatLevel.high ||
-      level == BhreThreatLevel.critical;
+      level == BhreThreatLevel.high || level == BhreThreatLevel.critical;
 
   String get summary {
     if (level == BhreThreatLevel.normal) {
@@ -71,9 +65,7 @@ class BhreThreatAssessment {
 }
 
 class BhreThreatAssessmentEngine {
-  BhreThreatAssessment analyze(
-    BhreAdvancedSecurityReport report,
-  ) {
+  BhreThreatAssessment analyze(BhreAdvancedSecurityReport report) {
     final factors = <BhreThreatFactor>[];
 
     if (!report.platform.isPhysicalDevice) {
@@ -153,10 +145,7 @@ class BhreThreatAssessmentEngine {
       );
     }
 
-    var score = factors.fold<int>(
-      0,
-      (total, factor) => total + factor.score,
-    );
+    var score = factors.fold<int>(0, (total, factor) => total + factor.score);
 
     if (score > 100) {
       score = 100;
@@ -191,9 +180,7 @@ class BhreThreatAssessmentEngine {
     return BhreThreatLevel.critical;
   }
 
-  double _calculateConfidence(
-    BhreAdvancedSecurityReport report,
-  ) {
+  double _calculateConfidence(BhreAdvancedSecurityReport report) {
     var confidence = 0.70;
 
     if (report.platform.isAndroid) {

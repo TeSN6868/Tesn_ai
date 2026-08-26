@@ -24,10 +24,7 @@ class BhreWorldDailyReport {
     final entries = categoryCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    return entries
-        .take(3)
-        .map((entry) => entry.key)
-        .toList(growable: false);
+    return entries.take(3).map((entry) => entry.key).toList(growable: false);
   }
 
   String get summary {
@@ -48,97 +45,66 @@ class BhreWorldDailyReport {
 class BhreWorldIntelligence {
   final BhreWorldIngestor ingestor;
 
-  BhreWorldIntelligence({
-    BhreWorldIngestor? ingestor,
-  }) : ingestor = ingestor ?? BhreWorldIngestor();
+  BhreWorldIntelligence({BhreWorldIngestor? ingestor})
+    : ingestor = ingestor ?? BhreWorldIngestor();
 
   Future<BhreWorldDailyReport> analyzeToday() async {
     final now = DateTime.now();
 
-    final start = DateTime(
-      now.year,
-      now.month,
-      now.day,
-    );
+    final start = DateTime(now.year, now.month, now.day);
 
-    final end = start.add(
-      const Duration(days: 1),
-    );
+    final end = start.add(const Duration(days: 1));
 
-    final today = ingestor.events.where((event) {
-      return !event.publishedAt.isBefore(start) &&
-          event.publishedAt.isBefore(end);
-    }).toList(growable: false);
+    final today = ingestor.events
+        .where((event) {
+          return !event.publishedAt.isBefore(start) &&
+              event.publishedAt.isBefore(end);
+        })
+        .toList(growable: false);
 
-    return _buildReport(
-      date: start,
-      events: today,
-    );
+    return _buildReport(date: start, events: today);
   }
 
-  Future<BhreWorldDailyReport> analyzeDate(
-    DateTime date,
-  ) async {
-    final start = DateTime(
-      date.year,
-      date.month,
-      date.day,
-    );
+  Future<BhreWorldDailyReport> analyzeDate(DateTime date) async {
+    final start = DateTime(date.year, date.month, date.day);
 
-    final end = start.add(
-      const Duration(days: 1),
-    );
+    final end = start.add(const Duration(days: 1));
 
-    final events = ingestor.events.where((event) {
-      return !event.publishedAt.isBefore(start) &&
-          event.publishedAt.isBefore(end);
-    }).toList(growable: false);
+    final events = ingestor.events
+        .where((event) {
+          return !event.publishedAt.isBefore(start) &&
+              event.publishedAt.isBefore(end);
+        })
+        .toList(growable: false);
 
-    return _buildReport(
-      date: start,
-      events: events,
-    );
+    return _buildReport(date: start, events: events);
   }
 
-  List<BhreWorldEvent> trending({
-    int limit = 10,
-  }) {
+  List<BhreWorldEvent> trending({int limit = 10}) {
     final events = [...ingestor.events];
 
-    events.sort(
-      (a, b) {
-        final importance =
-            b.importance.compareTo(a.importance);
+    events.sort((a, b) {
+      final importance = b.importance.compareTo(a.importance);
 
-        if (importance != 0) {
-          return importance;
-        }
+      if (importance != 0) {
+        return importance;
+      }
 
-        return b.publishedAt.compareTo(a.publishedAt);
-      },
-    );
+      return b.publishedAt.compareTo(a.publishedAt);
+    });
 
-    return events
-        .take(limit)
-        .toList(growable: false);
+    return events.take(limit).toList(growable: false);
   }
 
-  List<BhreWorldEvent> related(
-    String query, {
-    int limit = 10,
-  }) {
-    return ingestor.search(
-      query,
-      limit: limit,
-    );
+  List<BhreWorldEvent> related(String query, {int limit = 10}) {
+    return ingestor.search(query, limit: limit);
   }
 
   BhreWorldDailyReport _buildReport({
     required DateTime date,
     required List<BhreWorldEvent> events,
   }) {
-    final categoryCounts =
-        <BhreWorldCategory, int>{};
+    final categoryCounts = <BhreWorldCategory, int>{};
 
     final countries = <String>{};
 
@@ -156,27 +122,22 @@ class BhreWorldIntelligence {
         .length;
 
     final topEvents = [...events]
-      ..sort(
-        (a, b) {
-          final importance =
-              b.importance.compareTo(a.importance);
+      ..sort((a, b) {
+        final importance = b.importance.compareTo(a.importance);
 
-          if (importance != 0) {
-            return importance;
-          }
+        if (importance != 0) {
+          return importance;
+        }
 
-          return b.publishedAt.compareTo(a.publishedAt);
-        },
-      );
+        return b.publishedAt.compareTo(a.publishedAt);
+      });
 
     return BhreWorldDailyReport(
       date: date,
       totalEvents: events.length,
       importantEvents: importantEvents,
       categoryCounts: Map.unmodifiable(categoryCounts),
-      topEvents: topEvents
-          .take(10)
-          .toList(growable: false),
+      topEvents: topEvents.take(10).toList(growable: false),
       countries: countries.toList(growable: false),
       generatedAt: DateTime.now(),
     );

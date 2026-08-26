@@ -8,38 +8,26 @@ class BhreDeviceBridge {
   }
 
   Future<bool> isUsbDebuggingEnabled() async {
-    return await _channel.invokeMethod<bool>(
-          'isUsbDebuggingEnabled',
-        ) ??
-        false;
+    return await _channel.invokeMethod<bool>('isUsbDebuggingEnabled') ?? false;
   }
 
   Future<bool> isDeveloperOptionsEnabled() async {
-    return await _channel.invokeMethod<bool>(
-          'isDeveloperOptionsEnabled',
-        ) ??
+    return await _channel.invokeMethod<bool>('isDeveloperOptionsEnabled') ??
         false;
   }
 
   Future<String> getVerifiedBootState() async {
-    return await _channel.invokeMethod<String>(
-          'getVerifiedBootState',
-        ) ??
+    return await _channel.invokeMethod<String>('getVerifiedBootState') ??
         'unknown';
   }
 
   Future<String> getBootloaderLockState() async {
-    return await _channel.invokeMethod<String>(
-          'getBootloaderLockState',
-        ) ??
+    return await _channel.invokeMethod<String>('getBootloaderLockState') ??
         'unknown';
   }
 
   Future<bool> isDebuggableBuild() async {
-    return await _channel.invokeMethod<bool>(
-          'isDebuggableBuild',
-        ) ??
-        false;
+    return await _channel.invokeMethod<bool>('isDebuggableBuild') ?? false;
   }
 
   Future<BhreDeviceSecuritySnapshot> inspect() async {
@@ -80,17 +68,13 @@ class BhreDeviceSecuritySnapshot {
     required this.debuggableBuild,
   });
 
-  bool get verifiedBootHealthy =>
-      verifiedBootState.toLowerCase() == 'green';
+  bool get verifiedBootHealthy => verifiedBootState.toLowerCase() == 'green';
 
   bool get bootloaderSecure =>
-      bootloaderLocked == '1' ||
-      bootloaderLocked.toLowerCase() == 'true';
+      bootloaderLocked == '1' || bootloaderLocked.toLowerCase() == 'true';
 
   bool get overallSecure =>
-      verifiedBootHealthy &&
-      bootloaderSecure &&
-      !debuggableBuild;
+      verifiedBootHealthy && bootloaderSecure && !debuggableBuild;
 
   String get summary {
     final parts = <String>[];
@@ -102,9 +86,7 @@ class BhreDeviceSecuritySnapshot {
     );
 
     parts.add(
-      bootloaderSecure
-          ? 'Bootloader terkunci.'
-          : 'Bootloader tidak terkunci.',
+      bootloaderSecure ? 'Bootloader terkunci.' : 'Bootloader tidak terkunci.',
     );
 
     parts.add(

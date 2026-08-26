@@ -6,15 +6,11 @@ class BhreMemory {
   final int maxEntries;
   final List<BhreMemoryEntry> _entries = [];
 
-  BhreMemory({
-    this.maxEntries = 200,
-  }) : assert(maxEntries > 0);
+  BhreMemory({this.maxEntries = 200}) : assert(maxEntries > 0);
 
-  List<BhreMemoryEntry> get entries =>
-      List.unmodifiable(_entries);
+  List<BhreMemoryEntry> get entries => List.unmodifiable(_entries);
 
-  BhreMemoryEntry? get latest =>
-      _entries.isEmpty ? null : _entries.last;
+  BhreMemoryEntry? get latest => _entries.isEmpty ? null : _entries.last;
 
   void remember({
     required String content,
@@ -34,10 +30,7 @@ class BhreMemory {
     _entries.add(entry);
 
     if (_entries.length > maxEntries) {
-      _entries.removeRange(
-        0,
-        _entries.length - maxEntries,
-      );
+      _entries.removeRange(0, _entries.length - maxEntries);
     }
   }
 
@@ -46,12 +39,9 @@ class BhreMemory {
       return const [];
     }
 
-    final start =
-        _entries.length > count ? _entries.length - count : 0;
+    final start = _entries.length > count ? _entries.length - count : 0;
 
-    return List.unmodifiable(
-      _entries.sublist(start),
-    );
+    return List.unmodifiable(_entries.sublist(start));
   }
 
   List<BhreMemoryEntry> search(String query) {
@@ -63,8 +53,7 @@ class BhreMemory {
 
     return List.unmodifiable(
       _entries.where(
-        (entry) =>
-            entry.content.toLowerCase().contains(normalized),
+        (entry) => entry.content.toLowerCase().contains(normalized),
       ),
     );
   }

@@ -17,8 +17,7 @@ class BhreKnowledgeItem {
 class BhreKnowledgeCore {
   final List<BhreKnowledgeItem> _items = [];
 
-  List<BhreKnowledgeItem> get items =>
-      List.unmodifiable(_items);
+  List<BhreKnowledgeItem> get items => List.unmodifiable(_items);
 
   void add({
     required String id,
@@ -78,22 +77,13 @@ class BhreKnowledgeCore {
       }
 
       if (score > 0) {
-        scored.add(
-          _ScoredKnowledge(
-            item: item,
-            score: score,
-          ),
-        );
+        scored.add(_ScoredKnowledge(item: item, score: score));
       }
     }
 
-    scored.sort(
-      (a, b) => b.score.compareTo(a.score),
-    );
+    scored.sort((a, b) => b.score.compareTo(a.score));
 
-    return scored
-        .map((entry) => entry.item)
-        .toList(growable: false);
+    return scored.map((entry) => entry.item).toList(growable: false);
   }
 
   void remove(String id) {
@@ -109,8 +99,5 @@ class _ScoredKnowledge {
   final BhreKnowledgeItem item;
   final int score;
 
-  const _ScoredKnowledge({
-    required this.item,
-    required this.score,
-  });
+  const _ScoredKnowledge({required this.item, required this.score});
 }

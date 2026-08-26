@@ -5,9 +5,7 @@ abstract class BhreWorldSource {
 
   String get name;
 
-  Future<List<BhreWorldEvent>> fetch({
-    DateTime? since,
-  });
+  Future<List<BhreWorldEvent>> fetch({DateTime? since});
 }
 
 class BhreWorldSourceResult {

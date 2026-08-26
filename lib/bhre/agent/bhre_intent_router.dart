@@ -5,45 +5,21 @@ class BhreIntentRouter {
     final text = input.trim();
 
     if (text.isEmpty) {
-      return const BhreIntent(
-        type: BhreIntentType.unknown,
-        rawInput: '',
-      );
+      return const BhreIntent(type: BhreIntentType.unknown, rawInput: '');
     }
 
     final normalized = text.toLowerCase();
 
-    if (_containsAny(normalized, [
-      'alarm',
-      'bangunkan',
-      'bangun',
-    ])) {
-      return BhreIntent(
-        type: BhreIntentType.alarm,
-        rawInput: text,
-      );
+    if (_containsAny(normalized, ['alarm', 'bangunkan', 'bangun'])) {
+      return BhreIntent(type: BhreIntentType.alarm, rawInput: text);
     }
 
-    if (_containsAny(normalized, [
-      'ingatkan',
-      'pengingat',
-      'reminder',
-    ])) {
-      return BhreIntent(
-        type: BhreIntentType.reminder,
-        rawInput: text,
-      );
+    if (_containsAny(normalized, ['ingatkan', 'pengingat', 'reminder'])) {
+      return BhreIntent(type: BhreIntentType.reminder, rawInput: text);
     }
 
-    if (_containsAny(normalized, [
-      'rencanakan',
-      'rencana',
-      'siapkan',
-    ])) {
-      return BhreIntent(
-        type: BhreIntentType.planning,
-        rawInput: text,
-      );
+    if (_containsAny(normalized, ['rencanakan', 'rencana', 'siapkan'])) {
+      return BhreIntent(type: BhreIntentType.planning, rawInput: text);
     }
 
     if (_containsAny(normalized, [
@@ -52,10 +28,7 @@ class BhreIntentRouter {
       'arah ke',
       'pergi ke',
     ])) {
-      return BhreIntent(
-        type: BhreIntentType.navigation,
-        rawInput: text,
-      );
+      return BhreIntent(type: BhreIntentType.navigation, rawInput: text);
     }
 
     // Perintah tindakan harus diprioritaskan sebelum
@@ -78,10 +51,7 @@ class BhreIntentRouter {
       'buatkan',
       'tolong',
     ])) {
-      return BhreIntent(
-        type: BhreIntentType.command,
-        rawInput: text,
-      );
+      return BhreIntent(type: BhreIntentType.command, rawInput: text);
     }
 
     if (_containsAny(normalized, [
@@ -104,16 +74,10 @@ class BhreIntentRouter {
     }
 
     if (text.endsWith('?')) {
-      return BhreIntent(
-        type: BhreIntentType.question,
-        rawInput: text,
-      );
+      return BhreIntent(type: BhreIntentType.question, rawInput: text);
     }
 
-    return BhreIntent(
-      type: BhreIntentType.conversation,
-      rawInput: text,
-    );
+    return BhreIntent(type: BhreIntentType.conversation, rawInput: text);
   }
 
   bool _containsAny(String text, List<String> patterns) {

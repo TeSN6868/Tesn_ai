@@ -15,17 +15,14 @@ class BhreWorldCluster {
     required this.importance,
   });
 
-  int get sourceCount =>
-      events.map((event) => event.source).toSet().length;
+  int get sourceCount => events.map((event) => event.source).toSet().length;
 
-  int get countryCount =>
-      events.map((event) => event.country).toSet().length;
+  int get countryCount => events.map((event) => event.country).toSet().length;
 
   BhreWorldEvent get primaryEvent {
     final sorted = [...events]
       ..sort((a, b) {
-        final importance =
-            b.importance.compareTo(a.importance);
+        final importance = b.importance.compareTo(a.importance);
 
         if (importance != 0) return importance;
 
@@ -64,9 +61,7 @@ class BhreWorldTrend {
 }
 
 class BhreWorldAnalyzer {
-  List<BhreWorldCluster> cluster(
-    List<BhreWorldEvent> events,
-  ) {
+  List<BhreWorldCluster> cluster(List<BhreWorldEvent> events) {
     final clusters = <String, List<BhreWorldEvent>>{};
 
     for (final event in events) {
@@ -84,16 +79,12 @@ class BhreWorldAnalyzer {
       if (group.isEmpty) continue;
 
       final importance = group
-              .map((event) => event.importance)
-              .reduce((a, b) => a > b ? a : b);
+          .map((event) => event.importance)
+          .reduce((a, b) => a > b ? a : b);
 
-      final sourceCount =
-          group.map((event) => event.source).toSet().length;
+      final sourceCount = group.map((event) => event.source).toSet().length;
 
-      final confidence = _calculateConfidence(
-        group,
-        sourceCount,
-      );
+      final confidence = _calculateConfidence(group, sourceCount);
 
       result.add(
         BhreWorldCluster(
@@ -106,16 +97,13 @@ class BhreWorldAnalyzer {
       );
     }
 
-    result.sort(
-      (a, b) {
-        final importance =
-            b.importance.compareTo(a.importance);
+    result.sort((a, b) {
+      final importance = b.importance.compareTo(a.importance);
 
-        if (importance != 0) return importance;
+      if (importance != 0) return importance;
 
-        return b.confidence.compareTo(a.confidence);
-      },
-    );
+      return b.confidence.compareTo(a.confidence);
+    });
 
     return List.unmodifiable(result);
   }
@@ -133,16 +121,14 @@ class BhreWorldAnalyzer {
       final topic = entry.key;
       final currentEvents = entry.value;
 
-      final previousEvents =
-          previousGroups[topic] ?? const [];
+      final previousEvents = previousGroups[topic] ?? const [];
 
       final currentCount = currentEvents.length;
       final previousCount = previousEvents.length;
 
       final growth = previousCount == 0
           ? 1.0
-          : (currentCount - previousCount) /
-              previousCount;
+          : (currentCount - previousCount) / previousCount;
 
       final importance = currentEvents
           .map((event) => event.importance)
@@ -160,26 +146,21 @@ class BhreWorldAnalyzer {
       );
     }
 
-    trends.sort(
-      (a, b) {
-        final importance =
-            b.importance.compareTo(a.importance);
+    trends.sort((a, b) {
+      final importance = b.importance.compareTo(a.importance);
 
-        if (importance != 0) return importance;
+      if (importance != 0) return importance;
 
-        return b.growth.compareTo(a.growth);
-      },
-    );
+      return b.growth.compareTo(a.growth);
+    });
 
     return List.unmodifiable(trends);
   }
 
   String _topicKey(BhreWorldEvent event) {
-    final words = _normalize(event.title)
-        .split(' ')
-        .where((word) => word.length >= 4)
-        .take(6)
-        .toList();
+    final words = _normalize(
+      event.title,
+    ).split(' ').where((word) => word.length >= 4).take(6).toList();
 
     if (words.isEmpty) {
       return '${event.category.name}:${event.country}';
@@ -188,17 +169,13 @@ class BhreWorldAnalyzer {
     return '${event.category.name}:${words.join('-')}';
   }
 
-  String _buildTopic(
-    List<BhreWorldEvent> events,
-  ) {
+  String _buildTopic(List<BhreWorldEvent> events) {
     final primary = events.first;
 
     return primary.title.trim();
   }
 
-  Map<String, List<BhreWorldEvent>> _groupByTopic(
-    List<BhreWorldEvent> events,
-  ) {
+  Map<String, List<BhreWorldEvent>> _groupByTopic(List<BhreWorldEvent> events) {
     final result = <String, List<BhreWorldEvent>>{};
 
     for (final event in events) {
@@ -211,10 +188,7 @@ class BhreWorldAnalyzer {
     return result;
   }
 
-  double _calculateConfidence(
-    List<BhreWorldEvent> events,
-    int sourceCount,
-  ) {
+  double _calculateConfidence(List<BhreWorldEvent> events, int sourceCount) {
     var confidence = 0.40;
 
     if (sourceCount >= 2) {
@@ -229,8 +203,7 @@ class BhreWorldAnalyzer {
       confidence += 0.10;
     }
 
-    final hasUrl =
-        events.any((event) => event.url.trim().isNotEmpty);
+    final hasUrl = events.any((event) => event.url.trim().isNotEmpty);
 
     if (hasUrl) {
       confidence += 0.05;

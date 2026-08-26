@@ -20,17 +20,11 @@ class BJoDeviceSecurity {
     }
 
     final random = Random.secure();
-    final bytes = List<int>.generate(
-      32,
-      (_) => random.nextInt(256),
-    );
+    final bytes = List<int>.generate(32, (_) => random.nextInt(256));
 
     secret = base64UrlEncode(bytes);
 
-    await _storage.write(
-      key: _secretKey,
-      value: secret,
-    );
+    await _storage.write(key: _secretKey, value: secret);
 
     return secret;
   }
@@ -46,16 +40,11 @@ class BJoDeviceSecurity {
 
     final secret = await _getOrCreateSecret();
 
-    final digest = sha256.convert(
-      utf8.encode(secret),
-    );
+    final digest = sha256.convert(utf8.encode(secret));
 
     final deviceId = digest.toString();
 
-    await _storage.write(
-      key: _deviceIdKey,
-      value: deviceId,
-    );
+    await _storage.write(key: _deviceIdKey, value: deviceId);
 
     return deviceId;
   }

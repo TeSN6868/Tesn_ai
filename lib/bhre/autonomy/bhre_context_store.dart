@@ -4,21 +4,15 @@ class BhreContextStore {
   final int maxFacts;
   final List<BhreContextFact> _facts = [];
 
-  BhreContextStore({
-    this.maxFacts = 500,
-  }) : assert(maxFacts > 0);
+  BhreContextStore({this.maxFacts = 500}) : assert(maxFacts > 0);
 
-  List<BhreContextFact> get facts =>
-      List.unmodifiable(_facts);
+  List<BhreContextFact> get facts => List.unmodifiable(_facts);
 
   void add(BhreContextFact fact) {
     _facts.add(fact);
 
     if (_facts.length > maxFacts) {
-      _facts.removeRange(
-        0,
-        _facts.length - maxFacts,
-      );
+      _facts.removeRange(0, _facts.length - maxFacts);
     }
   }
 
@@ -30,10 +24,7 @@ class BhreContextStore {
     }
 
     return List.unmodifiable(
-      _facts.where(
-        (fact) =>
-            fact.value.toLowerCase().contains(normalized),
-      ),
+      _facts.where((fact) => fact.value.toLowerCase().contains(normalized)),
     );
   }
 
@@ -42,14 +33,9 @@ class BhreContextStore {
       return const [];
     }
 
-    final start =
-        _facts.length > count
-            ? _facts.length - count
-            : 0;
+    final start = _facts.length > count ? _facts.length - count : 0;
 
-    return List.unmodifiable(
-      _facts.sublist(start),
-    );
+    return List.unmodifiable(_facts.sublist(start));
   }
 
   void clear() {

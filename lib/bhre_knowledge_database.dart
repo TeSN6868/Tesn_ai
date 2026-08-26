@@ -66,21 +66,17 @@ class BhreKnowledgeDatabase {
     final db = await database;
     final now = DateTime.now().millisecondsSinceEpoch;
 
-    await db.insert(
-      _table,
-      {
-        'id': id.trim(),
-        'title': title.trim(),
-        'content': content.trim(),
-        'tags': tags
-            .map((tag) => tag.trim().toLowerCase())
-            .where((tag) => tag.isNotEmpty)
-            .join(','),
-        'created_at': now,
-        'updated_at': now,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert(_table, {
+      'id': id.trim(),
+      'title': title.trim(),
+      'content': content.trim(),
+      'tags': tags
+          .map((tag) => tag.trim().toLowerCase())
+          .where((tag) => tag.isNotEmpty)
+          .join(','),
+      'created_at': now,
+      'updated_at': now,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<BhreKnowledgeRecord?> getById(String id) async {
@@ -113,11 +109,7 @@ class BhreKnowledgeDatabase {
         OR content LIKE ?
         OR tags LIKE ?
       ''',
-      whereArgs: [
-        pattern,
-        pattern,
-        pattern,
-      ],
+      whereArgs: [pattern, pattern, pattern],
       orderBy: 'updated_at DESC',
     );
 
@@ -143,11 +135,7 @@ class BhreKnowledgeDatabase {
   Future<void> delete(String id) async {
     final db = await database;
 
-    await db.delete(
-      _table,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete(_table, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> clear() async {
@@ -158,27 +146,19 @@ class BhreKnowledgeDatabase {
   Future<int> count() async {
     final db = await database;
 
-    final result = await db.rawQuery(
-      'SELECT COUNT(*) AS total FROM $_table',
-    );
+    final result = await db.rawQuery('SELECT COUNT(*) AS total FROM $_table');
 
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  BhreKnowledgeRecord _fromMap(
-    Map<String, Object?> map,
-  ) {
+  BhreKnowledgeRecord _fromMap(Map<String, Object?> map) {
     return BhreKnowledgeRecord(
       id: map['id'] as String,
       title: map['title'] as String,
       content: map['content'] as String,
       tags: map['tags'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(
-        map['created_at'] as int,
-      ),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(
-        map['updated_at'] as int,
-      ),
+      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
     );
   }
 

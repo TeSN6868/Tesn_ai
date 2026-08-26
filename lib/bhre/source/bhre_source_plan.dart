@@ -1,10 +1,6 @@
 import 'bhre_source_kind.dart';
 
-enum BhreSourcePriority {
-  primary,
-  secondary,
-  tertiary,
-}
+enum BhreSourcePriority { primary, secondary, tertiary }
 
 class BhreSourcePlan {
   final String query;

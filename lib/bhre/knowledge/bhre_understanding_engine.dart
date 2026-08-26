@@ -21,10 +21,7 @@ class BhreUnderstandingEngine {
   BhreUnderstanding understand(String input) {
     final details = detailExtractor.extract(input);
 
-    final graph = relationEngine.build(
-      input,
-      details,
-    );
+    final graph = relationEngine.build(input, details);
 
     final decisions = <BhreReferenceDecision>[];
 
@@ -38,9 +35,7 @@ class BhreUnderstandingEngine {
         graph: graph,
       );
 
-      final decision = decisionEngine.decide(
-        candidates,
-      );
+      final decision = decisionEngine.decide(candidates);
 
       decisions.add(decision);
     }
@@ -49,8 +44,7 @@ class BhreUnderstandingEngine {
       input: input,
       details: details,
       graph: graph,
-      referenceDecisions:
-          List.unmodifiable(decisions),
+      referenceDecisions: List.unmodifiable(decisions),
     );
   }
 }

@@ -4,9 +4,8 @@ import 'bhre_tool.dart';
 class BhreAlarmTool implements BhreTool {
   final BhreAlarmService service;
 
-  BhreAlarmTool({
-    BhreAlarmService? service,
-  }) : service = service ?? BhreAlarmService();
+  BhreAlarmTool({BhreAlarmService? service})
+    : service = service ?? BhreAlarmService();
 
   @override
   String get id => 'alarm';

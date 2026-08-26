@@ -17,7 +17,7 @@ class BhreKnowledgeVerifier {
 
     final averageConfidence =
         results.map((e) => e.confidence).reduce((a, b) => a + b) /
-            results.length;
+        results.length;
 
     return BhreKnowledgeVerification(
       query: query,

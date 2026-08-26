@@ -27,9 +27,7 @@ class BhreMemoryKnowledgeStore implements BhreKnowledgeStore {
   }
 
   @override
-  Future<List<BhreKnowledgeRecord>> search(
-    String query,
-  ) async {
+  Future<List<BhreKnowledgeRecord>> search(String query) async {
     final normalized = query.trim().toLowerCase();
 
     if (normalized.isEmpty) {

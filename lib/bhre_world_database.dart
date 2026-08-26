@@ -71,9 +71,7 @@ class BhreWorldDatabase {
     );
   }
 
-  Future<int> saveAll(
-    List<BhreWorldEvent> events,
-  ) async {
+  Future<int> saveAll(List<BhreWorldEvent> events) async {
     if (events.isEmpty) return 0;
 
     final db = await database;
@@ -107,9 +105,7 @@ class BhreWorldDatabase {
     return BhreWorldEvent.fromMap(rows.first);
   }
 
-  Future<List<BhreWorldEvent>> latest({
-    int limit = 50,
-  }) async {
+  Future<List<BhreWorldEvent>> latest({int limit = 50}) async {
     final db = await database;
 
     final rows = await db.query(
@@ -118,9 +114,7 @@ class BhreWorldDatabase {
       limit: limit,
     );
 
-    return rows
-        .map(BhreWorldEvent.fromMap)
-        .toList(growable: false);
+    return rows.map(BhreWorldEvent.fromMap).toList(growable: false);
   }
 
   Future<List<BhreWorldEvent>> important({
@@ -137,9 +131,7 @@ class BhreWorldDatabase {
       limit: limit,
     );
 
-    return rows
-        .map(BhreWorldEvent.fromMap)
-        .toList(growable: false);
+    return rows.map(BhreWorldEvent.fromMap).toList(growable: false);
   }
 
   Future<List<BhreWorldEvent>> byCategory(
@@ -156,9 +148,7 @@ class BhreWorldDatabase {
       limit: limit,
     );
 
-    return rows
-        .map(BhreWorldEvent.fromMap)
-        .toList(growable: false);
+    return rows.map(BhreWorldEvent.fromMap).toList(growable: false);
   }
 
   Future<List<BhreWorldEvent>> byCountry(
@@ -179,15 +169,10 @@ class BhreWorldDatabase {
       limit: limit,
     );
 
-    return rows
-        .map(BhreWorldEvent.fromMap)
-        .toList(growable: false);
+    return rows.map(BhreWorldEvent.fromMap).toList(growable: false);
   }
 
-  Future<List<BhreWorldEvent>> search(
-    String query, {
-    int limit = 50,
-  }) async {
+  Future<List<BhreWorldEvent>> search(String query, {int limit = 50}) async {
     final db = await database;
 
     final clean = query.trim();
@@ -205,20 +190,12 @@ class BhreWorldDatabase {
         OR country LIKE ?
         OR category LIKE ?
       ''',
-      whereArgs: [
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-      ],
+      whereArgs: [pattern, pattern, pattern, pattern, pattern],
       orderBy: 'importance DESC, published_at DESC',
       limit: limit,
     );
 
-    return rows
-        .map(BhreWorldEvent.fromMap)
-        .toList(growable: false);
+    return rows.map(BhreWorldEvent.fromMap).toList(growable: false);
   }
 
   Future<List<BhreWorldEvent>> between(
@@ -234,25 +211,18 @@ class BhreWorldDatabase {
         published_at >= ?
         AND published_at < ?
       ''',
-      whereArgs: [
-        start.millisecondsSinceEpoch,
-        end.millisecondsSinceEpoch,
-      ],
+      whereArgs: [start.millisecondsSinceEpoch, end.millisecondsSinceEpoch],
       orderBy: 'published_at DESC',
       limit: limit,
     );
 
-    return rows
-        .map(BhreWorldEvent.fromMap)
-        .toList(growable: false);
+    return rows.map(BhreWorldEvent.fromMap).toList(growable: false);
   }
 
   Future<int> count() async {
     final db = await database;
 
-    final result = await db.rawQuery(
-      'SELECT COUNT(*) AS total FROM $_table',
-    );
+    final result = await db.rawQuery('SELECT COUNT(*) AS total FROM $_table');
 
     return Sqflite.firstIntValue(result) ?? 0;
   }
@@ -260,11 +230,7 @@ class BhreWorldDatabase {
   Future<void> delete(String id) async {
     final db = await database;
 
-    await db.delete(
-      _table,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete(_table, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> clear() async {

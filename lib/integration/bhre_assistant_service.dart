@@ -8,7 +8,7 @@ class BhreAssistantService {
   BhreAssistantState _state = const BhreAssistantState();
 
   BhreAssistantService({BhreRuntime? runtime})
-      : _runtime = runtime ?? BhreRuntime();
+    : _runtime = runtime ?? BhreRuntime();
 
   BhreAssistantState get state => _state;
 
@@ -25,9 +25,7 @@ class BhreAssistantService {
     try {
       await _runtime.start();
 
-      _state = _state.copyWith(
-        status: BhreAssistantStatus.idle,
-      );
+      _state = _state.copyWith(status: BhreAssistantStatus.idle);
     } catch (e) {
       _state = _state.copyWith(
         status: BhreAssistantStatus.error,
@@ -56,10 +54,7 @@ class BhreAssistantService {
 
     try {
       final response = await _runtime.dispatch(
-        BhreEvent(
-          type: BhreEventType.userMessage,
-          payload: normalized,
-        ),
+        BhreEvent(type: BhreEventType.userMessage, payload: normalized),
       );
 
       _state = _state.copyWith(
@@ -80,8 +75,6 @@ class BhreAssistantService {
   Future<void> stop() async {
     await _runtime.stop();
 
-    _state = _state.copyWith(
-      status: BhreAssistantStatus.idle,
-    );
+    _state = _state.copyWith(status: BhreAssistantStatus.idle);
   }
 }

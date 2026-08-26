@@ -32,21 +32,16 @@ class BhreReferenceScorer {
     final candidates = <BhreReferenceCandidate>[];
 
     for (final entity in graph.entities) {
-      if (expectedType != null &&
-          entity.type != expectedType) {
+      if (expectedType != null && entity.type != expectedType) {
         continue;
       }
 
       var score = entity.confidence * 0.35;
-      final reasons = <String>[
-        'base-confidence',
-      ];
+      final reasons = <String>['base-confidence'];
 
-      final normalizedReference =
-          reference.toLowerCase().trim();
+      final normalizedReference = reference.toLowerCase().trim();
 
-      final normalizedValue =
-          entity.value.toLowerCase().trim();
+      final normalizedValue = entity.value.toLowerCase().trim();
 
       // Referensi langsung.
       if (normalizedReference == normalizedValue) {
@@ -74,19 +69,17 @@ class BhreReferenceScorer {
         final related = graph.findEntity(relatedEntity);
 
         if (related != null) {
-          final connected = graph.relations.any(
-            (relation) {
-              final connectsSubject =
-                  relation.subjectId == entity.id &&
-                      relation.objectId == related.id;
+          final connected = graph.relations.any((relation) {
+            final connectsSubject =
+                relation.subjectId == entity.id &&
+                relation.objectId == related.id;
 
-              final connectsObject =
-                  relation.objectId == entity.id &&
-                      relation.subjectId == related.id;
+            final connectsObject =
+                relation.objectId == entity.id &&
+                relation.subjectId == related.id;
 
-              return connectsSubject || connectsObject;
-            },
-          );
+            return connectsSubject || connectsObject;
+          });
 
           if (connected) {
             score += 0.30;
@@ -104,9 +97,7 @@ class BhreReferenceScorer {
       );
     }
 
-    candidates.sort(
-      (a, b) => b.score.compareTo(a.score),
-    );
+    candidates.sort((a, b) => b.score.compareTo(a.score));
 
     return List.unmodifiable(candidates);
   }

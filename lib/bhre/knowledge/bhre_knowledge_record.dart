@@ -23,7 +23,7 @@ class BhreKnowledgeRecord {
     this.observedAt,
     this.confidence = 0.0,
     this.verified = false,
-    this.generatedBy = 'BHRE',
+    this.generatedBy = 'Bree',
   });
 
   BhreKnowledgeRecord copyWith({

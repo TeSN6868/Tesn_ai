@@ -28,9 +28,7 @@ class BhreReferenceDecision {
 class BhreReferenceDecisionEngine {
   const BhreReferenceDecisionEngine();
 
-  BhreReferenceDecision decide(
-    List<BhreReferenceCandidate> candidates,
-  ) {
+  BhreReferenceDecision decide(List<BhreReferenceCandidate> candidates) {
     if (candidates.isEmpty) {
       return const BhreReferenceDecision(
         type: BhreReferenceDecisionType.unresolved,
@@ -69,8 +67,7 @@ class BhreReferenceDecisionEngine {
           type: BhreReferenceDecisionType.resolvedWithLowConfidence,
           candidate: best,
           confidence: best.score,
-          reason:
-              'Kandidat unggul cukup jauh dari kandidat kedua.',
+          reason: 'Kandidat unggul cukup jauh dari kandidat kedua.',
         );
       }
 
@@ -78,8 +75,7 @@ class BhreReferenceDecisionEngine {
         type: BhreReferenceDecisionType.clarificationRequired,
         candidate: best,
         confidence: best.score,
-        reason:
-            'Kandidat teratas belum cukup unggul.',
+        reason: 'Kandidat teratas belum cukup unggul.',
       );
     }
 

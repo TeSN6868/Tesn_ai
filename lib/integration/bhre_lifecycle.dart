@@ -5,9 +5,8 @@ class BhreLifecycle {
 
   bool _initialized = false;
 
-  BhreLifecycle({
-    BhreIntegration? integration,
-  }) : integration = integration ?? BhreIntegration();
+  BhreLifecycle({BhreIntegration? integration})
+    : integration = integration ?? BhreIntegration();
 
   bool get isInitialized => _initialized;
 

@@ -3,9 +3,8 @@ import 'bhre_lifecycle.dart';
 class BhreAppController {
   final BhreLifecycle lifecycle;
 
-  BhreAppController({
-    BhreLifecycle? lifecycle,
-  }) : lifecycle = lifecycle ?? BhreLifecycle();
+  BhreAppController({BhreLifecycle? lifecycle})
+    : lifecycle = lifecycle ?? BhreLifecycle();
 
   bool get isReady => lifecycle.isInitialized;
 

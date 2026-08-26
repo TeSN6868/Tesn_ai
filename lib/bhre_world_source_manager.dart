@@ -6,30 +6,22 @@ class BhreWorldSourceManager {
 
   final List<BhreWorldSource> _sources = [];
 
-  BhreWorldSourceManager({
-    BhreWorldIngestor? ingestor,
-  }) : ingestor = ingestor ?? BhreWorldIngestor();
+  BhreWorldSourceManager({BhreWorldIngestor? ingestor})
+    : ingestor = ingestor ?? BhreWorldIngestor();
 
-  List<BhreWorldSource> get sources =>
-      List.unmodifiable(_sources);
+  List<BhreWorldSource> get sources => List.unmodifiable(_sources);
 
   void register(BhreWorldSource source) {
-    _sources.removeWhere(
-      (item) => item.id == source.id,
-    );
+    _sources.removeWhere((item) => item.id == source.id);
 
     _sources.add(source);
   }
 
   void unregister(String sourceId) {
-    _sources.removeWhere(
-      (source) => source.id == sourceId,
-    );
+    _sources.removeWhere((source) => source.id == sourceId);
   }
 
-  Future<BhreWorldSyncReport> sync({
-    DateTime? since,
-  }) async {
+  Future<BhreWorldSyncReport> sync({DateTime? since}) async {
     if (_sources.isEmpty) {
       return BhreWorldSyncReport(
         results: const [],
@@ -42,10 +34,7 @@ class BhreWorldSourceManager {
     final startedAt = DateTime.now();
 
     final futures = _sources.map(
-      (source) => _fetchSource(
-        source,
-        since: since,
-      ),
+      (source) => _fetchSource(source, since: since),
     );
 
     final results = await Future.wait(futures);
@@ -57,9 +46,7 @@ class BhreWorldSourceManager {
         continue;
       }
 
-      addedEvents += await ingestor.ingest(
-        result.events,
-      );
+      addedEvents += await ingestor.ingest(result.events);
     }
 
     return BhreWorldSyncReport(
@@ -75,9 +62,7 @@ class BhreWorldSourceManager {
     DateTime? since,
   }) async {
     try {
-      final events = await source.fetch(
-        since: since,
-      );
+      final events = await source.fetch(since: since);
 
       return BhreWorldSourceResult(
         sourceId: source.id,
@@ -116,23 +101,16 @@ class BhreWorldSyncReport {
 
   int get sourceCount => results.length;
 
-  int get successfulSources =>
-      results.where((result) => result.success).length;
+  int get successfulSources => results.where((result) => result.success).length;
 
-  int get failedSources =>
-      results.where((result) => !result.success).length;
+  int get failedSources => results.where((result) => !result.success).length;
 
   int get downloadedEvents =>
-      results.fold<int>(
-        0,
-        (total, result) => total + result.count,
-      );
+      results.fold<int>(0, (total, result) => total + result.count);
 
-  Duration get duration =>
-      finishedAt.difference(startedAt);
+  Duration get duration => finishedAt.difference(startedAt);
 
-  bool get success =>
-      failedSources == 0;
+  bool get success => failedSources == 0;
 
   String get summary {
     if (sourceCount == 0) {

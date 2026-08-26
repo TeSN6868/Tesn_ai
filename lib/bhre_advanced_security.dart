@@ -36,21 +36,15 @@ class BhreAdvancedSecurityReport {
     }
 
     if (!device.verifiedBootHealthy) {
-      result.add(
-        'Verified Boot tidak berada pada status green.',
-      );
+      result.add('Verified Boot tidak berada pada status green.');
     }
 
     if (!device.bootloaderSecure) {
-      result.add(
-        'Status bootloader perlu diperiksa.',
-      );
+      result.add('Status bootloader perlu diperiksa.');
     }
 
     if (device.debuggableBuild) {
-      result.add(
-        'Android build terdeteksi sebagai debuggable.',
-      );
+      result.add('Android build terdeteksi sebagai debuggable.');
     }
 
     return List.unmodifiable(result);
@@ -84,17 +78,13 @@ class BhreAdvancedSecurity {
   BhreAdvancedSecurity({
     BhreSecurityIntelligence? intelligence,
     BhreDeviceBridge? deviceBridge,
-  })  : intelligence =
-            intelligence ?? BhreSecurityIntelligence(),
-        deviceBridge =
-            deviceBridge ?? BhreDeviceBridge();
+  }) : intelligence = intelligence ?? BhreSecurityIntelligence(),
+       deviceBridge = deviceBridge ?? BhreDeviceBridge();
 
   Future<BhreAdvancedSecurityReport> inspect() async {
-    final platformReport =
-        await intelligence.inspect();
+    final platformReport = await intelligence.inspect();
 
-    final deviceReport =
-        await deviceBridge.inspect();
+    final deviceReport = await deviceBridge.inspect();
 
     return BhreAdvancedSecurityReport(
       platform: platformReport,

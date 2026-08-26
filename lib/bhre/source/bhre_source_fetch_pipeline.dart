@@ -6,9 +6,7 @@ import 'bhre_source_resolver.dart';
 class BhreSourceFetchPipeline {
   final BhreSourceFetcher fetcher;
 
-  const BhreSourceFetchPipeline({
-    required this.fetcher,
-  });
+  const BhreSourceFetchPipeline({required this.fetcher});
 
   Future<List<BhreSourceFetchResult>> fetchAll({
     required BhreKnowledgeRequest request,
@@ -17,10 +15,7 @@ class BhreSourceFetchPipeline {
     final results = <BhreSourceFetchResult>[];
 
     for (final source in sources) {
-      final result = await fetcher.fetch(
-        request: request,
-        source: source,
-      );
+      final result = await fetcher.fetch(request: request, source: source);
 
       results.add(result);
     }

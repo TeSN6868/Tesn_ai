@@ -23,8 +23,7 @@ class BhreSourcePlanner {
             BhreSourceKind.official,
             BhreSourceKind.news,
           ],
-          minimumSources:
-              type == BhreKnowledgeRequestType.analysis ? 2 : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: true,
           priority: BhreSourcePriority.primary,
@@ -38,8 +37,7 @@ class BhreSourcePlanner {
             BhreSourceKind.financial,
             BhreSourceKind.news,
           ],
-          minimumSources:
-              type == BhreKnowledgeRequestType.analysis ? 2 : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: fresh,
           priority: BhreSourcePriority.primary,
@@ -53,10 +51,7 @@ class BhreSourcePlanner {
             BhreSourceKind.government,
             BhreSourceKind.news,
           ],
-          minimumSources: type ==
-                  BhreKnowledgeRequestType.analysis
-              ? 2
-              : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: fresh,
           priority: BhreSourcePriority.primary,
@@ -84,8 +79,7 @@ class BhreSourcePlanner {
             BhreSourceKind.government,
             BhreSourceKind.news,
           ],
-          minimumSources:
-              type == BhreKnowledgeRequestType.analysis ? 2 : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: fresh,
           priority: BhreSourcePriority.primary,
@@ -112,8 +106,7 @@ class BhreSourcePlanner {
             BhreSourceKind.official,
             BhreSourceKind.news,
           ],
-          minimumSources:
-              type == BhreKnowledgeRequestType.analysis ? 2 : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: fresh,
           priority: BhreSourcePriority.primary,
@@ -127,10 +120,7 @@ class BhreSourcePlanner {
             BhreSourceKind.official,
             BhreSourceKind.news,
           ],
-          minimumSources: type ==
-                  BhreKnowledgeRequestType.analysis
-              ? 2
-              : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: fresh,
           priority: BhreSourcePriority.secondary,
@@ -144,8 +134,7 @@ class BhreSourcePlanner {
             BhreSourceKind.reference,
             BhreSourceKind.scientific,
           ],
-          minimumSources:
-              type == BhreKnowledgeRequestType.analysis ? 2 : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: fresh,
           priority: BhreSourcePriority.primary,
@@ -172,8 +161,7 @@ class BhreSourcePlanner {
             BhreSourceKind.reference,
             BhreSourceKind.news,
           ],
-          minimumSources:
-              type == BhreKnowledgeRequestType.analysis ? 2 : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: fresh,
           priority: BhreSourcePriority.secondary,
@@ -244,8 +232,7 @@ class BhreSourcePlanner {
             BhreSourceKind.news,
             BhreSourceKind.generalWeb,
           ],
-          minimumSources:
-              type == BhreKnowledgeRequestType.analysis ? 2 : 1,
+          minimumSources: type == BhreKnowledgeRequestType.analysis ? 2 : 1,
           requiresVerification: true,
           requiresFreshData: fresh,
           priority: BhreSourcePriority.primary,

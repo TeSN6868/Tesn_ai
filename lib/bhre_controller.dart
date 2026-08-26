@@ -3,9 +3,8 @@ import 'bhre_conversation_engine.dart';
 class BhreController {
   final BhreConversationEngine engine;
 
-  BhreController({
-    BhreConversationEngine? engine,
-  }) : engine = engine ?? BhreConversationEngine();
+  BhreController({BhreConversationEngine? engine})
+    : engine = engine ?? BhreConversationEngine();
 
   bool get isListening => engine.voice.isListening;
   bool get isSpeaking => engine.voice.isSpeaking;

@@ -6,9 +6,7 @@ import 'world_search_request.dart';
 class BhreWorldSearchProvider implements BhreKnowledgeProvider {
   final BhreHttpClient httpClient;
 
-  BhreWorldSearchProvider({
-    required this.httpClient,
-  });
+  BhreWorldSearchProvider({required this.httpClient});
 
   @override
   String get id => 'world_search';

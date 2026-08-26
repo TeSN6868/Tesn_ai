@@ -10,17 +10,12 @@ class BhreKnowledgePipeline {
   BhreKnowledgePipeline({
     BhreKnowledgeEngine? engine,
     BhreKnowledgeVerifier? verifier,
-  })  : engine = engine ?? BhreKnowledgeEngine(),
-        verifier = verifier ?? BhreKnowledgeVerifier();
+  }) : engine = engine ?? BhreKnowledgeEngine(),
+       verifier = verifier ?? BhreKnowledgeVerifier();
 
-  Future<BhreKnowledgeVerification> ask(
-    BhreKnowledgeQuery query,
-  ) async {
+  Future<BhreKnowledgeVerification> ask(BhreKnowledgeQuery query) async {
     final results = await engine.search(query.question);
 
-    return verifier.verify(
-      query.question,
-      results,
-    );
+    return verifier.verify(query.question, results);
   }
 }

@@ -4,9 +4,7 @@ import 'bhre_source_fetch_result.dart';
 class BhreSourceEvidenceCollector {
   const BhreSourceEvidenceCollector();
 
-  List<BhreSourceEvidence> collect(
-    List<BhreSourceFetchResult> results,
-  ) {
+  List<BhreSourceEvidence> collect(List<BhreSourceFetchResult> results) {
     final evidence = results
         .map(BhreSourceEvidence.fromFetch)
         .where((item) => item.usable)

@@ -14,46 +14,32 @@ class BhreAutonomousEngine {
   BhreAutonomousEngine({
     BhreContextStore? contextStore,
     BhreTemporalReasoner? temporalReasoner,
-  })  : contextStore =
-            contextStore ?? BhreContextStore(),
-        temporalReasoner =
-            temporalReasoner ?? const BhreTemporalReasoner() {
+  }) : contextStore = contextStore ?? BhreContextStore(),
+       temporalReasoner = temporalReasoner ?? const BhreTemporalReasoner() {
     goalManager = BhreGoalManager(this.contextStore);
   }
 
-  BhreAutonomousState process(
-    BhreUnderstanding understanding,
-  ) {
+  BhreAutonomousState process(BhreUnderstanding understanding) {
     final details = understanding.details;
 
-    temporalReasoner.rememberTemporalDetails(
-      details,
-      contextStore,
-    );
+    temporalReasoner.rememberTemporalDetails(details, contextStore);
 
     _rememberEntities(understanding);
 
-    final goal =
-        goalManager.createFromUnderstanding(
-      understanding,
-    );
+    final goal = goalManager.createFromUnderstanding(understanding);
 
     final hasGoal = goal != null;
 
-    final hasMemory =
-        contextStore.facts.isNotEmpty;
+    final hasMemory = contextStore.facts.isNotEmpty;
 
-    final referenceDetails =
-        details.where(
+    final referenceDetails = details.where(
       (detail) =>
           detail.type == BhreDetailType.reference &&
-          detail.metadata['kind'] ==
-              'entityReference',
+          detail.metadata['kind'] == 'entityReference',
     );
 
     final requiresClarification =
-        referenceDetails.isNotEmpty &&
-        understanding.referenceDecisions.isEmpty;
+        referenceDetails.isNotEmpty && understanding.referenceDecisions.isEmpty;
 
     String? nextAction;
 
@@ -71,58 +57,45 @@ class BhreAutonomousEngine {
       hasContext: details.isNotEmpty,
       hasMemory: hasMemory,
       hasGoal: hasGoal,
-      requiresClarification:
-          requiresClarification,
+      requiresClarification: requiresClarification,
       nextAction: nextAction,
-      confidence:
-          _calculateConfidence(details),
+      confidence: _calculateConfidence(details),
     );
   }
 
-  void _rememberEntities(
-    BhreUnderstanding understanding,
-  ) {
-    for (final entity
-        in understanding.graph.entities) {
+  void _rememberEntities(BhreUnderstanding understanding) {
+    for (final entity in understanding.graph.entities) {
       // Waktu bukan entity dunia.
       //
       // time/date sudah ditangani oleh
       // BhreTemporalReasoner.
       final type = entity.type.name;
 
-      if (type == 'time' ||
-          type == 'date') {
+      if (type == 'time' || type == 'date') {
         continue;
       }
 
       contextStore.add(
         BhreContextFact(
-          id:
-              'entity-${DateTime.now().microsecondsSinceEpoch}',
+          id: 'entity-${DateTime.now().microsecondsSinceEpoch}',
           type: BhreFactType.entity,
           value: entity.value,
           createdAt: DateTime.now(),
           confidence: entity.confidence,
-          metadata: {
-            'entityType': type,
-            'entityId': entity.id,
-          },
+          metadata: {'entityType': type, 'entityId': entity.id},
         ),
       );
     }
   }
 
-  double _calculateConfidence(
-    List<BhreDetail> details,
-  ) {
+  double _calculateConfidence(List<BhreDetail> details) {
     if (details.isEmpty) {
       return 0.0;
     }
 
     final total = details.fold<double>(
       0.0,
-      (sum, detail) =>
-          sum + detail.confidence,
+      (sum, detail) => sum + detail.confidence,
     );
 
     return total / details.length;

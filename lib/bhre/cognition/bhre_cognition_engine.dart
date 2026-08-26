@@ -36,7 +36,8 @@ class BhreCognitionEngine {
         return BhreDecision(
           type: BhreDecisionType.executeTool,
           intent: intent,
-          reason: 'Input merupakan perintah yang berpotensi membutuhkan tindakan.',
+          reason:
+              'Input merupakan perintah yang berpotensi membutuhkan tindakan.',
         );
 
       case BhreIntentType.conversation:

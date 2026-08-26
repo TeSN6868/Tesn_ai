@@ -25,9 +25,7 @@ class BhreContextManager {
     if (existing != null) return existing;
 
     final context = BhreContext(
-      sessionId:
-          sessionId ??
-          'bhre-${DateTime.now().microsecondsSinceEpoch}',
+      sessionId: sessionId ?? 'bhre-${DateTime.now().microsecondsSinceEpoch}',
       userId: userId,
       source: source,
       locale: locale,

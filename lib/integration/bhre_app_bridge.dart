@@ -1,14 +1,14 @@
 import 'bhre_lifecycle.dart';
 
-/// Application-level bridge antara B'Jo dan BHRE.
+/// Application-level bridge antara B'Jo dan Bree.
 ///
 /// Layer ini sengaja tipis agar UI B'Jo tidak bergantung langsung
-/// pada implementasi internal BHRE.
+/// pada implementasi internal Bree.
 class BhreAppBridge {
   final BhreLifecycle _lifecycle;
 
   BhreAppBridge({BhreLifecycle? lifecycle})
-      : _lifecycle = lifecycle ?? BhreLifecycle();
+    : _lifecycle = lifecycle ?? BhreLifecycle();
 
   bool get isInitialized => _lifecycle.isInitialized;
 

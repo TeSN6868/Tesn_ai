@@ -17,23 +17,18 @@ class BhreTemporalReasoner {
 
       store.add(
         BhreContextFact(
-          id:
-              'temporal-${DateTime.now().microsecondsSinceEpoch}',
+          id: 'temporal-${DateTime.now().microsecondsSinceEpoch}',
           type: BhreFactType.temporal,
           value: detail.value,
           createdAt: DateTime.now(),
           confidence: detail.confidence,
-          metadata: {
-            'detailType': detail.type.name,
-          },
+          metadata: {'detailType': detail.type.name},
         ),
       );
     }
   }
 
-  String? latestTemporal(
-    BhreContextStore store,
-  ) {
+  String? latestTemporal(BhreContextStore store) {
     final temporalFacts = store.facts
         .where((fact) => fact.type == BhreFactType.temporal)
         .toList();

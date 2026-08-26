@@ -1,10 +1,4 @@
-enum BhreAssistantStatus {
-  idle,
-  starting,
-  thinking,
-  responding,
-  error,
-}
+enum BhreAssistantStatus { idle, starting, thinking, responding, error }
 
 class BhreAssistantState {
   final BhreAssistantStatus status;

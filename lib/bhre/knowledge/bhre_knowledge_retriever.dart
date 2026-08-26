@@ -6,9 +6,7 @@ import 'bhre_knowledge_store.dart';
 class BhreKnowledgeRetriever {
   final BhreKnowledgeStore store;
 
-  const BhreKnowledgeRetriever({
-    required this.store,
-  });
+  const BhreKnowledgeRetriever({required this.store});
 
   Future<List<BhreKnowledgeCandidate>> retrieve({
     required String query,
@@ -28,28 +26,20 @@ class BhreKnowledgeRetriever {
     final candidates = <BhreKnowledgeCandidate>[];
 
     for (final record in records) {
-      final candidate = _rank(
-        record,
-        normalizedQuery,
-        domain,
-      );
+      final candidate = _rank(record, normalizedQuery, domain);
 
       if (candidate != null) {
         candidates.add(candidate);
       }
     }
 
-    candidates.sort(
-      (a, b) => b.score.compareTo(a.score),
-    );
+    candidates.sort((a, b) => b.score.compareTo(a.score));
 
     if (candidates.length <= limit) {
       return List.unmodifiable(candidates);
     }
 
-    return List.unmodifiable(
-      candidates.take(limit),
-    );
+    return List.unmodifiable(candidates.take(limit));
   }
 
   BhreKnowledgeCandidate? _rank(

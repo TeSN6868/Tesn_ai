@@ -13,9 +13,6 @@ class BhreEvent {
   final String payload;
   final DateTime timestamp;
 
-  BhreEvent({
-    required this.type,
-    required this.payload,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+  BhreEvent({required this.type, required this.payload, DateTime? timestamp})
+    : timestamp = timestamp ?? DateTime.now();
 }

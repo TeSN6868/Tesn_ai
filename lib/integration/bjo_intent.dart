@@ -1,11 +1,4 @@
-enum BJoIntentType {
-  chat,
-  search,
-  call,
-  location,
-  system,
-  unknown,
-}
+enum BJoIntentType { chat, search, call, location, system, unknown }
 
 class BJoIntent {
   final BJoIntentType type;

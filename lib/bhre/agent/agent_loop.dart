@@ -5,9 +5,8 @@ import 'agent_goal.dart';
 class BhreAgentLoop {
   final BhreAgentController controller;
 
-  BhreAgentLoop({
-    BhreAgentController? controller,
-  }) : controller = controller ?? BhreAgentController();
+  BhreAgentLoop({BhreAgentController? controller})
+    : controller = controller ?? BhreAgentController();
 
   Future<BhreResponse> execute(String instruction) {
     final goal = BhreGoal(

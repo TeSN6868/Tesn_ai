@@ -5,9 +5,7 @@ import 'bhre_runtime.dart';
 class BhreApp {
   final BhreRuntime runtime;
 
-  BhreApp({
-    BhreRuntime? runtime,
-  }) : runtime = runtime ?? BhreRuntime();
+  BhreApp({BhreRuntime? runtime}) : runtime = runtime ?? BhreRuntime();
 
   bool get isStarted => runtime.isStarted;
 
@@ -21,19 +19,13 @@ class BhreApp {
 
   Future<BhreResponse> sendMessage(String message) {
     return runtime.dispatch(
-      BhreEvent(
-        type: BhreEventType.userMessage,
-        payload: message,
-      ),
+      BhreEvent(type: BhreEventType.userMessage, payload: message),
     );
   }
 
   Future<BhreResponse> sendVoiceInput(String input) {
     return runtime.dispatch(
-      BhreEvent(
-        type: BhreEventType.voiceInput,
-        payload: input,
-      ),
+      BhreEvent(type: BhreEventType.voiceInput, payload: input),
     );
   }
 }

@@ -1,12 +1,4 @@
-enum BhreEntityType {
-  person,
-  place,
-  object,
-  event,
-  time,
-  date,
-  unknown,
-}
+enum BhreEntityType { person, place, object, event, time, date, unknown }
 
 class BhreEntity {
   final String id;
@@ -45,6 +37,5 @@ class BhreRelation {
   });
 
   @override
-  String toString() =>
-      'BhreRelation($subjectId --$relation--> $objectId)';
+  String toString() => 'BhreRelation($subjectId --$relation--> $objectId)';
 }

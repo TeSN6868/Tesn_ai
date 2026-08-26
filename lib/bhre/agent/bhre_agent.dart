@@ -20,11 +20,11 @@ class BhreAgent {
     BhreContextManager? contextManager,
     BhrePerception? perception,
     BhreMemory? memory,
-  })  : intentRouter = intentRouter ?? BhreIntentRouter(),
-        cognition = cognition ?? BhreCognitionEngine(),
-        contextManager = contextManager ?? BhreContextManager(),
-        perception = perception ?? BhrePerception(),
-        memory = memory ?? BhreMemory();
+  }) : intentRouter = intentRouter ?? BhreIntentRouter(),
+       cognition = cognition ?? BhreCognitionEngine(),
+       contextManager = contextManager ?? BhreContextManager(),
+       perception = perception ?? BhrePerception(),
+       memory = memory ?? BhreMemory();
 
   BhreDecision process(String input) {
     final intent = intentRouter.route(input);

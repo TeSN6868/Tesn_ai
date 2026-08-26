@@ -48,26 +48,26 @@ class BhreSourceEvidenceAggregator {
       );
     }
 
-    final sources = usable.map((evaluation) {
-      final evidence = evaluation.evidence;
+    final sources = usable
+        .map((evaluation) {
+          final evidence = evaluation.evidence;
 
-      return BhreKnowledgeSource(
-        id: evidence.sourceId,
-        name: evidence.sourceName,
-        type: _sourceType(evidence.sourceKind),
-        uri: evidence.uri,
-        confidence: evaluation.confidence,
-        verified: evaluation.verified,
-      );
-    }).toList(growable: false);
+          return BhreKnowledgeSource(
+            id: evidence.sourceId,
+            name: evidence.sourceName,
+            type: _sourceType(evidence.sourceKind),
+            uri: evidence.uri,
+            confidence: evaluation.confidence,
+            verified: evaluation.verified,
+          );
+        })
+        .toList(growable: false);
 
     final confidence = usable
         .map((evaluation) => evaluation.confidence)
         .reduce((a, b) => a < b ? a : b);
 
-    final verified = usable.every(
-      (evaluation) => evaluation.verified,
-    );
+    final verified = usable.every((evaluation) => evaluation.verified);
 
     final observedAt = usable
         .map((evaluation) => evaluation.evidence.observedAt)
@@ -87,13 +87,11 @@ class BhreSourceEvidenceAggregator {
       observedAt: observedAt,
       confidence: confidence,
       verified: verified,
-      generatedBy: 'BHRE_SOURCE_AGGREGATOR',
+      generatedBy: 'Bree_SOURCE_AGGREGATOR',
     );
   }
 
-  BhreKnowledgeSourceType _sourceType(
-    BhreSourceKind kind,
-  ) {
+  BhreKnowledgeSourceType _sourceType(BhreSourceKind kind) {
     switch (kind) {
       case BhreSourceKind.official:
         return BhreKnowledgeSourceType.web;

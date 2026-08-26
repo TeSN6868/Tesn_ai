@@ -67,7 +67,7 @@ class BhreSecurityBaselineResult {
 
   String get summary {
     if (baselineCreated) {
-      return 'Baseline keamanan BHRE berhasil dibuat.';
+      return 'Baseline keamanan Bree berhasil dibuat.';
     }
 
     if (!hasChanges) {
@@ -83,9 +83,7 @@ class BhreSecurityBaselineEngine {
 
   BhreSecurityBaseline? get baseline => _baseline;
 
-  BhreSecurityBaselineResult compare(
-    BhreThreatAssessment assessment,
-  ) {
+  BhreSecurityBaselineResult compare(BhreThreatAssessment assessment) {
     final report = _extractBaseline(assessment);
 
     if (_baseline == null) {
@@ -101,21 +99,18 @@ class BhreSecurityBaselineEngine {
 
     final changes = <BhreSecurityChange>[];
 
-    if (_baseline!.usbDebuggingEnabled !=
-        report.usbDebuggingEnabled) {
+    if (_baseline!.usbDebuggingEnabled != report.usbDebuggingEnabled) {
       changes.add(
         BhreSecurityChange(
           id: 'usb_debugging_changed',
           title: 'USB Debugging berubah',
-          description:
-              'Status USB debugging berbeda dari baseline sebelumnya.',
+          description: 'Status USB debugging berbeda dari baseline sebelumnya.',
           severity: 20,
         ),
       );
     }
 
-    if (_baseline!.developerOptionsEnabled !=
-        report.developerOptionsEnabled) {
+    if (_baseline!.developerOptionsEnabled != report.developerOptionsEnabled) {
       changes.add(
         BhreSecurityChange(
           id: 'developer_options_changed',
@@ -127,34 +122,29 @@ class BhreSecurityBaselineEngine {
       );
     }
 
-    if (_baseline!.verifiedBootState !=
-        report.verifiedBootState) {
+    if (_baseline!.verifiedBootState != report.verifiedBootState) {
       changes.add(
         BhreSecurityChange(
           id: 'verified_boot_changed',
           title: 'Verified Boot berubah',
-          description:
-              'Status Verified Boot berbeda dari baseline sebelumnya.',
+          description: 'Status Verified Boot berbeda dari baseline sebelumnya.',
           severity: 40,
         ),
       );
     }
 
-    if (_baseline!.bootloaderLocked !=
-        report.bootloaderLocked) {
+    if (_baseline!.bootloaderLocked != report.bootloaderLocked) {
       changes.add(
         BhreSecurityChange(
           id: 'bootloader_changed',
           title: 'Bootloader berubah',
-          description:
-              'Status bootloader berbeda dari baseline sebelumnya.',
+          description: 'Status bootloader berbeda dari baseline sebelumnya.',
           severity: 40,
         ),
       );
     }
 
-    if (_baseline!.debuggableBuild !=
-        report.debuggableBuild) {
+    if (_baseline!.debuggableBuild != report.debuggableBuild) {
       changes.add(
         BhreSecurityChange(
           id: 'debuggable_build_changed',
@@ -171,8 +161,7 @@ class BhreSecurityBaselineEngine {
         BhreSecurityChange(
           id: 'device_reboot',
           title: 'Perangkat mengalami reboot',
-          description:
-              'Boot count berubah sejak pemeriksaan baseline.',
+          description: 'Boot count berubah sejak pemeriksaan baseline.',
           severity: 5,
         ),
       );
@@ -199,9 +188,7 @@ class BhreSecurityBaselineEngine {
     _baseline = null;
   }
 
-  BhreSecurityBaseline _extractBaseline(
-    BhreThreatAssessment assessment,
-  ) {
+  BhreSecurityBaseline _extractBaseline(BhreThreatAssessment assessment) {
     var usbDebugging = false;
     var developerOptions = false;
     var verifiedBoot = 'unknown';

@@ -1,14 +1,14 @@
 import 'bhre_app_bridge.dart';
 
-/// Pintu utama aplikasi B'Jo untuk berkomunikasi dengan BHRE.
+/// Pintu utama aplikasi B'Jo untuk berkomunikasi dengan Bree.
 ///
 /// UI B'Jo hanya perlu mengenal gateway ini.
-/// Detail implementasi BHRE tetap tersembunyi di bawah layer integration.
+/// Detail implementasi Bree tetap tersembunyi di bawah layer integration.
 class BJoIntelligenceGateway {
   final BhreAppBridge _bridge;
 
   BJoIntelligenceGateway({BhreAppBridge? bridge})
-      : _bridge = bridge ?? BhreAppBridge();
+    : _bridge = bridge ?? BhreAppBridge();
 
   bool get isReady => _bridge.isInitialized;
 
