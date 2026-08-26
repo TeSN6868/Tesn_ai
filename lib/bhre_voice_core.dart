@@ -26,8 +26,15 @@ class BhreVoiceCore {
     if (!available) return false;
 
     await _tts.setLanguage('id-ID');
-    await _tts.setSpeechRate(0.48);
-    await _tts.setPitch(1.0);
+
+    // Karakter dasar suara Bree:
+    // pria Indonesia dewasa 30–35 tahun:
+    // tenang, profesional, hangat dan tidak terlalu cepat.
+    //
+    // Pemilihan voice pria spesifik diserahkan ke engine TTS
+    // Android agar kompatibel dengan perangkat pengguna.
+    await _tts.setSpeechRate(0.46);
+    await _tts.setPitch(0.88);
     await _tts.setVolume(1.0);
 
     _tts.setStartHandler(() {

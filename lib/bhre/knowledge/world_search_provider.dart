@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import '../connectivity/network/bhre_http_client.dart';
-import 'knowledge_provider.dart';
-import 'knowledge_result.dart';
-import 'knowledge_source.dart';
+import '../source/bhre_source_kind.dart';
+import 'bhre_knowledge_provider.dart';
+import 'bhre_knowledge_record.dart';
+import 'bhre_knowledge_request.dart';
+import 'bhre_knowledge_source.dart';
 import 'world_search_request.dart';
 
 class BhreWorldSearchProvider implements BhreKnowledgeProvider {
@@ -15,9 +17,20 @@ class BhreWorldSearchProvider implements BhreKnowledgeProvider {
   String get id => 'world_search';
 
   @override
-  Future<List<BhreKnowledgeResult>> search(String query) async {
-    final request = BhreWorldSearchRequest(query: query);
-    final normalized = request.query.trim();
+  String get name => 'World Search';
+
+  @override
+  BhreSourceKind get sourceKind => BhreSourceKind.generalWeb;
+
+  @override
+  bool supports(BhreKnowledgeRequest request) {
+    return true;
+  }
+
+  @override
+  Future<List<BhreKnowledgeRecord>> search(BhreKnowledgeRequest request) async {
+    final worldRequest = BhreWorldSearchRequest(query: request.query);
+    final normalized = worldRequest.query.trim();
 
     if (normalized.isEmpty) {
       return const [];
@@ -45,7 +58,9 @@ class BhreWorldSearchProvider implements BhreKnowledgeProvider {
       }
 
       final now = DateTime.now();
-      final results = <BhreKnowledgeResult>[];
+      final results = <BhreKnowledgeRecord>[];
+
+      var index = 0;
 
       for (final raw in rawResults) {
         if (raw is! Map) continue;
@@ -61,19 +76,30 @@ class BhreWorldSearchProvider implements BhreKnowledgeProvider {
 
         if (content.isEmpty) continue;
 
+        final fullContent = title.isEmpty ? content : '$title\n$content';
+
         results.add(
-          BhreKnowledgeResult(
-            query: normalized,
-            content: title.isEmpty ? content : '$title\n$content',
-            source: BhreKnowledgeSource(
-              id: sourceName.isEmpty ? 'world_search' : sourceName,
-              name: sourceName.isEmpty ? 'World Search' : sourceName,
-              description: 'Sumber pengetahuan dunia dari pencarian web.',
-            ),
-            retrievedAt: now,
+          BhreKnowledgeRecord(
+            id: 'world_search_${now.microsecondsSinceEpoch}_$index',
+            topic: title.isEmpty ? normalized : title,
+            content: fullContent,
+            domain: request.domain,
+            sources: [
+              BhreKnowledgeSource(
+                id: sourceName.isEmpty ? 'world_search' : sourceName,
+                type: BhreKnowledgeSourceType.web,
+                name: sourceName.isEmpty ? 'World Search' : sourceName,
+              ),
+            ],
+            createdAt: now,
+            observedAt: now,
             confidence: 0.8,
+            verified: false,
+            generatedBy: 'BhreWorldSearchProvider',
           ),
         );
+
+        index++;
       }
 
       return List.unmodifiable(results);
