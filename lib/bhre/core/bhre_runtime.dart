@@ -313,7 +313,10 @@ class BhreRuntime {
         BhreKnowledgeSource(
           id: sourceResult.sourceId.toString(),
           name: sourceResult.sourceName.toString(),
-          description: sourceResult.uri?.toString() ?? 'World Search',
+          type: BhreKnowledgeSourceType.web,
+          uri: sourceResult.uri?.toString(),
+          confidence: 0.80,
+          verified: sourceResult.success == true,
         ),
       ],
       createdAt: DateTime.now(),
