@@ -24,6 +24,7 @@ import 'm8_voice_service.dart';
 import 'bjo_device_security.dart';
 import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
+import 'integration/bhre_voice_conversation_controller.dart';
 
 final AudioPlayer _m8CallSoundPlayer = AudioPlayer();
 
@@ -3245,6 +3246,55 @@ class BJoMainShell extends StatefulWidget {
 }
 
 class _BJoMainShellState extends State<BJoMainShell> {
+  late final BhreVoiceConversationController _breeVoiceController;
+
+  @override
+  void initState() {
+    super.initState();
+    _breeVoiceController = BhreVoiceConversationController();
+    _breeVoiceController.addListener(_onBreeVoiceChanged);
+  }
+
+  void _onBreeVoiceChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _toggleBreeVoice() async {
+    if (_breeVoiceController.isEnabled) {
+      await _breeVoiceController.stop();
+    } else {
+      await _breeVoiceController.start();
+    }
+  }
+
+  String get _breeVoiceStatus {
+    switch (_breeVoiceController.mode) {
+      case BhreVoiceMode.off:
+        return 'Suara Bree mati';
+
+      case BhreVoiceMode.listening:
+        return 'Bree sedang mendengarkan';
+
+      case BhreVoiceMode.thinking:
+        return 'Bree sedang berpikir';
+
+      case BhreVoiceMode.speaking:
+        return 'Bree sedang berbicara';
+
+      case BhreVoiceMode.error:
+        return 'Voice Bree mengalami masalah';
+    }
+  }
+
+  @override
+  void dispose() {
+    _breeVoiceController.removeListener(_onBreeVoiceChanged);
+    _breeVoiceController.dispose();
+    super.dispose();
+  }
+
   int currentIndex = 0;
   Timer? _presenceTimer;
 
@@ -3389,6 +3439,18 @@ class _BJoMainShellState extends State<BJoMainShell> {
         elevation: 0,
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
+          IconButton(
+            tooltip: _breeVoiceController.isEnabled
+                ? 'Matikan suara Bree'
+                : 'Nyalakan suara Bree',
+            onPressed: _toggleBreeVoice,
+            icon: Icon(
+              _breeVoiceController.isEnabled
+                  ? Icons.mic_rounded
+                  : Icons.mic_off_rounded,
+            ),
+          ),
+
           IconButton(
             tooltip: "Profil B'Jo",
             icon: const Icon(Icons.person_rounded),

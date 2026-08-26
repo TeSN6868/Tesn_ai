@@ -1,0 +1,53 @@
+import '../connectivity/network/bhre_http_client.dart';
+import 'knowledge_provider.dart';
+import 'knowledge_result.dart';
+import 'world_search_request.dart';
+
+class BhreWorldSearchProvider implements BhreKnowledgeProvider {
+  final BhreHttpClient httpClient;
+
+  BhreWorldSearchProvider({required this.httpClient});
+
+  @override
+  String get id => 'world_search';
+
+  @override
+  Future<List<BhreKnowledgeResult>> search(String query) async {
+    final request = BhreWorldSearchRequest(query: query);
+
+    if (request.query.trim().isEmpty) {
+      return const [];
+    }
+
+    try {
+      final response = await httpClient.get(
+        '/api/world-search',
+        queryParameters: <String, String>{
+          'q': request.query.trim(),
+        },
+      );
+
+      if (response is Map) {
+        final raw = response['results'];
+
+        if (raw is List) {
+          return raw
+              .whereType<Map>()
+              .map(
+                (item) => BhreKnowledgeResult(
+                  title: (item['title'] ?? 'World knowledge').toString(),
+                  content: (item['content'] ?? item['snippet'] ?? '').toString(),
+                  source: (item['source'] ?? 'world_search').toString(),
+                ),
+              )
+              .where((item) => item.content.trim().isNotEmpty)
+              .toList();
+        }
+      }
+    } catch (_) {
+      // World search gagal -> knowledge layer tetap aman.
+    }
+
+    return const [];
+  }
+}

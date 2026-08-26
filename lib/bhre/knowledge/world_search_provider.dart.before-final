@@ -38,46 +38,50 @@ class BhreWorldSearchProvider implements BhreKnowledgeProvider {
         return const [];
       }
 
-      final rawResults = decoded['results'];
+      final raw = decoded['results'];
 
-      if (rawResults is! List) {
+      if (raw is! List) {
         return const [];
       }
 
       final now = DateTime.now();
-      final results = <BhreKnowledgeResult>[];
 
-      for (final raw in rawResults) {
-        if (raw is! Map) continue;
+      return raw
+          .whereType<Map>()
+          .map((item) {
+            final content =
+                (item['content'] ??
+                        item['snippet'] ??
+                        item['description'] ??
+                        '')
+                    .toString()
+                    .trim();
 
-        final title = (raw['title'] ?? 'Pengetahuan dunia').toString().trim();
-
-        final content =
-            (raw['content'] ?? raw['snippet'] ?? raw['description'] ?? '')
+            final title = (item['title'] ?? 'World knowledge')
                 .toString()
                 .trim();
 
-        final sourceName = (raw['source'] ?? 'World Search').toString().trim();
+            final sourceName = (item['source'] ?? 'world_search')
+                .toString()
+                .trim();
 
-        if (content.isEmpty) continue;
-
-        results.add(
-          BhreKnowledgeResult(
-            query: normalized,
-            content: title.isEmpty ? content : '$title\n$content',
-            source: BhreKnowledgeSource(
-              id: sourceName.isEmpty ? 'world_search' : sourceName,
-              name: sourceName.isEmpty ? 'World Search' : sourceName,
-              description: 'Sumber pengetahuan dunia dari pencarian web.',
-            ),
-            retrievedAt: now,
-            confidence: 0.8,
-          ),
-        );
-      }
-
-      return List.unmodifiable(results);
+            return BhreKnowledgeResult(
+              query: normalized,
+              content: content.isEmpty ? title : '$title\n$content',
+              source: BhreKnowledgeSource(
+                id: sourceName,
+                name: sourceName,
+                description: 'Sumber pengetahuan dunia: $sourceName',
+              ),
+              retrievedAt: now,
+              confidence: 0.8,
+            );
+          })
+          .where((item) => item.content.trim().isNotEmpty)
+          .toList();
     } catch (_) {
+      // World search gagal -> BHRE tetap berjalan menggunakan
+      // knowledge lokal yang tersedia.
       return const [];
     }
   }

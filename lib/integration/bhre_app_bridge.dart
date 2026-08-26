@@ -1,9 +1,8 @@
 import 'bhre_lifecycle.dart';
 
-/// Application-level bridge antara B'Jo dan Bree.
+/// Jembatan resmi B'Jo ↔ Bree.
 ///
-/// Layer ini sengaja tipis agar UI B'Jo tidak bergantung langsung
-/// pada implementasi internal Bree.
+/// UI B'Jo tidak perlu mengetahui implementasi internal BHRE.
 class BhreAppBridge {
   final BhreLifecycle _lifecycle;
 
@@ -21,6 +20,11 @@ class BhreAppBridge {
   Future<String> sendMessage(String message) async {
     await initialize();
     return _lifecycle.handleMessage(message);
+  }
+
+  Future<String> sendVoiceInput(String input) async {
+    await initialize();
+    return _lifecycle.handleVoiceInput(input);
   }
 
   Future<void> dispose() async {
