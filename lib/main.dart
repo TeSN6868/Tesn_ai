@@ -3253,6 +3253,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
     super.initState();
     _breeVoiceController = BhreVoiceConversationController();
     _breeVoiceController.addListener(_onBreeVoiceChanged);
+    _initPresence();
   }
 
   void _onBreeVoiceChanged() {
@@ -3292,6 +3293,7 @@ class _BJoMainShellState extends State<BJoMainShell> {
   void dispose() {
     _breeVoiceController.removeListener(_onBreeVoiceChanged);
     _breeVoiceController.dispose();
+    _presenceTimer?.cancel();
     super.dispose();
   }
 
@@ -3314,22 +3316,12 @@ class _BJoMainShellState extends State<BJoMainShell> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-
+  void _initPresence() {
     _sendPresenceHeartbeat();
-
     _presenceTimer = Timer.periodic(
       const Duration(seconds: 30),
       (_) => _sendPresenceHeartbeat(),
     );
-  }
-
-  @override
-  void dispose() {
-    _presenceTimer?.cancel();
-    super.dispose();
   }
 
   String get myPin =>

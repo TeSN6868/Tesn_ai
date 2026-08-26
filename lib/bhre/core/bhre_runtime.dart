@@ -1,11 +1,22 @@
 import '../agent/bhre_agent.dart';
 import '../answer/bhre_answer_assembler.dart';
 import '../cognition/bhre_decision.dart';
+import '../connectivity/network/bhre_http_client_impl.dart';
 import '../knowledge/bhre_knowledge_candidate.dart';
+import '../knowledge/bhre_knowledge_record.dart';
+import '../knowledge/bhre_knowledge_source.dart';
 import '../knowledge/bhre_knowledge_retriever.dart';
 import '../knowledge/bhre_knowledge_router.dart';
+import '../knowledge/bhre_knowledge_request.dart';
 import '../knowledge/bhre_memory_knowledge_store.dart';
 import '../knowledge/bhre_understanding_engine.dart';
+import '../knowledge/world_search_provider.dart';
+import '../source/bhre_provider_source_fetcher.dart';
+import '../source/bhre_source_fetch_pipeline.dart';
+import '../source/bhre_source_kind.dart';
+import '../source/bhre_source_plan.dart';
+import '../source/bhre_source_resolver.dart';
+import '../knowledge/bhre_source_registry.dart';
 import '../tools/bhre_tool_executor.dart';
 import '../tools/bhre_tool_registry.dart';
 import 'bhre_engine.dart';
@@ -24,6 +35,10 @@ class BhreRuntime {
   late final BhreAnswerAssembler answerAssembler;
   late final BhreToolExecutor toolExecutor;
 
+  late final BhreSourceRegistry sourceRegistry;
+  late final BhreSourceResolver sourceResolver;
+  late final BhreSourceFetchPipeline sourceFetchPipeline;
+
   bool _started = false;
 
   BhreRuntime({
@@ -32,15 +47,32 @@ class BhreRuntime {
     BhreToolRegistry? toolRegistry,
   }) : engine = engine ?? BhreEngine() {
     knowledgeStore = BhreMemoryKnowledgeStore();
+
     knowledgeRetriever = BhreKnowledgeRetriever(store: knowledgeStore);
+
     knowledgeRouter = const BhreKnowledgeRouter();
     understanding = const BhreUnderstandingEngine();
     answerAssembler = const BhreAnswerAssembler();
 
     final registry = toolRegistry ?? BhreToolRegistry();
+
     toolExecutor = BhreToolExecutor(registry: registry);
 
     this.agent = agent ?? BhreAgent();
+
+    final httpClient = BhreHttpClientImpl();
+
+    final worldSearchProvider = BhreWorldSearchProvider(httpClient: httpClient);
+
+    sourceRegistry = BhreSourceRegistry();
+
+    sourceRegistry.register(worldSearchProvider);
+
+    sourceResolver = const BhreSourceResolver();
+
+    sourceFetchPipeline = BhreSourceFetchPipeline(
+      fetcher: const BhreProviderSourceFetcher(),
+    );
   }
 
   bool get isStarted => _started;
@@ -93,8 +125,6 @@ class BhreRuntime {
       userId: 'local-user',
     );
 
-    // Understanding layer ikut membaca hubungan,
-    // referensi, dan detail dari pesan.
     understanding.understand(message);
 
     switch (decision.type) {
@@ -152,21 +182,156 @@ class BhreRuntime {
   Future<BhreResponse> _searchKnowledge(String query) async {
     final request = knowledgeRouter.route(query);
 
-    final candidates = await knowledgeRetriever.retrieve(
+    // ============================================================
+    // 1. LOCAL KNOWLEDGE
+    // ============================================================
+
+    var candidates = await knowledgeRetriever.retrieve(
       query: request.query,
       domain: request.domain,
       limit: request.maxSources,
     );
 
-    if (candidates.isEmpty) {
-      return BhreResponse(
-        text:
-            'Aku belum menemukan pengetahuan yang cukup di dalam basis pengetahuanku untuk menjawab: $query',
-        shouldSpeak: true,
-      );
+    if (candidates.isNotEmpty) {
+      return _answerFromCandidates(query, candidates);
     }
 
-    return _answerFromCandidates(query, candidates);
+    // ============================================================
+    // 2. WORLD KNOWLEDGE
+    // ============================================================
+
+    final plan = BhreSourcePlan(
+      query: request.query,
+      preferredSources: const [
+        BhreSourceKind.official,
+        BhreSourceKind.government,
+        BhreSourceKind.scientific,
+        BhreSourceKind.documentation,
+        BhreSourceKind.reference,
+        BhreSourceKind.news,
+        BhreSourceKind.generalWeb,
+      ],
+      minimumSources: 1,
+      requiresVerification: true,
+      requiresFreshData:
+          request.type == BhreKnowledgeRequestType.current ||
+          request.type == BhreKnowledgeRequestType.latest,
+    );
+
+    final sources = sourceResolver.resolve(
+      request: request,
+      plan: plan,
+      registry: sourceRegistry,
+    );
+
+    if (sources.isNotEmpty) {
+      final fetched = await sourceFetchPipeline.fetchAll(
+        request: request,
+        sources: sources,
+      );
+
+      // ==========================================================
+      // 3. STORE WORLD KNOWLEDGE
+      // ==========================================================
+
+      for (final sourceResult in fetched) {
+        if (!sourceResult.success) {
+          continue;
+        }
+
+        final content = sourceResult.content?.trim();
+
+        if (content == null || content.isEmpty) {
+          continue;
+        }
+
+        await knowledgeStore.save(_worldResultToRecord(request, sourceResult));
+      }
+
+      // ==========================================================
+      // 4. RANK AGAIN
+      // ==========================================================
+
+      candidates = await knowledgeRetriever.retrieve(
+        query: request.query,
+        domain: request.domain,
+        limit: request.maxSources,
+      );
+
+      if (candidates.isNotEmpty) {
+        return _answerFromCandidates(query, candidates);
+      }
+
+      // ==========================================================
+      // 5. DIRECT FETCH FALLBACK
+      // ==========================================================
+
+      final successful = fetched
+          .where(
+            (result) =>
+                result.success &&
+                result.content != null &&
+                result.content!.trim().isNotEmpty,
+          )
+          .toList();
+
+      if (successful.isNotEmpty) {
+        final text = successful
+            .map((result) => result.content!.trim())
+            .join('\n\n');
+
+        return BhreResponse(
+          text: _cleanWorldAnswer(query, text),
+          shouldSpeak: true,
+        );
+      }
+    }
+
+    // ============================================================
+    // 6. FINAL FALLBACK
+    // ============================================================
+
+    return BhreResponse(
+      text:
+          'Aku belum berhasil menemukan informasi yang cukup untuk menjawab "$query". Coba ulangi pertanyaannya dengan sedikit lebih spesifik.',
+      shouldSpeak: true,
+    );
+  }
+
+  BhreKnowledgeRecord _worldResultToRecord(
+    BhreKnowledgeRequest request,
+    dynamic sourceResult,
+  ) {
+    final content = sourceResult.content?.toString().trim() ?? '';
+
+    return BhreKnowledgeRecord(
+      id: 'world_${DateTime.now().microsecondsSinceEpoch}_${sourceResult.sourceId}',
+      topic: request.query,
+      content: content,
+      domain: request.domain,
+      sources: [
+        BhreKnowledgeSource(
+          id: sourceResult.sourceId.toString(),
+          name: sourceResult.sourceName.toString(),
+          description: sourceResult.uri?.toString() ?? 'World Search',
+        ),
+      ],
+      createdAt: DateTime.now(),
+      observedAt: sourceResult.fetchedAt,
+      confidence: 0.80,
+      verified: sourceResult.success == true,
+      generatedBy: 'BhreWorldSearch',
+    );
+  }
+
+  String _cleanWorldAnswer(String query, String text) {
+    final value = text.trim();
+
+    if (value.isEmpty) {
+      return 'Aku belum menemukan informasi yang cukup untuk menjawab "$query".';
+    }
+
+    return value;
   }
 
   BhreResponse _answerFromCandidates(
