@@ -67,6 +67,70 @@ class BhreKnowledgeRouter {
       return BhreKnowledgeDomain.economy;
     }
 
+    // ============================================================
+    // IT / CYBERSECURITY / DIGITAL FORENSICS
+    // ============================================================
+    //
+    // Cybersecurity dan Digital Forensics sengaja diprioritaskan
+    // sebagai bagian utama domain teknologi Bree.
+    //
+    if (_containsAny(text, [
+      'digital forensics',
+      'digital forensic',
+      'forensik digital',
+      'forensik komputer',
+      'computer forensics',
+      'computer forensic',
+      'mobile forensics',
+      'mobile forensic',
+      'network forensics',
+      'network forensic',
+      'disk forensics',
+      'memory forensics',
+      'forensic analysis',
+      'analisis forensik',
+      'bukti digital',
+      'barang bukti digital',
+      'digital evidence',
+      'chain of custody',
+      'autopsy',
+      'volatility',
+      'sleuth kit',
+      'sleuthkit',
+      'wireshark',
+      'packet capture',
+      'pcap',
+      'malware analysis',
+      'analisis malware',
+      'incident response',
+      'incident handling',
+      'threat hunting',
+      'threat intelligence',
+      'penetration testing',
+      'penetration test',
+      'ethical hacking',
+      'ethical hacker',
+      'cybersecurity',
+      'cyber security',
+      'keamanan siber',
+      'keamanan cyber',
+      'kejahatan siber',
+      'cybercrime',
+      'cyber crime',
+      'ransomware',
+      'phishing',
+      'exploit',
+      'vulnerability',
+      'kerentanan',
+      'firewall',
+      'ids',
+      'ips',
+      'soc',
+      'siem',
+    ])) {
+      return BhreKnowledgeDomain.technology;
+    }
+
     if (_containsAny(text, [
       'ai',
       'artificial intelligence',
@@ -80,11 +144,18 @@ class BhreKnowledgeRouter {
       'aplikasi',
       'teknologi',
       'internet',
-      'cyber',
-      'keamanan siber',
       'database',
       'flutter',
       'dart',
+      'server',
+      'cloud',
+      'api',
+      'jaringan',
+      'network',
+      'linux',
+      'android',
+      'ios',
+      'sistem operasi',
     ])) {
       return BhreKnowledgeDomain.technology;
     }

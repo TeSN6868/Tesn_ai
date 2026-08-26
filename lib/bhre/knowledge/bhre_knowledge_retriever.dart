@@ -51,24 +51,58 @@ class BhreKnowledgeRetriever {
     final content = record.content.toLowerCase();
 
     var score = 0.0;
-    final reasons = <String>[];
+    final reasons = <String>{};
 
+    // Exact full-query match remains strongest.
     if (topic == query) {
-      score += 0.50;
+      score += 0.60;
       reasons.add('exact_topic');
     } else if (topic.contains(query)) {
-      score += 0.35;
+      score += 0.45;
       reasons.add('topic_match');
     }
 
     if (content.contains(query)) {
-      score += 0.20;
+      score += 0.30;
       reasons.add('content_match');
     }
 
+    // Domain relevance.
     if (domain != null && record.domain == domain) {
-      score += 0.15;
+      score += 0.20;
       reasons.add('domain_match');
+    }
+
+    // Smart token matching.
+    //
+    // Example:
+    // "bagaimana cara melakukan analisis forensik digital?"
+    //
+    // Tidak harus ada seluruh kalimat tersebut di knowledge.
+    // Cukup kata-kata pentingnya ditemukan pada topic/content.
+    final tokens = _keywords(query);
+
+    var matchedTokens = 0;
+
+    for (final token in tokens) {
+      final inTopic = topic.contains(token);
+      final inContent = content.contains(token);
+
+      if (inTopic) {
+        score += 0.12;
+        matchedTokens++;
+        reasons.add('keyword_topic');
+      } else if (inContent) {
+        score += 0.07;
+        matchedTokens++;
+        reasons.add('keyword_content');
+      }
+    }
+
+    if (tokens.isNotEmpty && matchedTokens > 0) {
+      final coverage = matchedTokens / tokens.length;
+      score += coverage * 0.20;
+      reasons.add('keyword_coverage');
     }
 
     if (record.verified) {
@@ -91,5 +125,51 @@ class BhreKnowledgeRetriever {
       score: score,
       reasons: List.unmodifiable(reasons),
     );
+  }
+
+  List<String> _keywords(String query) {
+    const stopWords = {
+      'apa',
+      'itu',
+      'yang',
+      'dan',
+      'atau',
+      'di',
+      'ke',
+      'dari',
+      'untuk',
+      'dengan',
+      'pada',
+      'dalam',
+      'ini',
+      'itu',
+      'saya',
+      'aku',
+      'bisa',
+      'bagaimana',
+      'mengapa',
+      'kenapa',
+      'jelaskan',
+      'jelasin',
+      'tolong',
+      'mohon',
+      'caranya',
+      'cara',
+      'kah',
+      'ya',
+      'dong',
+    };
+
+    final normalized = query.toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9\s]'),
+      ' ',
+    );
+
+    return normalized
+        .split(RegExp(r'\s+'))
+        .map((word) => word.trim())
+        .where((word) => word.length >= 3 && !stopWords.contains(word))
+        .toSet()
+        .toList();
   }
 }
