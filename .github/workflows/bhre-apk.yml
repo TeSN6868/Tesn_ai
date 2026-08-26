@@ -1,0 +1,50 @@
+name: BHRE APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - bhre-engine
+
+jobs:
+  build-bhre:
+    name: Build BHRE APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout BHRE
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.9'
+          channel: stable
+          cache: true
+
+      - name: Flutter Pub Get
+        run: flutter pub get
+
+      - name: Analyze BHRE
+        run: flutter analyze lib/bhre_main.dart
+
+      - name: Build BHRE APK
+        run: flutter build apk --release -t lib/bhre_main.dart
+
+      - name: Rename APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             build/app/outputs/flutter-apk/BHRE.apk
+
+      - name: Upload BHRE APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BHRE-APK
+          path: build/app/outputs/flutter-apk/BHRE.apk
+          if-no-files-found: error

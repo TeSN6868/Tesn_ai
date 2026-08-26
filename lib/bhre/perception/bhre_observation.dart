@@ -1,12 +1,11 @@
 enum BhreObservationType {
-  location,
-  time,
-  device,
-  notification,
-  calendar,
-  network,
-  voice,
-  environment,
+  userMessage,
+  voiceInput,
+  systemEvent,
+  scheduledEvent,
+  locationChanged,
+  notificationReceived,
+  toolResult,
 }
 
 class BhreObservation {
@@ -15,10 +14,24 @@ class BhreObservation {
   final DateTime timestamp;
   final Map<String, dynamic> metadata;
 
-  BhreObservation({
+  const BhreObservation({
     required this.type,
     required this.value,
-    DateTime? timestamp,
+    required this.timestamp,
     this.metadata = const {},
-  }) : timestamp = timestamp ?? DateTime.now();
+  });
+
+  BhreObservation copyWith({
+    BhreObservationType? type,
+    String? value,
+    DateTime? timestamp,
+    Map<String, dynamic>? metadata,
+  }) {
+    return BhreObservation(
+      type: type ?? this.type,
+      value: value ?? this.value,
+      timestamp: timestamp ?? this.timestamp,
+      metadata: metadata ?? this.metadata,
+    );
+  }
 }

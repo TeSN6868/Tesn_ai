@@ -58,6 +58,32 @@ class BhreIntentRouter {
       );
     }
 
+    // Perintah tindakan harus diprioritaskan sebelum
+    // klasifikasi pertanyaan/informasi.
+    if (_containsAny(normalized, [
+      'buka',
+      'tutup',
+      'putar',
+      'kirim',
+      'hapus',
+      'simpan',
+      'hubungi',
+      'telepon',
+      'panggil',
+      'mulai',
+      'berhenti',
+      'nyalakan',
+      'matikan',
+      'lakukan',
+      'buatkan',
+      'tolong',
+    ])) {
+      return BhreIntent(
+        type: BhreIntentType.command,
+        rawInput: text,
+      );
+    }
+
     if (_containsAny(normalized, [
       'cari',
       'berita',
@@ -73,19 +99,6 @@ class BhreIntentRouter {
     ])) {
       return BhreIntent(
         type: BhreIntentType.informationRequest,
-        rawInput: text,
-      );
-    }
-
-    if (_containsAny(normalized, [
-      'tolong',
-      'lakukan',
-      'buatkan',
-      'nyalakan',
-      'matikan',
-    ])) {
-      return BhreIntent(
-        type: BhreIntentType.command,
         rawInput: text,
       );
     }

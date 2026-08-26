@@ -1,27 +1,45 @@
+enum BhreSource {
+  bjo,
+  system,
+  voice,
+  notification,
+  scheduled,
+  location,
+  unknown,
+}
+
 class BhreContext {
-  final DateTime timestamp;
-  final String? location;
-  final String? currentActivity;
-  final Map<String, dynamic> data;
+  final String sessionId;
+  final String? userId;
+  final BhreSource source;
+  final String locale;
+  final DateTime createdAt;
+  final Map<String, dynamic> metadata;
 
   const BhreContext({
-    required this.timestamp,
-    this.location,
-    this.currentActivity,
-    this.data = const {},
+    required this.sessionId,
+    this.userId,
+    this.source = BhreSource.unknown,
+    this.locale = 'id-ID',
+    required this.createdAt,
+    this.metadata = const {},
   });
 
   BhreContext copyWith({
-    DateTime? timestamp,
-    String? location,
-    String? currentActivity,
-    Map<String, dynamic>? data,
+    String? sessionId,
+    String? userId,
+    BhreSource? source,
+    String? locale,
+    DateTime? createdAt,
+    Map<String, dynamic>? metadata,
   }) {
     return BhreContext(
-      timestamp: timestamp ?? this.timestamp,
-      location: location ?? this.location,
-      currentActivity: currentActivity ?? this.currentActivity,
-      data: data ?? this.data,
+      sessionId: sessionId ?? this.sessionId,
+      userId: userId ?? this.userId,
+      source: source ?? this.source,
+      locale: locale ?? this.locale,
+      createdAt: createdAt ?? this.createdAt,
+      metadata: metadata ?? this.metadata,
     );
   }
 }
