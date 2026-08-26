@@ -1,17 +1,22 @@
-name: Build M8 APK
+name: BHRE Android APK
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  build-apk:
+    name: Build BHRE Release APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout M8
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -30,35 +35,22 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
+      - name: Flutter doctor
+        run: flutter doctor -v
+
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Analyze M8
-        run: dart analyze lib/main.dart || true
-        continue-on-error: true
+      - name: Analyze
+        run: flutter analyze --no-pub
 
-      - name: Build Debug APK
-        run: flutter build apk --debug
-
-      - name: Build Release APK
+      - name: Build release APK
         run: flutter build apk --release
 
-      - name: Verify APK files
-        run: |
-          ls -lh build/app/outputs/flutter-apk/
-          test -f build/app/outputs/flutter-apk/app-debug.apk
-          test -f build/app/outputs/flutter-apk/app-release.apk
-
-      - name: Upload Debug APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: M8-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
-          if-no-files-found: error
-
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: M8-release-apk
+          name: BHRE-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
+          retention-days: 14
