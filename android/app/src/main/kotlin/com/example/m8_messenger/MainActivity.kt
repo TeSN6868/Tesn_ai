@@ -1,7 +1,5 @@
 package com.example.m8_messenger
 
-import android.content.Context
-import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
@@ -21,7 +19,6 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
 
             when (call.method) {
-
                 "getBootCount" -> {
                     val bootCount =
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -35,30 +32,6 @@ class MainActivity : FlutterActivity() {
                         }
 
                     result.success(bootCount)
-                }
-
-                "startCallAudio" -> {
-                    val video = call.argument<Boolean>("video") ?: false
-
-                    val audioManager =
-                        getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-                    audioManager.mode =
-                        AudioManager.MODE_IN_COMMUNICATION
-
-                    audioManager.isSpeakerphoneOn = video
-
-                    result.success(true)
-                }
-
-                "stopCallAudio" -> {
-                    val audioManager =
-                        getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-                    audioManager.isSpeakerphoneOn = false
-                    audioManager.mode = AudioManager.MODE_NORMAL
-
-                    result.success(true)
                 }
 
                 else -> result.notImplemented()

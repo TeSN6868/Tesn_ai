@@ -1,39 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:http/http.dart' as http;
 
 class M8CallService {
   static const apiBase = 'https://m8-messenger-api.coolalaga686.workers.dev';
-
-  static const MethodChannel _audioChannel = MethodChannel('bjo/device');
-
-  Future<void> _startNativeCallAudio() async {
-    try {
-      await _audioChannel.invokeMethod<bool>(
-        'startCallAudio',
-        <String, dynamic>{'video': _isVideoCall},
-      );
-
-      print(
-        '[BJO AUDIO] NATIVE START '
-        'mode=${_isVideoCall ? 'VIDEO/SPEAKER' : 'VOICE/EARPIECE'}',
-      );
-    } catch (e) {
-      print('[BJO AUDIO] NATIVE START ERROR: $e');
-    }
-  }
-
-  Future<void> _stopNativeCallAudio() async {
-    try {
-      await _audioChannel.invokeMethod<bool>('stopCallAudio');
-      print('[BJO AUDIO] NATIVE AUDIO STOP');
-    } catch (e) {
-      print('[BJO AUDIO] NATIVE STOP ERROR: $e');
-    }
-  }
 
   RTCPeerConnection? peer;
   MediaStream? localStream;
@@ -174,7 +146,6 @@ class M8CallService {
     videoEnabled = videoCall;
 
     // Aktifkan routing audio Android untuk panggilan.
-    await _startNativeCallAudio();
 
     try {
       final response = await http.post(
@@ -258,7 +229,6 @@ class M8CallService {
     videoEnabled = videoCall;
 
     // Aktifkan routing audio Android untuk panggilan masuk.
-    await _startNativeCallAudio();
 
     final response = await http.post(
       Uri.parse('$apiBase/api/calls/accept'),

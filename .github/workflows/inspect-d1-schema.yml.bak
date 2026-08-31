@@ -1,0 +1,38 @@
+name: Inspect D1 Schema
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Wrangler
+        run: npm install --no-save wrangler@4.125.0
+
+      - name: Check Wrangler
+        run: ./node_modules/.bin/wrangler --version
+
+      - name: Inspect D1 tables
+        run: |
+          ./node_modules/.bin/wrangler d1 execute m8-database --remote \
+            --command="SELECT name, type, sql FROM sqlite_master WHERE type IN ('table','index') ORDER BY type, name;"
+
+      - name: Inspect chats schema
+        run: |
+          ./node_modules/.bin/wrangler d1 execute m8-database --remote \
+            --command="PRAGMA table_info(chats);"
+
+      - name: Inspect messages schema
+        run: |
+          ./node_modules/.bin/wrangler d1 execute m8-database --remote \
+            --command="PRAGMA table_info(messages);"
