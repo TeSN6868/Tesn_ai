@@ -415,12 +415,8 @@ export default {
 
         const now = Math.floor(Date.now() / 1000);
 
-        /*
-         * Story Feed tidak lagi menggunakan masa berlaku 24 jam.
-         * expires_at tetap diisi jauh ke depan agar database lama
-         * tetap kompatibel tanpa migrasi berbahaya.
-         */
-        const expiresAt = now + (10 * 365 * 24 * 60 * 60);
+        // Story B'Jo berlaku selama 24 jam.
+        const expiresAt = now + (24 * 60 * 60);
 
         const storyId = crypto.randomUUID();
 
@@ -839,9 +835,10 @@ export default {
           INNER JOIN users u
             ON u.m8_pin = s.user_pin
           WHERE s.is_active = 1
+            AND s.expires_at > ?
           ORDER BY s.created_at DESC
           LIMIT 100
-        `).bind(myPin).all();
+        `).bind(myPin, Math.floor(Date.now() / 1000)).all();
 
         return json({
           success: true,
