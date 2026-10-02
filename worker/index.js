@@ -4326,7 +4326,6 @@ export default {
           profile_background_url: user.profile_background_url,
         },
       });
-    }
 
       return json({
         success: false,
