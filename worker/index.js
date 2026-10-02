@@ -866,12 +866,11 @@ export default {
 
         const password = String(body.password || "");
         const confirmPassword = String(body.confirm_password || "");
-        const m8Pin = String(body.m8_pin || body.pin || "").trim();
 
-        if (!name || (!finalEmail && !finalPhone) || !password || !confirmPassword || !m8Pin) {
+        if (!name || (!finalEmail && !finalPhone) || !password || !confirmPassword) {
           return json({
             success: false,
-            error: "Nama, email/nomor HP, password, konfirmasi password, dan PIN M8 wajib diisi.",
+            error: "Nama, email/nomor HP, password, dan konfirmasi password wajib diisi.",
           }, 400);
         }
 
@@ -882,28 +881,6 @@ export default {
           }, 400);
         }
 
-        // ============================================================
-        // M8 PIN RULES
-        // Owner PIN khusus: M8000001
-        // User PIN: tepat 8 karakter, huruf kecil + angka
-        // ============================================================
-
-        const OWNER_PIN = "M8000001";
-
-        if (m8Pin === OWNER_PIN) {
-          return json({
-            success: false,
-            error: "PIN Owner M8 adalah PIN khusus dan tidak dapat digunakan untuk registrasi pengguna.",
-          }, 403);
-        }
-
-        if (!/^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{8}$/.test(m8Pin)) {
-          return json({
-            success: false,
-            error: "PIN M8 harus tepat 8 karakter dan terdiri dari huruf kecil serta angka.",
-          }, 400);
-        }
-
         if (!env.DB) {
           return json({
             success: false,
@@ -911,16 +888,47 @@ export default {
           }, 500);
         }
 
+        // ============================================================
+        // B'JO PIN OTOMATIS
+        // 8 karakter: huruf kecil + angka
+        // Dibuat server-side menggunakan crypto.getRandomValues()
+        // ============================================================
+
+        let m8Pin = "";
+
+        for (let attempt = 0; attempt < 20; attempt++) {
+          m8Pin = generateBjoPin();
+
+          const pinExists = await env.DB.prepare(
+            "SELECT id FROM users WHERE m8_pin = ? LIMIT 1"
+          )
+            .bind(m8Pin)
+            .first();
+
+          if (!pinExists) {
+            break;
+          }
+
+          m8Pin = "";
+        }
+
+        if (!m8Pin) {
+          return json({
+            success: false,
+            error: "Gagal membuat B'Jo PIN unik. Silakan coba lagi.",
+          }, 503);
+        }
+
         const existing = await env.DB.prepare(
-          "SELECT id FROM users WHERE (email IS NOT NULL AND email = ?) OR (phone IS NOT NULL AND phone = ?) OR m8_pin = ? LIMIT 1"
+          "SELECT id FROM users WHERE (email IS NOT NULL AND email = ?) OR (phone IS NOT NULL AND phone = ?) LIMIT 1"
         )
-          .bind(finalEmail || "", finalPhone || "", m8Pin)
+          .bind(finalEmail || "", finalPhone || "")
           .first();
 
         if (existing) {
           return json({
             success: false,
-            error: "Email/nomor HP atau PIN M8 sudah terdaftar.",
+            error: "Email/nomor HP sudah terdaftar.",
           }, 409);
         }
 
@@ -941,12 +949,20 @@ export default {
           .run();
 
         if (!result.success) {
-          throw new Error("Gagal menyimpan akun M8.");
+          throw new Error("Gagal menyimpan akun B'Jo.");
         }
 
         return json({
           success: true,
-          message: "Akun M8 berhasil dibuat.",
+          message: "Akun B'Jo berhasil dibuat.",
+          m8_pin: m8Pin,
+          user: {
+            id: result.meta?.last_row_id ?? null,
+            name,
+            email: finalEmail || null,
+            phone: finalPhone || null,
+            m8_pin: m8Pin,
+          },
         }, 201);
       }
 
@@ -4164,21 +4180,18 @@ export default {
     if (url.pathname === "/api/login" && request.method === "POST") {
       const body = await request.json();
 
-      const identifier = String(
-        body.identifier || body.email_or_phone || ""
-      ).trim();
+      const name = String(body.name || "").trim();
 
       const m8Pin = String(
         body.m8_pin || body.pin || ""
       ).trim();
 
-      const password = String(body.password || "");
       const deviceId = String(body.device_id || "").trim();
 
-      if ((!identifier && !m8Pin) || !password) {
+      if (!name || !m8Pin) {
         return json({
           success: false,
-          error: "Identitas/PIN dan password wajib diisi.",
+          error: "Nama dan B'Jo PIN wajib diisi.",
         }, 400);
       }
 
@@ -4189,41 +4202,66 @@ export default {
         }, 500);
       }
 
-      let user;
-
-      if (identifier) {
-        user = await env.DB.prepare(`
-          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url, profile_background_url
-          FROM users
-          WHERE (email = ? OR phone = ?) AND active = 1
-          LIMIT 1
-        `)
-          .bind(identifier, identifier)
-          .first();
-      } else {
-        user = await env.DB.prepare(`
-          SELECT id, name, email, phone, m8_pin, password_hash, profile_photo_url, profile_background_url
-          FROM users
-          WHERE m8_pin = ? AND active = 1
-          LIMIT 1
-        `)
-          .bind(m8Pin)
-          .first();
-      }
+      const user = await env.DB.prepare(`
+        SELECT
+          id,
+          name,
+          email,
+          phone,
+          m8_pin,
+          profile_photo_url,
+          profile_background_url
+        FROM users
+        WHERE name = ? AND m8_pin = ? AND active = 1
+        LIMIT 1
+      `)
+        .bind(name, m8Pin)
+        .first();
 
       if (!user) {
         return json({
           success: false,
-          error: "Identitas/PIN atau password salah.",
+          error: "Nama atau B'Jo PIN salah.",
         }, 401);
       }
 
-      let validPassword = await verifyPassword(
-        password,
-        user.password_hash
-      );
+      await ensureSessionTables(env);
 
-      // Upgrade akun lama dari SHA-256 ke PBKDF2
+      const token = await createToken();
+      const tokenHash = await hashToken(token);
+      const deviceName = getDeviceName(request);
+      const platform = getPlatform(request);
+
+      await env.DB.prepare(`
+        INSERT INTO sessions
+          (user_id, token_hash, device_name, platform, device_id, created_at, last_seen_at, expires_at)
+        VALUES (?, ?, ?, ?, ?, unixepoch(), unixepoch(), unixepoch() + 2592000)
+      `)
+        .bind(
+          user.id,
+          tokenHash,
+          deviceName,
+          platform,
+          deviceId
+        )
+        .run();
+
+      return json({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          m8_pin: user.m8_pin,
+          profile_photo_url: user.profile_photo_url,
+          profile_background_url: user.profile_background_url,
+        },
+      });
+    }
+
+    // Upgrade akun lama dari SHA-256 ke PBKDF2
       if (
         !validPassword &&
         user.password_hash &&
@@ -4306,6 +4344,33 @@ export default {
     }
   },
 };
+
+function generateBjoPin() {
+  const letters = "abcdefghijklmnopqrstuvwxyz";
+  const numbers = "0123456789";
+  const chars = letters + numbers;
+
+  const randomBytes = new Uint8Array(8);
+  crypto.getRandomValues(randomBytes);
+
+  const result = [];
+
+  // Minimal 1 huruf dan 1 angka.
+  result.push(letters[randomBytes[0] % letters.length]);
+  result.push(numbers[randomBytes[1] % numbers.length]);
+
+  for (let i = 2; i < 8; i++) {
+    result.push(chars[randomBytes[i] % chars.length]);
+  }
+
+  // Acak posisi karakter.
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = randomBytes[i] % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result.join("");
+}
 
 async function hashPassword(password) {
   const iterations = 100000;
