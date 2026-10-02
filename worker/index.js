@@ -4264,8 +4264,8 @@ export default {
           email: user.email,
           phone: user.phone,
           m8_pin: user.m8_pin,
-          profile_photo_url: user.profile_photo_url,
-          profile_background_url: user.profile_background_url,
+          profile_photo_url: normalizeBjoMediaUrl(user.profile_photo_url, url),
+          profile_background_url: normalizeBjoMediaUrl(user.profile_background_url, url),
         },
       });
     }
@@ -4590,6 +4590,25 @@ async function getProfilePrivacy(env, userId) {
   }
 
   return privacy;
+}
+
+function normalizeBjoMediaUrl(value, requestUrl) {
+  if (!value) return value;
+
+  try {
+    const parsed = new URL(value);
+    if (
+      parsed.pathname.startsWith("/api/media/") &&
+      parsed.hostname === "m8-messenger-api.coolalaga686.workers.dev"
+    ) {
+      const current = new URL(requestUrl);
+      parsed.protocol = current.protocol;
+      parsed.host = current.host;
+      return parsed.toString();
+    }
+  } catch (_) {}
+
+  return value;
 }
 
 function applyProfilePrivacy(user, privacy, isOwner = false) {
