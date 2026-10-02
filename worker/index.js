@@ -182,7 +182,16 @@ export default {
           }, 400);
         }
 
-        const object = await env.MEDIA.get(key);
+        let object;
+        try {
+          object = await env.MEDIA.get(key);
+        } catch (error) {
+          return json({
+            success: false,
+            error: "R2 MEDIA get gagal.",
+            detail: error instanceof Error ? error.message : String(error),
+          }, 500);
+        }
 
         if (!object) {
           return json({
